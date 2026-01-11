@@ -1,1 +1,52 @@
+# Minimal Survivors Game
 
+A tiny HTML5 survivors-like game that runs in mobile Safari with no build step.
+
+## Features
+
+- **Player**: Green circle that you control
+- **Enemies**: Red squares that chase you
+- **Projectiles**: Yellow triangles that auto-fire at enemies
+- **Controls**: 
+  - Desktop: WASD keys for movement
+  - Mobile: Touch anywhere to move toward that position
+- **Goal**: Survive as long as possible and get the highest score!
+
+## How to Play
+
+1. Open `index.html` in any modern browser (Chrome, Safari, Firefox, Edge)
+2. Move to avoid red squares
+3. Yellow triangles auto-fire from your position toward enemies
+4. Each enemy killed gives you 10 points
+5. Each enemy collision takes 10 health
+6. Game over when health reaches 0
+7. Tap/click to restart after game over
+
+## Technology
+
+- Pure HTML5 Canvas 2D rendering
+- Vanilla JavaScript (with TypeScript source)
+- No build step required - just open index.html
+- Works on mobile Safari with touch controls
+- Uses requestAnimationFrame for smooth 60fps gameplay
+
+## Files
+
+- `index.html` - Main game page
+- `game.js` - Game logic (runs directly in browser)
+- `game.ts` - TypeScript source (for type checking)
+- `tsconfig.json` - TypeScript configuration
+
+## Development
+
+The game runs directly from `game.js` with no build step. The `game.ts` file is provided for:
+- Type checking with TypeScript
+- Better IDE support
+- Documentation
+
+To type-check the TypeScript (optional):
+```bash
+npx tsc --noEmit
+```
+
+No compilation is needed to run the game!
