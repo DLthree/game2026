@@ -1,5 +1,5 @@
-import { Player, Enemy, Projectile } from '../entities/index.ts';
-import { InputSystem, CollisionSystem, RenderSystem } from '../systems/index.ts';
+import { Player, Enemy, Projectile } from '../entities/index';
+import { InputSystem, CollisionSystem, RenderSystem } from '../systems/index';
 
 export class Game {
   private canvas: HTMLCanvasElement;

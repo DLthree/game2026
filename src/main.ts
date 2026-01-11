@@ -1,4 +1,4 @@
-import { Game } from './core/Game.ts';
+import { Game } from './core/Game';
 
 // Initialize game when DOM is loaded
 const canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;

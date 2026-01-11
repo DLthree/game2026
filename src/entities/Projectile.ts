@@ -1,4 +1,4 @@
-import { Triangle, Vector2 } from '../types/index.ts';
+import { Triangle, Vector2 } from '../types/index';
 
 export class Projectile implements Triangle {
   pos: Vector2;

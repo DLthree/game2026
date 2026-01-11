@@ -1,4 +1,4 @@
-import { Circle, Vector2 } from '../types/index.ts';
+import { Circle, Vector2 } from '../types/index';
 
 export class Player implements Circle {
   pos: Vector2;

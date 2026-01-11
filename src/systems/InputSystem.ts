@@ -1,4 +1,4 @@
-import { Vector2 } from '../types/index.ts';
+import { Vector2 } from '../types/index';
 
 export class InputSystem {
   private keys: Record<string, boolean> = { w: false, a: false, s: false, d: false };

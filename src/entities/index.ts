@@ -1,3 +1,3 @@
-export { Player } from './Player.ts';
-export { Enemy } from './Enemy.ts';
-export { Projectile } from './Projectile.ts';
+export { Player } from './Player';
+export { Enemy } from './Enemy';
+export { Projectile } from './Projectile';

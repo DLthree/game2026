@@ -1,4 +1,4 @@
-import { Player, Enemy, Projectile } from '../entities/index.ts';
+import { Player, Enemy, Projectile } from '../entities/index';
 
 export class RenderSystem {
   private ctx: CanvasRenderingContext2D;

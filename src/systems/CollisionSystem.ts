@@ -1,4 +1,4 @@
-import { Player, Enemy, Projectile } from '../entities/index.ts';
+import { Player, Enemy, Projectile } from '../entities/index';
 
 export class CollisionSystem {
   checkPlayerEnemyCollision(player: Player, enemy: Enemy): boolean {

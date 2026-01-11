@@ -1,4 +1,4 @@
-import { Square, Vector2 } from '../types/index.ts';
+import { Square, Vector2 } from '../types/index';
 
 export class Enemy implements Square {
   pos: Vector2;
