@@ -164,10 +164,19 @@ function update(dt) {
         game.lastEnemySpawn = now;
         const side = Math.floor(Math.random() * 4);
         let x, y;
-        if (side === 0) { x = -20; y = Math.random() * canvas.height; }
-        else if (side === 1) { x = canvas.width + 20; y = Math.random() * canvas.height; }
-        else if (side === 2) { x = Math.random() * canvas.width; y = -20; }
-        else { x = Math.random() * canvas.width; y = canvas.height + 20; }
+        if (side === 0) { 
+            x = -20; 
+            y = Math.random() * canvas.height; 
+        } else if (side === 1) { 
+            x = canvas.width + 20; 
+            y = Math.random() * canvas.height; 
+        } else if (side === 2) { 
+            x = Math.random() * canvas.width; 
+            y = -20; 
+        } else { // side === 3
+            x = Math.random() * canvas.width; 
+            y = canvas.height + 20; 
+        }
         
         game.enemies.push({
             pos: { x, y },
