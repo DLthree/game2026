@@ -1,24 +1,25 @@
-import { Triangle, Vector2 } from '../types/index';
+/**
+ * @typedef {import('../types/index.js').Triangle} Triangle
+ * @typedef {import('../types/index.js').Vector2} Vector2
+ */
 
-export class Projectile implements Triangle {
-  pos: Vector2;
-  vel: Vector2;
-  size: number;
-  color: string;
-
-  constructor(x: number, y: number, velX: number, velY: number) {
+/**
+ * @implements {Triangle}
+ */
+export class Projectile {
+  constructor(x, y, velX, velY) {
     this.pos = { x, y };
     this.vel = { x: velX, y: velY };
     this.size = 8;
     this.color = '#ffff00';
   }
 
-  update(dt: number): void {
+  update(dt) {
     this.pos.x += this.vel.x * dt;
     this.pos.y += this.vel.y * dt;
   }
 
-  draw(ctx: CanvasRenderingContext2D): void {
+  draw(ctx) {
     ctx.fillStyle = this.color;
     ctx.beginPath();
     
@@ -42,7 +43,7 @@ export class Projectile implements Triangle {
     ctx.fill();
   }
 
-  isOutOfBounds(width: number, height: number): boolean {
+  isOutOfBounds(width, height) {
     return this.pos.x < 0 || this.pos.x > width || 
            this.pos.y < 0 || this.pos.y > height;
   }
