@@ -1,6 +1,6 @@
 # Game 2026
 
-A modern TypeScript canvas-based game with a clean, modular architecture.
+A minimal HTML5 canvas-based survivors-like game built for mobile Safari with no build step required.
 
 ## Features
 
@@ -17,24 +17,23 @@ A modern TypeScript canvas-based game with a clean, modular architecture.
 ```
 game2026/
 ├── src/
-│   ├── main.ts              # Application entry point
+│   ├── main.js              # Application entry point
 │   ├── core/
-│   │   └── Game.ts          # Main game orchestration class
+│   │   └── Game.js          # Main game orchestration class
 │   ├── entities/
-│   │   ├── index.ts         # Entity exports
-│   │   ├── Player.ts        # Player entity
-│   │   ├── Enemy.ts         # Enemy entity
-│   │   └── Projectile.ts    # Projectile entity
+│   │   ├── index.js         # Entity exports
+│   │   ├── Player.js        # Player entity
+│   │   ├── Enemy.js         # Enemy entity
+│   │   └── Projectile.js    # Projectile entity
 │   ├── systems/
-│   │   ├── index.ts         # System exports
-│   │   ├── InputSystem.ts   # Handles keyboard, mouse, and touch input
-│   │   ├── CollisionSystem.ts # Collision detection logic
-│   │   └── RenderSystem.ts  # Canvas rendering
+│   │   ├── index.js         # System exports
+│   │   ├── InputSystem.js   # Handles keyboard, mouse, and touch input
+│   │   ├── CollisionSystem.js # Collision detection logic
+│   │   └── RenderSystem.js  # Canvas rendering
 │   └── types/
-│       └── index.ts         # TypeScript interfaces and types
+│       └── index.js         # JSDoc type definitions
 ├── index.html               # HTML entry point
-├── package.json             # Project dependencies and scripts
-├── tsconfig.json            # TypeScript configuration
+├── package.json             # Optional (only for serve script)
 └── README.md                # This file
 ```
 
@@ -55,54 +54,31 @@ This structure makes the code:
 
 ### Prerequisites
 
-- Node.js (v18 or higher)
+- **Python 3** (for local HTTP server)
+- No Node.js or npm required (optional for convenience script only)
 
-### Installation
+### Running the Game
 
+**Option 1: Python HTTP Server (Recommended)**
 ```bash
-npm install
+python3 -m http.server 8000
 ```
 
-### Development
-
-Run the development server with hot module replacement:
-
+**Option 2: Using npm script (if you have Node.js installed)**
 ```bash
-npm run dev
+npm run serve
 ```
 
-Then open http://localhost:5173 in your browser.
+Then open http://localhost:8000 in your browser.
 
-### Production Build
+**Option 3: Direct File Access**
 
-Build the optimized production bundle:
-
-```bash
-npm run build
-```
-
-The output will be in the `dist/` directory.
-
-### Preview Production Build
-
-Preview the production build locally:
-
-```bash
-npm run preview
-```
-
-### Type Checking
-
-Run TypeScript type checking without building:
-
-```bash
-npm run typecheck
-```
+Simply open `index.html` in any modern browser. Note: Some browsers may have CORS restrictions with the `file://` protocol for ES modules, so using an HTTP server is recommended.
 
 ## How to Play
 
-1. Run the development server (`npm run dev`)
-2. Open the game in your browser
+1. Start a local HTTP server (see "Running the Game" above)
+2. Open the game in your browser at http://localhost:8000
 3. Move with WASD keys (desktop) or touch (mobile) to avoid red squares
 4. Yellow triangles auto-fire from your position toward enemies
 5. Each enemy killed gives you 10 points
@@ -112,14 +88,15 @@ npm run typecheck
 
 ## Technology Stack
 
-- **TypeScript**: Type-safe JavaScript
-- **Vite**: Fast build tool and dev server
+- **Plain JavaScript**: ES modules with JSDoc type annotations
 - **HTML5 Canvas**: 2D rendering
-- **ES Modules**: Modern JavaScript module system
+- **Zero Build**: No compilation or bundling - runs directly in the browser
 
 ## Development Notes
 
-- The game uses TypeScript only (no JavaScript files in src/)
-- Vite handles bundling and provides hot module replacement during development
-- All game logic is fully typed for better IDE support and fewer bugs
+- **No build step required**: All code is plain JavaScript that runs directly in the browser
+- **Native ES modules**: Uses `import`/`export` with explicit `.js` file extensions
+- **JSDoc for typing**: Type hints via JSDoc comments (no TypeScript compilation)
+- **Mobile-first**: Optimized for mobile Safari with touch controls
+- **GitHub Pages**: Automatically deployed on push to main branch
 - The modular structure makes it easy to add new entities or systems
