@@ -7,6 +7,7 @@ A minimal HTML5 canvas-based survivors-like game built for mobile Safari with no
 - **Player**: Green circle that you control
 - **Enemies**: Red squares that chase you
 - **Projectiles**: Yellow triangles that auto-fire at enemies
+- **Skill Tree System**: Flexible, reusable skill tree with multiple currencies and branching paths (see [SKILLTREE.md](SKILLTREE.md))
 - **Controls**: 
   - Desktop: WASD keys for movement
   - Mobile: Touch anywhere to move toward that position
@@ -30,11 +31,19 @@ game2026/
 │   │   ├── InputSystem.js   # Handles keyboard, mouse, and touch input
 │   │   ├── CollisionSystem.js # Collision detection logic
 │   │   └── RenderSystem.js  # Canvas rendering
+│   ├── skilltree/
+│   │   ├── index.js         # Skill tree exports
+│   │   ├── SkillTreeManager.js # Skill tree logic
+│   │   └── SkillTreeUI.js   # Skill tree visual rendering
+│   ├── data/
+│   │   └── skillTreeData.js # Skill tree configuration data
 │   └── types/
 │       └── index.js         # JSDoc type definitions
 ├── index.html               # HTML entry point
+├── skilltree-demo.html      # Standalone skill tree demo
 ├── package.json             # Optional (only for serve script)
-└── README.md                # This file
+├── README.md                # This file
+└── SKILLTREE.md             # Skill tree documentation
 ```
 
 ## Architecture
@@ -85,6 +94,18 @@ Simply open `index.html` in any modern browser. Note: Some browsers may have COR
 6. Each enemy collision takes 10 health
 7. Game over when health reaches 0
 8. Tap/click to restart after game over
+9. Click "Skill Tree" button to open the skill tree interface
+
+## Skill Tree Demo
+
+To see the standalone skill tree system in action:
+
+```bash
+python3 -m http.server 8000
+# Open http://localhost:8000/skilltree-demo.html
+```
+
+For full documentation, see [SKILLTREE.md](SKILLTREE.md)
 
 ## Technology Stack
 
