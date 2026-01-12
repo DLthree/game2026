@@ -1,19 +1,20 @@
-import { Circle, Vector2 } from '../types/index';
+/**
+ * @typedef {import('../types/index.js').Circle} Circle
+ * @typedef {import('../types/index.js').Vector2} Vector2
+ */
 
-export class Player implements Circle {
-  pos: Vector2;
-  vel: Vector2;
-  radius: number;
-  color: string;
-
-  constructor(x: number, y: number) {
+/**
+ * @implements {Circle}
+ */
+export class Player {
+  constructor(x, y) {
     this.pos = { x, y };
     this.vel = { x: 0, y: 0 };
     this.radius = 15;
     this.color = '#00ff00';
   }
 
-  update(dt: number, canvasWidth: number, canvasHeight: number): void {
+  update(dt, canvasWidth, canvasHeight) {
     this.pos.x += this.vel.x * dt;
     this.pos.y += this.vel.y * dt;
 
@@ -22,14 +23,14 @@ export class Player implements Circle {
     this.pos.y = Math.max(this.radius, Math.min(canvasHeight - this.radius, this.pos.y));
   }
 
-  draw(ctx: CanvasRenderingContext2D): void {
+  draw(ctx) {
     ctx.fillStyle = this.color;
     ctx.beginPath();
     ctx.arc(this.pos.x, this.pos.y, this.radius, 0, Math.PI * 2);
     ctx.fill();
   }
 
-  reset(x: number, y: number): void {
+  reset(x, y) {
     this.pos = { x, y };
     this.vel = { x: 0, y: 0 };
   }

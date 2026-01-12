@@ -1,31 +1,20 @@
-import { Player, Enemy, Projectile } from '../entities/index';
-import { InputSystem, CollisionSystem, RenderSystem } from '../systems/index';
+import { Player, Enemy, Projectile } from '../entities/index.js';
+import { InputSystem, CollisionSystem, RenderSystem } from '../systems/index.js';
 
 export class Game {
-  private canvas: HTMLCanvasElement;
-  private player: Player;
-  private enemies: Enemy[] = [];
-  private projectiles: Projectile[] = [];
-  
-  private score = 0;
-  private health = 100;
-  private isGameOver = false;
-  
-  private lastEnemySpawn = 0;
-  private lastShot = 0;
-  private lastTime = 0;
-
-  private inputSystem: InputSystem;
-  private collisionSystem: CollisionSystem;
-  private renderSystem: RenderSystem;
-
-  private scoreElement: HTMLElement;
-  private healthElement: HTMLElement;
-  private gameOverElement: HTMLElement;
-
-  constructor(canvas: HTMLCanvasElement) {
+  constructor(canvas) {
     this.canvas = canvas;
+    this.enemies = [];
+    this.projectiles = [];
     
+    this.score = 0;
+    this.health = 100;
+    this.isGameOver = false;
+    
+    this.lastEnemySpawn = 0;
+    this.lastShot = 0;
+    this.lastTime = 0;
+
     // Initialize systems
     this.inputSystem = new InputSystem(canvas, () => this.handleRestart());
     this.collisionSystem = new CollisionSystem();
@@ -35,15 +24,15 @@ export class Game {
     this.player = new Player(canvas.width / 2, canvas.height / 2);
 
     // Get UI elements
-    this.scoreElement = document.getElementById('score') as HTMLElement;
-    this.healthElement = document.getElementById('health') as HTMLElement;
-    this.gameOverElement = document.getElementById('gameOver') as HTMLElement;
+    this.scoreElement = document.getElementById('score');
+    this.healthElement = document.getElementById('health');
+    this.gameOverElement = document.getElementById('gameOver');
 
     // Setup canvas resize
     this.setupResize();
   }
 
-  private setupResize(): void {
+  setupResize() {
     const resize = () => {
       const maxWidth = 800;
       const maxHeight = 600;
@@ -62,7 +51,7 @@ export class Game {
     window.addEventListener('resize', resize);
   }
 
-  private handleRestart(): void {
+  handleRestart() {
     if (!this.isGameOver) return;
 
     this.player.reset(this.canvas.width / 2, this.canvas.height / 2);
@@ -76,7 +65,7 @@ export class Game {
     this.gameOverElement.style.display = 'none';
   }
 
-  private update(dt: number): void {
+  update(dt) {
     if (this.isGameOver) return;
 
     // Update player movement
@@ -167,9 +156,9 @@ export class Game {
     this.healthElement.textContent = this.health.toString();
   }
 
-  private spawnEnemy(): void {
+  spawnEnemy() {
     const side = Math.floor(Math.random() * 4);
-    let x: number, y: number;
+    let x, y;
 
     if (side === 0) {
       x = -20;
@@ -188,8 +177,8 @@ export class Game {
     this.enemies.push(new Enemy(x, y));
   }
 
-  private shootAtNearestEnemy(): void {
-    let nearestEnemy: Enemy | null = null;
+  shootAtNearestEnemy() {
+    let nearestEnemy = null;
     let nearestDist = Infinity;
 
     for (const enemy of this.enemies) {
@@ -218,14 +207,14 @@ export class Game {
     }
   }
 
-  private draw(): void {
+  draw() {
     this.renderSystem.clear();
     this.renderSystem.drawPlayer(this.player);
     this.renderSystem.drawEnemies(this.enemies);
     this.renderSystem.drawProjectiles(this.projectiles);
   }
 
-  private gameLoop = (timestamp: number): void => {
+  gameLoop = (timestamp) => {
     const dt = (timestamp - this.lastTime) / 1000;
     this.lastTime = timestamp;
 
@@ -237,7 +226,7 @@ export class Game {
     requestAnimationFrame(this.gameLoop);
   };
 
-  start(): void {
+  start() {
     requestAnimationFrame(this.gameLoop);
   }
 }

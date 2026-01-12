@@ -1,13 +1,13 @@
-import { Square, Vector2 } from '../types/index';
+/**
+ * @typedef {import('../types/index.js').Square} Square
+ * @typedef {import('../types/index.js').Vector2} Vector2
+ */
 
-export class Enemy implements Square {
-  pos: Vector2;
-  vel: Vector2;
-  size: number;
-  color: string;
-  health: number;
-
-  constructor(x: number, y: number) {
+/**
+ * @implements {Square}
+ */
+export class Enemy {
+  constructor(x, y) {
     this.pos = { x, y };
     this.vel = { x: 0, y: 0 };
     this.size = 15;
@@ -15,7 +15,7 @@ export class Enemy implements Square {
     this.health = 1;
   }
 
-  update(dt: number, targetPos: Vector2): void {
+  update(dt, targetPos) {
     const dx = targetPos.x - this.pos.x;
     const dy = targetPos.y - this.pos.y;
     const dist = Math.sqrt(dx * dx + dy * dy);
@@ -28,7 +28,7 @@ export class Enemy implements Square {
     this.pos.y += this.vel.y * dt;
   }
 
-  draw(ctx: CanvasRenderingContext2D): void {
+  draw(ctx) {
     ctx.fillStyle = this.color;
     ctx.fillRect(
       this.pos.x - this.size,
@@ -38,7 +38,7 @@ export class Enemy implements Square {
     );
   }
 
-  takeDamage(): boolean {
+  takeDamage() {
     this.health--;
     return this.health <= 0;
   }

@@ -1,16 +1,9 @@
 {
   "name": "game2026",
   "version": "1.0.0",
-  "description": "Modern TypeScript canvas-based game",
+  "description": "Modern JavaScript canvas-based game for mobile Safari",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview",
-    "typecheck": "tsc --noEmit"
-  },
-  "devDependencies": {
-    "typescript": "^5.3.3",
-    "vite": "^6.1.7"
+    "serve": "python3 -m http.server 8000"
   }
 }

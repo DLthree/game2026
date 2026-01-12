@@ -1,7 +1,7 @@
-import { Player, Enemy, Projectile } from '../entities/index';
+import { Player, Enemy, Projectile } from '../entities/index.js';
 
 export class CollisionSystem {
-  checkPlayerEnemyCollision(player: Player, enemy: Enemy): boolean {
+  checkPlayerEnemyCollision(player, enemy) {
     const dx = player.pos.x - enemy.pos.x;
     const dy = player.pos.y - enemy.pos.y;
     const dist = Math.sqrt(dx * dx + dy * dy);
@@ -9,7 +9,7 @@ export class CollisionSystem {
     return dist < collisionDist;
   }
 
-  checkProjectileEnemyCollision(projectile: Projectile, enemy: Enemy): boolean {
+  checkProjectileEnemyCollision(projectile, enemy) {
     const dx = projectile.pos.x - enemy.pos.x;
     const dy = projectile.pos.y - enemy.pos.y;
     const dist = Math.sqrt(dx * dx + dy * dy);

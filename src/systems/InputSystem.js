@@ -1,32 +1,31 @@
-import { Vector2 } from '../types/index';
+/**
+ * @typedef {import('../types/index.js').Vector2} Vector2
+ */
 
 export class InputSystem {
-  private keys: Record<string, boolean> = { w: false, a: false, s: false, d: false };
-  private mouse = { x: 0, y: 0, down: false };
-  private targetPos: Vector2 | null = null;
-  private canvas: HTMLCanvasElement;
-  private onRestart?: () => void;
-
-  constructor(canvas: HTMLCanvasElement, onRestart?: () => void) {
+  constructor(canvas, onRestart) {
     this.canvas = canvas;
     this.onRestart = onRestart;
+    this.keys = { w: false, a: false, s: false, d: false };
+    this.mouse = { x: 0, y: 0, down: false };
+    this.targetPos = null;
     this.setupListeners();
   }
 
-  private setupListeners(): void {
+  setupListeners() {
     // Keyboard
-    window.addEventListener('keydown', (e: KeyboardEvent) => {
+    window.addEventListener('keydown', (e) => {
       const key = e.key.toLowerCase();
       if (key in this.keys) this.keys[key] = true;
     });
 
-    window.addEventListener('keyup', (e: KeyboardEvent) => {
+    window.addEventListener('keyup', (e) => {
       const key = e.key.toLowerCase();
       if (key in this.keys) this.keys[key] = false;
     });
 
     // Mouse
-    this.canvas.addEventListener('mousedown', (e: MouseEvent) => {
+    this.canvas.addEventListener('mousedown', (e) => {
       if (this.onRestart) {
         this.onRestart();
       }
@@ -34,7 +33,7 @@ export class InputSystem {
       this.updateMousePosition(e);
     });
 
-    this.canvas.addEventListener('mousemove', (e: MouseEvent) => {
+    this.canvas.addEventListener('mousemove', (e) => {
       this.updateMousePosition(e);
     });
 
@@ -43,7 +42,7 @@ export class InputSystem {
     });
 
     // Touch
-    this.canvas.addEventListener('touchstart', (e: TouchEvent) => {
+    this.canvas.addEventListener('touchstart', (e) => {
       e.preventDefault();
       if (this.onRestart) {
         this.onRestart();
@@ -52,25 +51,25 @@ export class InputSystem {
       this.updateTouchPosition(touch);
     }, { passive: false });
 
-    this.canvas.addEventListener('touchmove', (e: TouchEvent) => {
+    this.canvas.addEventListener('touchmove', (e) => {
       e.preventDefault();
       const touch = e.touches[0];
       this.updateTouchPosition(touch);
     }, { passive: false });
 
-    this.canvas.addEventListener('touchend', (e: TouchEvent) => {
+    this.canvas.addEventListener('touchend', (e) => {
       e.preventDefault();
       this.targetPos = null;
     }, { passive: false });
   }
 
-  private updateMousePosition(e: MouseEvent): void {
+  updateMousePosition(e) {
     const rect = this.canvas.getBoundingClientRect();
     this.mouse.x = (e.clientX - rect.left) * (this.canvas.width / rect.width);
     this.mouse.y = (e.clientY - rect.top) * (this.canvas.height / rect.height);
   }
 
-  private updateTouchPosition(touch: Touch): void {
+  updateTouchPosition(touch) {
     const rect = this.canvas.getBoundingClientRect();
     this.targetPos = {
       x: (touch.clientX - rect.left) * (this.canvas.width / rect.width),
@@ -78,8 +77,8 @@ export class InputSystem {
     };
   }
 
-  getMovementVelocity(speed: number): Vector2 {
-    const vel: Vector2 = { x: 0, y: 0 };
+  getMovementVelocity(speed) {
+    const vel = { x: 0, y: 0 };
 
     // Keyboard movement
     if (this.keys.w) vel.y = -speed;
@@ -91,7 +90,7 @@ export class InputSystem {
     return vel;
   }
 
-  getTargetPosition(): Vector2 | null {
+  getTargetPosition() {
     return this.targetPos;
   }
 }
