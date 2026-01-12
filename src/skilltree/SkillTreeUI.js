@@ -42,6 +42,8 @@ export class SkillTreeUI {
     this.zoomInFactor = 1.1;
     this.zoomOutFactor = 0.9;
     this.autoCenterPadding = 100;
+    this.maxAutoCenterScale = 1.0;
+    this.currencyPanelHeight = 40;
     
     this.setupCanvas();
     this.setupEventListeners();
@@ -236,6 +238,7 @@ export class SkillTreeUI {
         // Double-tap detected - try to purchase
         if (this.manager.canPurchaseSkill(skill.id)) {
           this.manager.purchaseSkill(skill.id);
+          this.selectedSkill = skill;
           this.render();
         }
         this.lastTouchTime = 0;
@@ -562,14 +565,14 @@ export class SkillTreeUI {
       const treeWidth = maxX - minX;
       const treeHeight = maxY - minY;
       const scaleX = this.canvas.width / treeWidth;
-      const scaleY = (this.canvas.height - 40) / treeHeight; // Account for currency panel
-      this.scale = Math.min(scaleX, scaleY, 1.0);
+      const scaleY = (this.canvas.height - this.currencyPanelHeight) / treeHeight; // Account for currency panel
+      this.scale = Math.min(scaleX, scaleY, this.maxAutoCenterScale);
       
       // Center the tree
       const scaledWidth = treeWidth * this.scale;
       const scaledHeight = treeHeight * this.scale;
       this.offsetX = (this.canvas.width - scaledWidth) / 2 - minX * this.scale;
-      this.offsetY = ((this.canvas.height - scaledHeight) / 2 - minY * this.scale) + 20; // Account for currency panel
+      this.offsetY = ((this.canvas.height - scaledHeight) / 2 - minY * this.scale) + (this.currencyPanelHeight / 2); // Account for currency panel
     }
     
     this.render();
