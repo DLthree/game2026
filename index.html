@@ -7,6 +7,9 @@
     <meta name="mobile-web-app-capable" content="yes">
     <title>Survivors Game</title>
     <style>
+        :root {
+            --skill-tree-header-height: 50px;
+        }
         * {
             margin: 0;
             padding: 0;
@@ -84,7 +87,7 @@
         }
         #skillTreeContent {
             width: 100%;
-            height: calc(100% - 50px);
+            height: calc(100% - var(--skill-tree-header-height));
             overflow: hidden;
         }
         #skillTreeToggle {

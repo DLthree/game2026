@@ -37,6 +37,12 @@ export class SkillTreeUI {
     this.lastTouchedSkill = null;
     this.lastPinchDist = null;
     
+    // Constants
+    this.doubleTapTimeout = 500; // milliseconds
+    this.zoomInFactor = 1.1;
+    this.zoomOutFactor = 0.9;
+    this.autoCenterPadding = 100;
+    
     this.setupCanvas();
     this.setupEventListeners();
   }
@@ -179,7 +185,7 @@ export class SkillTreeUI {
     const mouseY = (event.clientY - rect.top) * (this.canvas.height / rect.height);
     
     // Calculate zoom
-    const zoomFactor = event.deltaY < 0 ? 1.1 : 0.9;
+    const zoomFactor = event.deltaY < 0 ? this.zoomInFactor : this.zoomOutFactor;
     const newScale = Math.max(this.minScale, Math.min(this.maxScale, this.scale * zoomFactor));
     
     if (newScale !== this.scale) {
@@ -212,7 +218,7 @@ export class SkillTreeUI {
       const now = Date.now();
       const timeSinceLastTouch = now - this.lastTouchTime;
       
-      if (skill && this.lastTouchedSkill === skill && timeSinceLastTouch < 500) {
+      if (skill && this.lastTouchedSkill === skill && timeSinceLastTouch < this.doubleTapTimeout) {
         // Double-tap detected - try to purchase
         if (this.manager.canPurchaseSkill(skill.id)) {
           this.manager.purchaseSkill(skill.id);
@@ -532,7 +538,7 @@ export class SkillTreeUI {
       }
       
       // Add padding
-      const padding = 100;
+      const padding = this.autoCenterPadding;
       minX -= padding;
       minY -= padding;
       maxX += padding;
