@@ -13,7 +13,7 @@ game.start();
 
 // Initialize skill tree
 const skillTreeManager = new SkillTreeManager();
-const skillTreeUI = new SkillTreeUI(skillTreeManager, 'skillTreeContainer');
+const skillTreeUI = new SkillTreeUI(skillTreeManager, 'skillTreeContent');
 
 // Setup skill tree toggle
 const toggleButton = document.getElementById('skillTreeToggle');
@@ -22,13 +22,16 @@ const closeButton = document.getElementById('skillTreeClose');
 toggleButton.addEventListener('click', () => {
   if (skillTreeUI.isVisible()) {
     skillTreeUI.hide();
+    game.resume();
   } else {
+    game.pause();
     skillTreeUI.show();
   }
 });
 
 closeButton.addEventListener('click', () => {
   skillTreeUI.hide();
+  game.resume();
 });
 
 // Export for potential game integration

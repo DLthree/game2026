@@ -10,6 +10,7 @@ export class Game {
     this.score = 0;
     this.health = 100;
     this.isGameOver = false;
+    this.isPaused = false;
     
     this.lastEnemySpawn = 0;
     this.lastShot = 0;
@@ -66,7 +67,7 @@ export class Game {
   }
 
   update(dt) {
-    if (this.isGameOver) return;
+    if (this.isGameOver || this.isPaused) return;
 
     // Update player movement
     const speed = 200;
@@ -228,5 +229,13 @@ export class Game {
 
   start() {
     requestAnimationFrame(this.gameLoop);
+  }
+  
+  pause() {
+    this.isPaused = true;
+  }
+  
+  resume() {
+    this.isPaused = false;
   }
 }
