@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skill Tree Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: #0a0a1a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: monospace;
+            color: #fff;
+        }
+        #container {
+            width: 90vw;
+            max-width: 900px;
+            background: #000;
+            border: 3px solid #444;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #4CAF50;
+        }
+        .info {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #AAA;
+            font-size: 14px;
+        }
+        #skillTreeContainer {
+            position: relative;
+            width: 100%;
+        }
+        .controls {
+            text-align: center;
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            background: #4CAF50;
+            color: #fff;
+            border: 2px solid #2E7D32;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #66BB6A;
+        }
+        button:active {
+            background: #2E7D32;
+        }
+        button.secondary {
+            background: #2196F3;
+            border-color: #1976D2;
+        }
+        button.secondary:hover {
+            background: #42A5F5;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <h1>Skill Tree System Demo</h1>
+        <div class="info">
+            This is a standalone demo of the reusable skill tree system.<br>
+            Click skills to purchase them. Prerequisites must be met first.<br>
+            Currencies auto-increment every 2 seconds for easy testing.
+        </div>
+        <div id="skillTreeContainer"></div>
+        <div class="controls">
+            <button id="addCurrency">Add Currencies (+50 Gold, +5 Gems, +20 XP)</button>
+            <button id="resetTree" class="secondary">Reset Skill Tree</button>
+        </div>
+    </div>
+    
+    <script type="module">
+        import { SkillTreeManager, SkillTreeUI } from './src/skilltree/index.js';
+
+        // Initialize skill tree
+        const skillTreeManager = new SkillTreeManager();
+        const skillTreeUI = new SkillTreeUI(skillTreeManager, 'skillTreeContainer');
+        
+        // Show the tree immediately
+        skillTreeUI.show();
+
+        // Auto-add currencies for testing
+        setInterval(() => {
+            skillTreeManager.addCurrency('gold', 5);
+            skillTreeManager.addCurrency('gems', 1);
+            skillTreeManager.addCurrency('experience', 10);
+            skillTreeUI.render();
+        }, 2000);
+
+        // Manual currency addition
+        document.getElementById('addCurrency').addEventListener('click', () => {
+            skillTreeManager.addCurrency('gold', 50);
+            skillTreeManager.addCurrency('gems', 5);
+            skillTreeManager.addCurrency('experience', 20);
+            skillTreeUI.render();
+        });
+
+        // Reset button
+        document.getElementById('resetTree').addEventListener('click', () => {
+            skillTreeManager.reset();
+            skillTreeUI.render();
+        });
+    </script>
+</body>
+</html>

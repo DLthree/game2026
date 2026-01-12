@@ -47,6 +47,60 @@
             display: none;
             pointer-events: none;
         }
+        #skillTreeContainer {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #000;
+            border: 3px solid #444;
+            border-radius: 8px;
+            padding: 20px;
+            display: none;
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow: auto;
+            z-index: 1000;
+        }
+        #skillTreeToggle {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 10px 20px;
+            background: #4CAF50;
+            color: #fff;
+            border: 2px solid #2E7D32;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 100;
+            text-shadow: 1px 1px 2px #000;
+        }
+        #skillTreeToggle:hover {
+            background: #66BB6A;
+        }
+        #skillTreeToggle:active {
+            background: #2E7D32;
+        }
+        #skillTreeClose {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 5px 15px;
+            background: #F44336;
+            color: #fff;
+            border: 2px solid #C62828;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        #skillTreeClose:hover {
+            background: #EF5350;
+        }
     </style>
 </head>
 <body>
@@ -58,6 +112,10 @@
     <div id="gameOver">
         <div>GAME OVER</div>
         <div style="font-size: 16px; margin-top: 10px;">Tap to restart</div>
+    </div>
+    <button id="skillTreeToggle">Skill Tree</button>
+    <div id="skillTreeContainer">
+        <button id="skillTreeClose">Close</button>
     </div>
     <script type="module" src="./src/main.js"></script>
 </body>
