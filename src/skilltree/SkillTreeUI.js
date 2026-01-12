@@ -123,7 +123,7 @@ export class SkillTreeUI {
   }
 
   handleClick(event) {
-    // Ignore clicks if we were dragging
+    // Ignore clicks if we were dragging to prevent accidental selections after panning
     if (this.isDragging) {
       return;
     }
@@ -405,7 +405,7 @@ export class SkillTreeUI {
 
   drawCurrencyPanel() {
     const currencies = this.manager.getAllCurrencies();
-    const panelHeight = 40;
+    const panelHeight = this.currencyPanelHeight;
     
     this.ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
     this.ctx.fillRect(0, 0, this.canvas.width, panelHeight);
