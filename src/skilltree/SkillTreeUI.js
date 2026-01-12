@@ -68,6 +68,7 @@ export class SkillTreeUI {
   setupEventListeners() {
     // Mouse events for desktop
     this.canvas.addEventListener('click', (e) => this.handleClick(e));
+    this.canvas.addEventListener('dblclick', (e) => this.handleDoubleClick(e));
     this.canvas.addEventListener('mousemove', (e) => this.handleMouseMove(e));
     this.canvas.addEventListener('mousedown', (e) => this.handleMouseDown(e));
     this.canvas.addEventListener('mouseup', (e) => this.handleMouseUp(e));
@@ -136,6 +137,19 @@ export class SkillTreeUI {
       // Clicked empty space, deselect
       this.selectedSkill = null;
       this.render();
+    }
+  }
+  
+  handleDoubleClick(event) {
+    const coords = this.getCanvasCoordinates(event);
+    const skill = this.getSkillAtPosition(coords.x, coords.y);
+    
+    if (skill) {
+      // Try to purchase on double-click
+      if (this.manager.canPurchaseSkill(skill.id)) {
+        this.manager.purchaseSkill(skill.id);
+        this.render();
+      }
     }
   }
   
