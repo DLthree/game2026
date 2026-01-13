@@ -187,9 +187,9 @@ export class VisualStyleSystem {
     this.offscreenCanvas.width = this.canvas.width;
     this.offscreenCanvas.height = this.canvas.height;
     
-    const config = StyleConfig[VisualStyle.BLOOM_GEOMETRY];
-    this.bloomCanvas.width = this.canvas.width * config.internalScale;
-    this.bloomCanvas.height = this.canvas.height * config.internalScale;
+    // Bloom canvas is only used by legacy canvas-based styles
+    this.bloomCanvas.width = this.canvas.width * 0.5;
+    this.bloomCanvas.height = this.canvas.height * 0.5;
     
     // Update WebGL canvas size
     if (this.webglSupported && this.glCanvas) {

@@ -31,21 +31,44 @@ void main() {
   float brightness = dot(color.rgb, vec3(0.299, 0.587, 0.114));
   vec3 bloomColor = vec3(0.0);
   
-  // Strong bloom for Geometry Dash look
-  float blurRadius = 10.0;
-  float sampleCount = 0.0;
+  // Strong bloom for Geometry Dash look with optimized sampling
+  // Using separable blur concept but in single pass with fewer samples
+  float blurRadius = 12.0;
   
   // Only bloom bright pixels (lower threshold for more glow)
   if (brightness > 0.15) {
-    // Multi-layer box blur
-    // Inner layer (5x5)
-    for (int x = -2; x <= 2; x++) {
-      for (int y = -2; y <= 2; y++) {
-        vec2 offset = vec2(float(x), float(y)) * blurRadius * texelSize;
-        vec4 sample = texture2D(u_texture, v_texCoord + offset);
-        bloomColor += sample.rgb;
-        sampleCount += 1.0;
-      }
+    // Optimized radial sampling pattern (12 samples instead of 25)
+    // Sample at cardinal and diagonal directions at two distances
+    float sampleCount = 0.0;
+    
+    // Inner ring (4 samples)
+    vec2 offsets[4];
+    offsets[0] = vec2(1.0, 0.0);
+    offsets[1] = vec2(0.0, 1.0);
+    offsets[2] = vec2(-1.0, 0.0);
+    offsets[3] = vec2(0.0, -1.0);
+    
+    for (int i = 0; i < 4; i++) {
+      vec2 offset = offsets[i] * blurRadius * texelSize;
+      bloomColor += texture2D(u_texture, v_texCoord + offset).rgb;
+      sampleCount += 1.0;
+    }
+    
+    // Outer ring (8 samples at diagonals and extended cardinals)
+    vec2 offsets2[8];
+    offsets2[0] = vec2(1.5, 1.5);
+    offsets2[1] = vec2(-1.5, 1.5);
+    offsets2[2] = vec2(1.5, -1.5);
+    offsets2[3] = vec2(-1.5, -1.5);
+    offsets2[4] = vec2(2.0, 0.0);
+    offsets2[5] = vec2(0.0, 2.0);
+    offsets2[6] = vec2(-2.0, 0.0);
+    offsets2[7] = vec2(0.0, -2.0);
+    
+    for (int i = 0; i < 8; i++) {
+      vec2 offset = offsets2[i] * blurRadius * texelSize;
+      bloomColor += texture2D(u_texture, v_texCoord + offset).rgb * 0.7;
+      sampleCount += 0.7;
     }
     
     bloomColor /= sampleCount;
