@@ -19,7 +19,7 @@ import {
   updateTextureFromCanvas,
   renderFullscreenQuad
 } from './ShaderUtils.js';
-import { CLEAN_GLTEST_SHADER, CLEAN_GLSTYLE_SHADER, PSYCHEDELIC_BLAST_SHADER } from './Shaders.js';
+import { GEOMETRY_DASH_BLOOM_SHADER, CLEAN_GLTEST_SHADER, CLEAN_GLSTYLE_SHADER, PSYCHEDELIC_BLAST_SHADER } from './Shaders.js';
 
 /**
  * Visual style enum
@@ -56,10 +56,7 @@ export const StyleNames = {
  */
 export const StyleConfig = {
   [VisualStyle.BLOOM_GEOMETRY]: {
-    bloomStrength: 0.8,        // Bloom composite alpha
-    blurRadius: 12,             // Blur filter radius in pixels
-    internalScale: 0.5,         // Downsample factor for bloom layer
-    glowColor: true,            // Use entity colors for glow
+    useWebGL: true,             // Now uses WebGL shader for bloom
   },
   
   [VisualStyle.CLEAN_MINIMAL]: {
@@ -140,6 +137,13 @@ export class VisualStyleSystem {
     // Create shader programs
     this.shaderPrograms = {};
     
+    // BLOOM_GEOMETRY shader (Geometry Dash style)
+    this.shaderPrograms[VisualStyle.BLOOM_GEOMETRY] = createShaderProgram(
+      this.gl,
+      FULLSCREEN_VERTEX_SHADER,
+      GEOMETRY_DASH_BLOOM_SHADER
+    );
+    
     // CLEAN_GLTEST shader
     this.shaderPrograms[VisualStyle.CLEAN_GLTEST] = createShaderProgram(
       this.gl,
@@ -183,9 +187,9 @@ export class VisualStyleSystem {
     this.offscreenCanvas.width = this.canvas.width;
     this.offscreenCanvas.height = this.canvas.height;
     
-    const config = StyleConfig[VisualStyle.BLOOM_GEOMETRY];
-    this.bloomCanvas.width = this.canvas.width * config.internalScale;
-    this.bloomCanvas.height = this.canvas.height * config.internalScale;
+    // Bloom canvas is only used by legacy canvas-based styles
+    this.bloomCanvas.width = this.canvas.width * 0.5;
+    this.bloomCanvas.height = this.canvas.height * 0.5;
     
     // Update WebGL canvas size
     if (this.webglSupported && this.glCanvas) {
@@ -227,14 +231,11 @@ export class VisualStyleSystem {
   
   /**
    * Get the render context for drawing the scene
-   * For most styles, this is the main context
-   * For BLOOM_GEOMETRY, it's the offscreen context
+   * For WebGL styles, this is the main context (will be transferred to WebGL)
+   * For canvas styles, this is the main context
    * @returns {CanvasRenderingContext2D}
    */
   getSceneContext() {
-    if (this.currentStyle === VisualStyle.BLOOM_GEOMETRY) {
-      return this.offscreenCtx;
-    }
     return this.ctx;
   }
   
@@ -245,7 +246,7 @@ export class VisualStyleSystem {
   applyPostProcessing() {
     switch (this.currentStyle) {
       case VisualStyle.BLOOM_GEOMETRY:
-        this.applyBloomGeometry();
+        this.applyShaderStyle(VisualStyle.BLOOM_GEOMETRY);
         break;
       case VisualStyle.CLEAN_MINIMAL:
         this.applyCleanMinimal();

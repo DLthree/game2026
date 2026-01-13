@@ -6,6 +6,94 @@
  */
 
 /**
+ * GEOMETRY_DASH_BLOOM - Geometry Dash inspired style with strong bloom effect
+ * 
+ * Creates a visual style similar to Geometry Dash:
+ * - Strong bloom/glow on bright objects
+ * - High contrast with dark background
+ * - Vibrant, saturated colors
+ * - Crisp edges with glowing halos
+ */
+export const GEOMETRY_DASH_BLOOM_SHADER = `
+precision mediump float;
+
+uniform sampler2D u_texture;
+uniform vec2 u_resolution;
+uniform float u_time;
+
+varying vec2 v_texCoord;
+
+void main() {
+  vec2 texelSize = 1.0 / u_resolution;
+  vec4 color = texture2D(u_texture, v_texCoord);
+  
+  // Extract brightness for bloom
+  float brightness = dot(color.rgb, vec3(0.299, 0.587, 0.114));
+  vec3 bloomColor = vec3(0.0);
+  
+  // Strong bloom for Geometry Dash look with optimized sampling
+  // Using separable blur concept but in single pass with fewer samples
+  float blurRadius = 12.0;
+  
+  // Only bloom bright pixels (lower threshold for more glow)
+  if (brightness > 0.15) {
+    // Optimized radial sampling pattern (12 samples instead of 25)
+    // Sample at cardinal and diagonal directions at two distances
+    float sampleCount = 0.0;
+    
+    // Inner ring (4 samples)
+    vec2 offsets[4];
+    offsets[0] = vec2(1.0, 0.0);
+    offsets[1] = vec2(0.0, 1.0);
+    offsets[2] = vec2(-1.0, 0.0);
+    offsets[3] = vec2(0.0, -1.0);
+    
+    for (int i = 0; i < 4; i++) {
+      vec2 offset = offsets[i] * blurRadius * texelSize;
+      bloomColor += texture2D(u_texture, v_texCoord + offset).rgb;
+      sampleCount += 1.0;
+    }
+    
+    // Outer ring (8 samples at diagonals and extended cardinals)
+    vec2 offsets2[8];
+    offsets2[0] = vec2(1.5, 1.5);
+    offsets2[1] = vec2(-1.5, 1.5);
+    offsets2[2] = vec2(1.5, -1.5);
+    offsets2[3] = vec2(-1.5, -1.5);
+    offsets2[4] = vec2(2.0, 0.0);
+    offsets2[5] = vec2(0.0, 2.0);
+    offsets2[6] = vec2(-2.0, 0.0);
+    offsets2[7] = vec2(0.0, -2.0);
+    
+    for (int i = 0; i < 8; i++) {
+      vec2 offset = offsets2[i] * blurRadius * texelSize;
+      bloomColor += texture2D(u_texture, v_texCoord + offset).rgb * 0.7;
+      sampleCount += 0.7;
+    }
+    
+    bloomColor /= sampleCount;
+  }
+  
+  // Boost saturation for Geometry Dash look
+  vec3 finalColor = color.rgb;
+  float lum = dot(finalColor, vec3(0.299, 0.587, 0.114));
+  finalColor = mix(vec3(lum), finalColor, 1.6); // Increase saturation strongly
+  
+  // Add bloom with very strong intensity (Geometry Dash has extreme bloom)
+  finalColor += bloomColor * 5.0;
+  
+  // Increase contrast significantly
+  finalColor = (finalColor - 0.5) * 1.6 + 0.5;
+  
+  // Slight brightness boost for vibrant look
+  finalColor *= 1.15;
+  
+  // Clamp and output
+  gl_FragColor = vec4(clamp(finalColor, 0.0, 1.0), color.a);
+}
+`;
+
+/**
  * CLEAN_GLTEST - Simple passthrough shader to test WebGL functionality
  * 
  * This is a minimal shader that simply displays the input texture without modification.
