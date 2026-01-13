@@ -19,7 +19,7 @@ import {
   updateTextureFromCanvas,
   renderFullscreenQuad
 } from './ShaderUtils.js';
-import { CLEAN_GLTEST_SHADER, CLEAN_GLSTYLE_SHADER } from './Shaders.js';
+import { CLEAN_GLTEST_SHADER, CLEAN_GLSTYLE_SHADER, PSYCHEDELIC_BLAST_SHADER } from './Shaders.js';
 
 /**
  * Visual style enum
@@ -33,6 +33,7 @@ export const VisualStyle = {
   CRT_ANALOG: 3,
   CLEAN_GLTEST: 4,
   CLEAN_GLSTYLE: 5,
+  PSYCHEDELIC_BLAST: 6,
 };
 
 /**
@@ -46,6 +47,7 @@ export const StyleNames = {
   [VisualStyle.CRT_ANALOG]: 'CRT Analog',
   [VisualStyle.CLEAN_GLTEST]: 'Clean GL Test',
   [VisualStyle.CLEAN_GLSTYLE]: 'Clean GL Style',
+  [VisualStyle.PSYCHEDELIC_BLAST]: 'Psychedelic Blast',
 };
 
 /**
@@ -82,6 +84,10 @@ export const StyleConfig = {
   },
   
   [VisualStyle.CLEAN_GLSTYLE]: {
+    useWebGL: true,             // This style requires WebGL
+  },
+  
+  [VisualStyle.PSYCHEDELIC_BLAST]: {
     useWebGL: true,             // This style requires WebGL
   },
 };
@@ -146,6 +152,13 @@ export class VisualStyleSystem {
       this.gl,
       FULLSCREEN_VERTEX_SHADER,
       CLEAN_GLSTYLE_SHADER
+    );
+    
+    // PSYCHEDELIC_BLAST shader
+    this.shaderPrograms[VisualStyle.PSYCHEDELIC_BLAST] = createShaderProgram(
+      this.gl,
+      FULLSCREEN_VERTEX_SHADER,
+      PSYCHEDELIC_BLAST_SHADER
     );
     
     // Setup fullscreen quads for each shader
@@ -248,6 +261,9 @@ export class VisualStyleSystem {
         break;
       case VisualStyle.CLEAN_GLSTYLE:
         this.applyShaderStyle(VisualStyle.CLEAN_GLSTYLE);
+        break;
+      case VisualStyle.PSYCHEDELIC_BLAST:
+        this.applyShaderStyle(VisualStyle.PSYCHEDELIC_BLAST);
         break;
     }
   }
