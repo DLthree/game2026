@@ -2,7 +2,7 @@
  * VisualStyleSystem - Manages visual style post-processing effects
  * 
  * This system provides multiple visual styles that can be swapped at runtime.
- * All styles use Canvas 2D post-processing techniques (no WebGL/shaders).
+ * Styles use either Canvas 2D post-processing or WebGL shaders.
  * Core gameplay geometry and logic remain unchanged across styles.
  * 
  * Architecture:
@@ -10,6 +10,16 @@
  * - Styles are isolated and can be added without touching gameplay code
  * - Style switching is instant via enum-based configuration
  */
+
+import { 
+  FULLSCREEN_VERTEX_SHADER,
+  createShaderProgram,
+  setupFullscreenQuad,
+  createTextureFromCanvas,
+  updateTextureFromCanvas,
+  renderFullscreenQuad
+} from './ShaderUtils.js';
+import { CLEAN_GLTEST_SHADER, CLEAN_GLSTYLE_SHADER } from './Shaders.js';
 
 /**
  * Visual style enum
@@ -21,6 +31,8 @@ export const VisualStyle = {
   CLEAN_MINIMAL: 1,
   GHOST_TRAILS: 2,
   CRT_ANALOG: 3,
+  CLEAN_GLTEST: 4,
+  CLEAN_GLSTYLE: 5,
 };
 
 /**
@@ -32,6 +44,8 @@ export const StyleNames = {
   [VisualStyle.CLEAN_MINIMAL]: 'Clean Minimal',
   [VisualStyle.GHOST_TRAILS]: 'Ghost Trails',
   [VisualStyle.CRT_ANALOG]: 'CRT Analog',
+  [VisualStyle.CLEAN_GLTEST]: 'Clean GL Test',
+  [VisualStyle.CLEAN_GLSTYLE]: 'Clean GL Style',
 };
 
 /**
@@ -62,6 +76,14 @@ export const StyleConfig = {
     vignetteStrength: 0.3,      // Vignette darkness at edges
     noiseIntensity: 0.05,       // Random noise alpha
   },
+  
+  [VisualStyle.CLEAN_GLTEST]: {
+    useWebGL: true,             // This style requires WebGL
+  },
+  
+  [VisualStyle.CLEAN_GLSTYLE]: {
+    useWebGL: true,             // This style requires WebGL
+  },
 };
 
 /**
@@ -87,7 +109,58 @@ export class VisualStyleSystem {
     this.trailFrames = [];
     this.maxTrailFrames = 8;
     
+    // Initialize WebGL for shader-based styles
+    this.initWebGL();
+    
     this.updateCanvasSize();
+  }
+  
+  /**
+   * Initialize WebGL context and shader programs
+   */
+  initWebGL() {
+    // Create a separate WebGL canvas for shader-based rendering
+    this.glCanvas = document.createElement('canvas');
+    this.gl = this.glCanvas.getContext('webgl') || this.glCanvas.getContext('experimental-webgl');
+    
+    if (!this.gl) {
+      console.warn('WebGL not supported, shader styles will be disabled');
+      this.webglSupported = false;
+      return;
+    }
+    
+    this.webglSupported = true;
+    
+    // Create shader programs
+    this.shaderPrograms = {};
+    
+    // CLEAN_GLTEST shader
+    this.shaderPrograms[VisualStyle.CLEAN_GLTEST] = createShaderProgram(
+      this.gl,
+      FULLSCREEN_VERTEX_SHADER,
+      CLEAN_GLTEST_SHADER
+    );
+    
+    // CLEAN_GLSTYLE shader
+    this.shaderPrograms[VisualStyle.CLEAN_GLSTYLE] = createShaderProgram(
+      this.gl,
+      FULLSCREEN_VERTEX_SHADER,
+      CLEAN_GLSTYLE_SHADER
+    );
+    
+    // Setup fullscreen quads for each shader
+    this.shaderQuads = {};
+    for (const [style, program] of Object.entries(this.shaderPrograms)) {
+      if (program) {
+        this.shaderQuads[style] = setupFullscreenQuad(this.gl, program);
+      }
+    }
+    
+    // Create texture for scene data
+    this.sceneTexture = null;
+    
+    // Store start time for shader animations
+    this.startTime = Date.now();
   }
   
   /**
@@ -100,6 +173,13 @@ export class VisualStyleSystem {
     const config = StyleConfig[VisualStyle.BLOOM_GEOMETRY];
     this.bloomCanvas.width = this.canvas.width * config.internalScale;
     this.bloomCanvas.height = this.canvas.height * config.internalScale;
+    
+    // Update WebGL canvas size
+    if (this.webglSupported && this.glCanvas) {
+      this.glCanvas.width = this.canvas.width;
+      this.glCanvas.height = this.canvas.height;
+      this.gl.viewport(0, 0, this.glCanvas.width, this.glCanvas.height);
+    }
   }
   
   /**
@@ -162,6 +242,12 @@ export class VisualStyleSystem {
         break;
       case VisualStyle.CRT_ANALOG:
         this.applyCRTAnalog();
+        break;
+      case VisualStyle.CLEAN_GLTEST:
+        this.applyShaderStyle(VisualStyle.CLEAN_GLTEST);
+        break;
+      case VisualStyle.CLEAN_GLSTYLE:
+        this.applyShaderStyle(VisualStyle.CLEAN_GLSTYLE);
         break;
     }
   }
@@ -316,6 +402,68 @@ export class VisualStyleSystem {
       this.ctx.fillRect(x, y, 1, 1);
     }
     this.ctx.globalAlpha = 1;
+  }
+  
+  /**
+   * Apply WebGL shader-based style
+   * 
+   * Process:
+   * 1. Copy current canvas content to WebGL texture
+   * 2. Apply shader to texture
+   * 3. Render result back to main canvas
+   * 
+   * @param {number} style - The shader style to apply
+   */
+  applyShaderStyle(style) {
+    if (!this.webglSupported) {
+      console.warn('WebGL not supported, falling back to clean minimal style');
+      this.applyCleanMinimal();
+      return;
+    }
+    
+    const program = this.shaderPrograms[style];
+    const quad = this.shaderQuads[style];
+    
+    if (!program || !quad) {
+      console.warn(`Shader program for style ${style} not available`);
+      return;
+    }
+    
+    const gl = this.gl;
+    
+    // Create or update texture from current canvas
+    if (!this.sceneTexture) {
+      this.sceneTexture = createTextureFromCanvas(gl, this.canvas);
+    } else {
+      updateTextureFromCanvas(gl, this.sceneTexture, this.canvas);
+    }
+    
+    // Setup WebGL state
+    gl.clearColor(0.1, 0.1, 0.18, 1.0);  // Match background color
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    
+    // Use shader program
+    gl.useProgram(program);
+    
+    // Bind texture
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, this.sceneTexture);
+    
+    // Set uniforms
+    const textureLocation = gl.getUniformLocation(program, 'u_texture');
+    const resolutionLocation = gl.getUniformLocation(program, 'u_resolution');
+    const timeLocation = gl.getUniformLocation(program, 'u_time');
+    
+    gl.uniform1i(textureLocation, 0);
+    gl.uniform2f(resolutionLocation, this.canvas.width, this.canvas.height);
+    gl.uniform1f(timeLocation, (Date.now() - this.startTime) / 1000.0);
+    
+    // Render fullscreen quad
+    renderFullscreenQuad(gl, program, quad);
+    
+    // Copy WebGL result back to main canvas
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.ctx.drawImage(this.glCanvas, 0, 0);
   }
   
   /**
