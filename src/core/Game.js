@@ -46,6 +46,9 @@ export class Game {
       this.canvas.height = maxHeight;
       this.canvas.style.width = `${maxWidth * scale}px`;
       this.canvas.style.height = `${maxHeight * scale}px`;
+      
+      // Update render system canvas sizes
+      this.renderSystem.updateCanvasSize();
     };
     
     resize();
@@ -213,6 +216,7 @@ export class Game {
     this.renderSystem.drawPlayer(this.player);
     this.renderSystem.drawEnemies(this.enemies);
     this.renderSystem.drawProjectiles(this.projectiles);
+    this.renderSystem.applyPostProcessing();
   }
 
   gameLoop = (timestamp) => {

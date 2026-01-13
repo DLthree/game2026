@@ -112,6 +112,28 @@
         #skillTreeToggle:active {
             background: #2E7D32;
         }
+        #visualStyleToggle {
+            position: absolute;
+            top: 60px;
+            right: 10px;
+            padding: 10px 20px;
+            background: #2196F3;
+            color: #fff;
+            border: 2px solid #1565C0;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 100;
+            text-shadow: 1px 1px 2px #000;
+        }
+        #visualStyleToggle:hover {
+            background: #42A5F5;
+        }
+        #visualStyleToggle:active {
+            background: #1565C0;
+        }
         #skillTreeClose {
             padding: 5px 15px;
             background: #F44336;
@@ -139,6 +161,7 @@
         <div style="font-size: 16px; margin-top: 10px;">Tap to restart</div>
     </div>
     <button id="skillTreeToggle">Skill Tree</button>
+    <button id="visualStyleToggle">Style: Bloom Geometry</button>
     <div id="skillTreeContainer">
         <div id="skillTreeHeader">
             <div id="skillTreeTitle">Skill Tree</div>

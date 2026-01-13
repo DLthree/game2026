@@ -1,5 +1,6 @@
 import { Game } from './core/Game.js';
 import { SkillTreeManager, SkillTreeUI } from './skilltree/index.js';
+import { StyleNames } from './systems/index.js';
 
 // Initialize game when DOM is loaded
 const canvas = document.getElementById('gameCanvas');
@@ -32,6 +33,28 @@ toggleButton.addEventListener('click', () => {
 closeButton.addEventListener('click', () => {
   skillTreeUI.hide();
   game.resume();
+});
+
+// Setup visual style toggle
+const visualStyleToggle = document.getElementById('visualStyleToggle');
+const visualStyleSystem = game.renderSystem.getVisualStyleSystem();
+
+function updateStyleButtonText() {
+  const currentStyle = visualStyleSystem.getCurrentStyle();
+  visualStyleToggle.textContent = `Style: ${StyleNames[currentStyle]}`;
+}
+
+visualStyleToggle.addEventListener('click', () => {
+  visualStyleSystem.nextStyle();
+  updateStyleButtonText();
+});
+
+// Keyboard shortcut for style switching (V key)
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'v' || e.key === 'V') {
+    visualStyleSystem.nextStyle();
+    updateStyleButtonText();
+  }
 });
 
 // Export for potential game integration
