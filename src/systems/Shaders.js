@@ -6,6 +6,71 @@
  */
 
 /**
+ * GEOMETRY_DASH_BLOOM - Geometry Dash inspired style with strong bloom effect
+ * 
+ * Creates a visual style similar to Geometry Dash:
+ * - Strong bloom/glow on bright objects
+ * - High contrast with dark background
+ * - Vibrant, saturated colors
+ * - Crisp edges with glowing halos
+ */
+export const GEOMETRY_DASH_BLOOM_SHADER = `
+precision mediump float;
+
+uniform sampler2D u_texture;
+uniform vec2 u_resolution;
+uniform float u_time;
+
+varying vec2 v_texCoord;
+
+void main() {
+  vec2 texelSize = 1.0 / u_resolution;
+  vec4 color = texture2D(u_texture, v_texCoord);
+  
+  // Extract brightness for bloom
+  float brightness = dot(color.rgb, vec3(0.299, 0.587, 0.114));
+  vec3 bloomColor = vec3(0.0);
+  
+  // Strong bloom for Geometry Dash look
+  float blurRadius = 10.0;
+  float sampleCount = 0.0;
+  
+  // Only bloom bright pixels (lower threshold for more glow)
+  if (brightness > 0.15) {
+    // Multi-layer box blur
+    // Inner layer (5x5)
+    for (int x = -2; x <= 2; x++) {
+      for (int y = -2; y <= 2; y++) {
+        vec2 offset = vec2(float(x), float(y)) * blurRadius * texelSize;
+        vec4 sample = texture2D(u_texture, v_texCoord + offset);
+        bloomColor += sample.rgb;
+        sampleCount += 1.0;
+      }
+    }
+    
+    bloomColor /= sampleCount;
+  }
+  
+  // Boost saturation for Geometry Dash look
+  vec3 finalColor = color.rgb;
+  float lum = dot(finalColor, vec3(0.299, 0.587, 0.114));
+  finalColor = mix(vec3(lum), finalColor, 1.6); // Increase saturation strongly
+  
+  // Add bloom with very strong intensity (Geometry Dash has extreme bloom)
+  finalColor += bloomColor * 5.0;
+  
+  // Increase contrast significantly
+  finalColor = (finalColor - 0.5) * 1.6 + 0.5;
+  
+  // Slight brightness boost for vibrant look
+  finalColor *= 1.15;
+  
+  // Clamp and output
+  gl_FragColor = vec4(clamp(finalColor, 0.0, 1.0), color.a);
+}
+`;
+
+/**
  * CLEAN_GLTEST - Simple passthrough shader to test WebGL functionality
  * 
  * This is a minimal shader that simply displays the input texture without modification.
