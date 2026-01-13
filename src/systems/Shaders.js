@@ -206,6 +206,92 @@ void main() {
 `;
 
 /**
+ * GEOMETRY_WARS_SHADER - Full Geometry Wars visual style
+ * 
+ * Implements the complete Geometry Wars look:
+ * - Extreme bloom/glow with multiple passes
+ * - Additive color blending
+ * - High saturation neon colors
+ * - Dark background with bright highlights
+ * - Crisp wireframe edges with intense halos
+ */
+export const GEOMETRY_WARS_SHADER = `
+precision mediump float;
+
+uniform sampler2D u_texture;
+uniform vec2 u_resolution;
+uniform float u_time;
+
+varying vec2 v_texCoord;
+
+void main() {
+  vec2 texelSize = 1.0 / u_resolution;
+  vec4 color = texture2D(u_texture, v_texCoord);
+  
+  // Extract brightness for bloom
+  float brightness = dot(color.rgb, vec3(0.299, 0.587, 0.114));
+  vec3 bloomColor = vec3(0.0);
+  
+  // Ultra-strong bloom for Geometry Wars look
+  // Multiple sampling rings for intense glow
+  float blurRadius = 16.0;
+  
+  // Very low threshold - almost everything glows
+  if (brightness > 0.08) {
+    float sampleCount = 0.0;
+    
+    // Ring 1: Close samples (8 directions)
+    for (int i = 0; i < 8; i++) {
+      float angle = 6.28318 * float(i) / 8.0;
+      vec2 offset = vec2(cos(angle), sin(angle)) * blurRadius * 0.5 * texelSize;
+      bloomColor += texture2D(u_texture, v_texCoord + offset).rgb * 1.0;
+      sampleCount += 1.0;
+    }
+    
+    // Ring 2: Medium samples (8 directions)
+    for (int i = 0; i < 8; i++) {
+      float angle = 6.28318 * float(i) / 8.0 + 0.39;
+      vec2 offset = vec2(cos(angle), sin(angle)) * blurRadius * texelSize;
+      bloomColor += texture2D(u_texture, v_texCoord + offset).rgb * 0.8;
+      sampleCount += 0.8;
+    }
+    
+    // Ring 3: Far samples (12 directions)
+    for (int i = 0; i < 12; i++) {
+      float angle = 6.28318 * float(i) / 12.0;
+      vec2 offset = vec2(cos(angle), sin(angle)) * blurRadius * 1.5 * texelSize;
+      bloomColor += texture2D(u_texture, v_texCoord + offset).rgb * 0.6;
+      sampleCount += 0.6;
+    }
+    
+    bloomColor /= sampleCount;
+  }
+  
+  // Extreme saturation boost for neon look
+  vec3 finalColor = color.rgb;
+  float lum = dot(finalColor, vec3(0.299, 0.587, 0.114));
+  finalColor = mix(vec3(lum), finalColor, 2.2); // Very high saturation
+  
+  // Add bloom with extreme intensity (Geometry Wars signature)
+  finalColor += bloomColor * 8.0;
+  
+  // Strong contrast for dark background / bright foreground
+  finalColor = (finalColor - 0.5) * 1.8 + 0.5;
+  
+  // Brightness boost for vibrant neon look
+  finalColor *= 1.3;
+  
+  // Subtle glow halo around bright areas
+  if (brightness > 0.5) {
+    finalColor += vec3(0.2) * (brightness - 0.5);
+  }
+  
+  // Clamp and output
+  gl_FragColor = vec4(clamp(finalColor, 0.0, 1.0), color.a);
+}
+`;
+
+/**
  * PSYCHEDELIC_BLAST - Highly visible shader with dramatic effects
  * 
  * This shader combines multiple striking visual effects to create an unmistakable style:

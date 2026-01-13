@@ -19,7 +19,8 @@ import {
   updateTextureFromCanvas,
   renderFullscreenQuad
 } from './ShaderUtils.js';
-import { GEOMETRY_DASH_BLOOM_SHADER, CLEAN_GLTEST_SHADER, CLEAN_GLSTYLE_SHADER, PSYCHEDELIC_BLAST_SHADER } from './Shaders.js';
+import { GEOMETRY_DASH_BLOOM_SHADER, GEOMETRY_WARS_SHADER, CLEAN_GLTEST_SHADER, CLEAN_GLSTYLE_SHADER, PSYCHEDELIC_BLAST_SHADER } from './Shaders.js';
+import { GeometryWarsRenderer } from './GeometryWarsRenderer.js';
 
 /**
  * Visual style enum
@@ -34,6 +35,7 @@ export const VisualStyle = {
   CLEAN_GLTEST: 4,
   CLEAN_GLSTYLE: 5,
   PSYCHEDELIC_BLAST: 6,
+  GEOMETRY_WARS: 7,
 };
 
 /**
@@ -48,6 +50,7 @@ export const StyleNames = {
   [VisualStyle.CLEAN_GLTEST]: 'Clean GL Test',
   [VisualStyle.CLEAN_GLSTYLE]: 'Clean GL Style',
   [VisualStyle.PSYCHEDELIC_BLAST]: 'Psychedelic Blast',
+  [VisualStyle.GEOMETRY_WARS]: 'Geometry Wars',
 };
 
 /**
@@ -87,6 +90,11 @@ export const StyleConfig = {
   [VisualStyle.PSYCHEDELIC_BLAST]: {
     useWebGL: true,             // This style requires WebGL
   },
+  
+  [VisualStyle.GEOMETRY_WARS]: {
+    useWebGL: true,             // This style requires WebGL for bloom
+    useGeometryWarsRenderer: true, // Enable full Geometry Wars renderer
+  },
 };
 
 /**
@@ -114,6 +122,9 @@ export class VisualStyleSystem {
     
     // Initialize WebGL for shader-based styles
     this.initWebGL();
+    
+    // Initialize Geometry Wars renderer
+    this.geometryWarsRenderer = new GeometryWarsRenderer(canvas);
     
     this.updateCanvasSize();
   }
@@ -163,6 +174,13 @@ export class VisualStyleSystem {
       this.gl,
       FULLSCREEN_VERTEX_SHADER,
       PSYCHEDELIC_BLAST_SHADER
+    );
+    
+    // GEOMETRY_WARS shader
+    this.shaderPrograms[VisualStyle.GEOMETRY_WARS] = createShaderProgram(
+      this.gl,
+      FULLSCREEN_VERTEX_SHADER,
+      GEOMETRY_WARS_SHADER
     );
     
     // Setup fullscreen quads for each shader
@@ -265,6 +283,9 @@ export class VisualStyleSystem {
         break;
       case VisualStyle.PSYCHEDELIC_BLAST:
         this.applyShaderStyle(VisualStyle.PSYCHEDELIC_BLAST);
+        break;
+      case VisualStyle.GEOMETRY_WARS:
+        this.applyGeometryWars();
         break;
     }
   }
@@ -490,5 +511,24 @@ export class VisualStyleSystem {
     const ctx = this.getSceneContext();
     ctx.fillStyle = '#1a1a2e';
     ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+  }
+  
+  /**
+   * GEOMETRY_WARS: Full Geometry Wars visual style
+   * 
+   * Applies the complete shader-based bloom effect.
+   * The GeometryWarsRenderer handles additional effects like particles, grid, etc.
+   */
+  applyGeometryWars() {
+    // Apply the Geometry Wars shader for bloom
+    this.applyShaderStyle(VisualStyle.GEOMETRY_WARS);
+  }
+  
+  /**
+   * Get the Geometry Wars renderer for external control
+   * @returns {GeometryWarsRenderer}
+   */
+  getGeometryWarsRenderer() {
+    return this.geometryWarsRenderer;
   }
 }
