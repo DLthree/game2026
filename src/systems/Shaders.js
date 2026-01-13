@@ -232,12 +232,12 @@ void main() {
   float brightness = dot(color.rgb, vec3(0.299, 0.587, 0.114));
   vec3 bloomColor = vec3(0.0);
   
-  // Ultra-strong bloom for Geometry Wars look
+  // Strong bloom for Geometry Wars look
   // Multiple sampling rings for intense glow
-  float blurRadius = 16.0;
+  float blurRadius = 14.0;
   
-  // Very low threshold - almost everything glows
-  if (brightness > 0.08) {
+  // Low threshold - bright elements glow
+  if (brightness > 0.1) {
     float sampleCount = 0.0;
     
     // Ring 1: Close samples (8 directions)
@@ -252,39 +252,26 @@ void main() {
     for (int i = 0; i < 8; i++) {
       float angle = 6.28318 * float(i) / 8.0 + 0.39;
       vec2 offset = vec2(cos(angle), sin(angle)) * blurRadius * texelSize;
-      bloomColor += texture2D(u_texture, v_texCoord + offset).rgb * 0.8;
-      sampleCount += 0.8;
-    }
-    
-    // Ring 3: Far samples (12 directions)
-    for (int i = 0; i < 12; i++) {
-      float angle = 6.28318 * float(i) / 12.0;
-      vec2 offset = vec2(cos(angle), sin(angle)) * blurRadius * 1.5 * texelSize;
-      bloomColor += texture2D(u_texture, v_texCoord + offset).rgb * 0.6;
-      sampleCount += 0.6;
+      bloomColor += texture2D(u_texture, v_texCoord + offset).rgb * 0.7;
+      sampleCount += 0.7;
     }
     
     bloomColor /= sampleCount;
   }
   
-  // Extreme saturation boost for neon look
+  // Strong saturation boost for neon look
   vec3 finalColor = color.rgb;
   float lum = dot(finalColor, vec3(0.299, 0.587, 0.114));
-  finalColor = mix(vec3(lum), finalColor, 2.2); // Very high saturation
+  finalColor = mix(vec3(lum), finalColor, 1.8); // High saturation
   
-  // Add bloom with extreme intensity (Geometry Wars signature)
-  finalColor += bloomColor * 8.0;
+  // Add bloom with strong intensity (Geometry Wars signature)
+  finalColor += bloomColor * 4.0;
   
   // Strong contrast for dark background / bright foreground
-  finalColor = (finalColor - 0.5) * 1.8 + 0.5;
+  finalColor = (finalColor - 0.5) * 1.6 + 0.5;
   
   // Brightness boost for vibrant neon look
-  finalColor *= 1.3;
-  
-  // Subtle glow halo around bright areas
-  if (brightness > 0.5) {
-    finalColor += vec3(0.2) * (brightness - 0.5);
-  }
+  finalColor *= 1.2;
   
   // Clamp and output
   gl_FragColor = vec4(clamp(finalColor, 0.0, 1.0), color.a);

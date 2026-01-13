@@ -352,10 +352,6 @@ export class GeometryWarsRenderer {
     // Smooth zoom
     this.cameraZoom += (this.targetZoom - this.cameraZoom) * 0.1;
   }
-  
-  /**
-   * Apply grid deformation from a force source
-   */
   deformGrid(x, y, strength = 1.0) {
     if (!this.config.backgroundGrid || this.gridPoints.length === 0) return;
     

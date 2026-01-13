@@ -509,7 +509,12 @@ export class VisualStyleSystem {
    */
   clearScene() {
     const ctx = this.getSceneContext();
-    ctx.fillStyle = '#1a1a2e';
+    // Use dark background for all styles, especially Geometry Wars
+    if (this.currentStyle === VisualStyle.GEOMETRY_WARS) {
+      ctx.fillStyle = '#000000'; // Pure black for Geometry Wars
+    } else {
+      ctx.fillStyle = '#1a1a2e'; // Dark blue for other styles
+    }
     ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
   }
   
