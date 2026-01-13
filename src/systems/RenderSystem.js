@@ -1,5 +1,5 @@
 import { Player, Enemy, Projectile } from '../entities/index.js';
-import { VisualStyleSystem } from './VisualStyleSystem.js';
+import { VisualStyleSystem, VisualStyle } from './VisualStyleSystem.js';
 
 export class RenderSystem {
   constructor(canvas) {
@@ -17,25 +17,54 @@ export class RenderSystem {
   clear() {
     // Clear the scene context (may be offscreen for some styles)
     this.visualStyleSystem.clearScene();
+    
+    // If Geometry Wars mode, draw background layers first
+    const ctx = this.visualStyleSystem.getSceneContext();
+    if (this.visualStyleSystem.getCurrentStyle() === VisualStyle.GEOMETRY_WARS) {
+      const gwRenderer = this.visualStyleSystem.getGeometryWarsRenderer();
+      gwRenderer.drawStarfield(ctx);
+      gwRenderer.drawGrid(ctx);
+    }
   }
 
   drawPlayer(player) {
     // Get the appropriate context for current style
     const ctx = this.visualStyleSystem.getSceneContext();
-    player.draw(ctx);
+    
+    // If Geometry Wars mode, use wireframe rendering
+    if (this.visualStyleSystem.getCurrentStyle() === VisualStyle.GEOMETRY_WARS) {
+      const gwRenderer = this.visualStyleSystem.getGeometryWarsRenderer();
+      gwRenderer.drawEntityWireframe(ctx, player, gwRenderer.colors.player);
+    } else {
+      player.draw(ctx);
+    }
   }
 
   drawEnemies(enemies) {
     const ctx = this.visualStyleSystem.getSceneContext();
+    const isGeometryWars = this.visualStyleSystem.getCurrentStyle() === VisualStyle.GEOMETRY_WARS;
+    const gwRenderer = isGeometryWars ? this.visualStyleSystem.getGeometryWarsRenderer() : null;
+    
     for (const enemy of enemies) {
-      enemy.draw(ctx);
+      if (isGeometryWars) {
+        gwRenderer.drawEntityWireframe(ctx, enemy, gwRenderer.colors.enemy);
+      } else {
+        enemy.draw(ctx);
+      }
     }
   }
 
   drawProjectiles(projectiles) {
     const ctx = this.visualStyleSystem.getSceneContext();
+    const isGeometryWars = this.visualStyleSystem.getCurrentStyle() === VisualStyle.GEOMETRY_WARS;
+    const gwRenderer = isGeometryWars ? this.visualStyleSystem.getGeometryWarsRenderer() : null;
+    
     for (const projectile of projectiles) {
-      projectile.draw(ctx);
+      if (isGeometryWars) {
+        gwRenderer.drawEntityWireframe(ctx, projectile, gwRenderer.colors.projectile);
+      } else {
+        projectile.draw(ctx);
+      }
     }
   }
   
@@ -44,6 +73,14 @@ export class RenderSystem {
    * Should be called after all entities are drawn
    */
   applyPostProcessing() {
+    // If Geometry Wars mode, draw foreground effects before post-processing
+    if (this.visualStyleSystem.getCurrentStyle() === VisualStyle.GEOMETRY_WARS) {
+      const ctx = this.visualStyleSystem.getSceneContext();
+      const gwRenderer = this.visualStyleSystem.getGeometryWarsRenderer();
+      gwRenderer.drawParticles(ctx);
+      gwRenderer.drawShockwaves(ctx);
+    }
+    
     this.visualStyleSystem.applyPostProcessing();
   }
   

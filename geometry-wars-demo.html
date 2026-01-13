@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geometry Wars Mode - Demo & Configuration</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: monospace;
+            background: #000;
+            color: #fff;
+            padding: 20px;
+        }
+        h1 {
+            color: #00ff88;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .section {
+            background: #111;
+            border: 2px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            color: #00ffff;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        .feature-list {
+            list-style: none;
+            padding-left: 0;
+        }
+        .feature-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #222;
+        }
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+        .feature-name {
+            color: #ffff00;
+            font-weight: bold;
+        }
+        .feature-desc {
+            color: #aaa;
+            font-size: 12px;
+            margin-top: 4px;
+        }
+        .config-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+        }
+        .config-item {
+            background: #1a1a1a;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #333;
+        }
+        .config-item label {
+            display: block;
+            color: #00ff88;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        .config-item input[type="checkbox"] {
+            margin-right: 8px;
+        }
+        .config-item input[type="range"] {
+            width: 100%;
+        }
+        code {
+            background: #222;
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: #ff88ff;
+        }
+        .screenshot {
+            width: 100%;
+            border: 2px solid #00ff88;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        .note {
+            background: #1a1a00;
+            border-left: 4px solid #ffff00;
+            padding: 10px;
+            margin-top: 15px;
+            font-size: 12px;
+            color: #ffff88;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 Geometry Wars Visual Mode</h1>
+        
+        <div class="section">
+            <h2>Overview</h2>
+            <p>The Geometry Wars visual mode transforms the game into a procedurally-generated neon wireframe experience inspired by the classic Geometry Wars series. All effects are rendered in real-time using WebGL shaders and Canvas 2D, with no sprite assets required.</p>
+        </div>
+
+        <div class="section">
+            <h2>Core Visual Features</h2>
+            <ul class="feature-list">
+                <li>
+                    <div class="feature-name">1. Wireframe Geometry Rendering</div>
+                    <div class="feature-desc">All entities rendered as sharp vector outlines with distinct shapes: circles (player), squares with X (enemies), triangles (projectiles)</div>
+                </li>
+                <li>
+                    <div class="feature-name">2. Full Bloom / Glow Pipeline</div>
+                    <div class="feature-desc">WebGL shader-based bloom with multi-ring sampling for intense neon glow. Bloom intensity scales with action</div>
+                </li>
+                <li>
+                    <div class="feature-name">3. Particle System</div>
+                    <div class="feature-desc">
+                        • Impact particles: Sparks on collision<br>
+                        • Trail particles: Player and projectile motion trails<br>
+                        • Explosion particles: Bursts with expanding rings on enemy death<br>
+                        • All particles procedurally generated triangles with lifetime curves
+                    </div>
+                </li>
+                <li>
+                    <div class="feature-name">4. Deformable Background Grid</div>
+                    <div class="feature-desc">Neon blue grid that ripples and warps around explosions, player movement, and enemy impacts. Uses spring physics for smooth deformation</div>
+                </li>
+                <li>
+                    <div class="feature-name">5. Parallax Starfield</div>
+                    <div class="feature-desc">Multi-layered starfield with depth-based parallax scrolling. Responds to camera shake and movement</div>
+                </li>
+                <li>
+                    <div class="feature-name">6. Screen-Space Shockwaves</div>
+                    <div class="feature-desc">Expanding rings on enemy kills, with multi-ring shockwaves on score milestones (every 100 points)</div>
+                </li>
+                <li>
+                    <div class="feature-name">7. Camera Effects (Juice)</div>
+                    <div class="feature-desc">
+                        • Screen shake on impacts and explosions<br>
+                        • Shake intensity scales with event magnitude<br>
+                        • Smooth camera follow with directional shake<br>
+                        • Support for zoom and time dilation (configured but ready for future features)
+                    </div>
+                </li>
+                <li>
+                    <div class="feature-name">8. Additive Color Palette</div>
+                    <div class="feature-desc">
+                        • Player: Cyan/turquoise (#00ff88)<br>
+                        • Enemies: Red (#ff2244)<br>
+                        • Projectiles: Yellow (#ffff00)<br>
+                        • Explosions: Orange (#ff8800)<br>
+                        • Shockwaves: White (#ffffff)<br>
+                        • Grid: Blue (#0066ff)
+                    </div>
+                </li>
+                <li>
+                    <div class="feature-name">9. Motion Trails</div>
+                    <div class="feature-desc">Moving entities leave particle trails that fade over time. Trail density increases with speed</div>
+                </li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>Configuration Options</h2>
+            <p style="margin-bottom: 15px;">The Geometry Wars renderer exposes a comprehensive configuration system via <code>GeometryWarsConfig</code>:</p>
+            
+            <div class="config-section">
+                <div class="config-item">
+                    <label><input type="checkbox" checked disabled> Wireframe Mode</label>
+                    <div class="feature-desc">Toggle between wireframe outlines and filled shapes</div>
+                </div>
+                <div class="config-item">
+                    <label><input type="checkbox" checked disabled> Bloom / Glow</label>
+                    <div class="feature-desc">Enable/disable WebGL bloom shader</div>
+                </div>
+                <div class="config-item">
+                    <label><input type="checkbox" checked disabled> Particles</label>
+                    <div class="feature-desc">Toggle all particle effects (trails, impacts, explosions)</div>
+                </div>
+                <div class="config-item">
+                    <label><input type="checkbox" checked disabled> Background Grid</label>
+                    <div class="feature-desc">Show/hide deformable grid</div>
+                </div>
+                <div class="config-item">
+                    <label><input type="checkbox" checked disabled> Starfield</label>
+                    <div class="feature-desc">Toggle parallax starfield</div>
+                </div>
+                <div class="config-item">
+                    <label><input type="checkbox" checked disabled> Shockwaves</label>
+                    <div class="feature-desc">Enable/disable expanding ring effects</div>
+                </div>
+                <div class="config-item">
+                    <label><input type="checkbox" checked disabled> Camera Effects</label>
+                    <div class="feature-desc">Toggle screen shake and zoom</div>
+                </div>
+                <div class="config-item">
+                    <label><input type="checkbox" checked disabled> Motion Trails</label>
+                    <div class="feature-desc">Enable/disable entity trails</div>
+                </div>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <h3 style="color: #00ffff; font-size: 16px; margin-bottom: 10px;">Scalar Parameters</h3>
+                <div class="config-section">
+                    <div class="config-item">
+                        <label>Master Intensity: <span id="intensity-val">1.0</span></label>
+                        <input type="range" min="0" max="1" step="0.1" value="1.0" disabled>
+                        <div class="feature-desc">Global multiplier for all effects (0.0 - 1.0)</div>
+                    </div>
+                    <div class="config-item">
+                        <label>Wireframe Line Width: <span>2.0</span></label>
+                        <input type="range" min="1" max="5" step="0.5" value="2.0" disabled>
+                    </div>
+                    <div class="config-item">
+                        <label>Grid Size: <span>40</span></label>
+                        <input type="range" min="20" max="80" step="10" value="40" disabled>
+                    </div>
+                    <div class="config-item">
+                        <label>Grid Deform Strength: <span>0.6</span></label>
+                        <input type="range" min="0" max="1" step="0.1" value="0.6" disabled>
+                    </div>
+                    <div class="config-item">
+                        <label>Shake Intensity: <span>8.0</span></label>
+                        <input type="range" min="0" max="20" step="1" value="8" disabled>
+                    </div>
+                    <div class="config-item">
+                        <label>Particle Count: <span>50</span></label>
+                        <input type="range" min="10" max="100" step="10" value="50" disabled>
+                    </div>
+                </div>
+            </div>
+
+            <div class="note">
+                <strong>Note:</strong> Configuration can be accessed via <code>game.renderSystem.getVisualStyleSystem().getGeometryWarsRenderer().getConfig()</code> and updated with <code>updateConfig(updates)</code>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Gameplay Integration</h2>
+            <p>Effects are triggered automatically based on gameplay events:</p>
+            <ul class="feature-list">
+                <li>
+                    <div class="feature-name">Enemy Collision with Player</div>
+                    <div class="feature-desc">→ Impact particles + camera shake (0.5 intensity) + grid deformation (0.8 strength)</div>
+                </li>
+                <li>
+                    <div class="feature-name">Enemy Death</div>
+                    <div class="feature-desc">→ Explosion particles (15 count) + shockwave (80px radius) + camera shake (0.3 intensity) + grid deformation (1.0 strength)</div>
+                </li>
+                <li>
+                    <div class="feature-name">Score Milestone (every 100 points)</div>
+                    <div class="feature-desc">→ Multi-ring shockwave (3 rings) + strong camera shake (1.0 intensity)</div>
+                </li>
+                <li>
+                    <div class="feature-name">Player Movement</div>
+                    <div class="feature-desc">→ Trail particles (30% spawn chance per frame when moving)</div>
+                </li>
+                <li>
+                    <div class="feature-name">Projectile Flight</div>
+                    <div class="feature-desc">→ Trail particles (50% spawn chance per frame)</div>
+                </li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>How to Activate</h2>
+            <ol style="padding-left: 20px; line-height: 1.8;">
+                <li>Load the game at <code>http://localhost:8000</code></li>
+                <li>Click the blue "Style" button in the top-right corner, or press <code>V</code> key to cycle through visual styles</li>
+                <li>Continue cycling until you reach <code>"Style: Geometry Wars"</code></li>
+                <li>Enjoy the full Geometry Wars experience!</li>
+            </ol>
+        </div>
+
+        <div class="section">
+            <h2>Architecture</h2>
+            <p style="margin-bottom: 10px;">The implementation follows the project's zero-build philosophy:</p>
+            <ul style="padding-left: 20px; line-height: 1.8;">
+                <li><strong>GeometryWarsRenderer.js</strong> - Main renderer class with particle system, grid, starfield, and effect management</li>
+                <li><strong>Shaders.js</strong> - Added <code>GEOMETRY_WARS_SHADER</code> with multi-ring bloom sampling</li>
+                <li><strong>VisualStyleSystem.js</strong> - Integrated new <code>VisualStyle.GEOMETRY_WARS</code> enum and rendering pipeline</li>
+                <li><strong>RenderSystem.js</strong> - Modified to use wireframe rendering and draw background/foreground layers</li>
+                <li><strong>Game.js</strong> - Added event triggers for particles, shockwaves, camera shake, and grid deformation</li>
+            </ul>
+            <div class="note">
+                <strong>No build step required:</strong> All code is plain JavaScript ES modules. Simply refresh the browser to see changes.
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Performance</h2>
+            <p>The Geometry Wars renderer is optimized for real-time performance:</p>
+            <ul style="padding-left: 20px; line-height: 1.8;">
+                <li>WebGL shader for bloom (GPU-accelerated)</li>
+                <li>Efficient particle pooling and lifetime management</li>
+                <li>Grid deformation uses spring physics with spatial optimization</li>
+                <li>Configurable intensity scalar allows performance tuning</li>
+                <li>Individual effect toggles for accessibility and performance</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

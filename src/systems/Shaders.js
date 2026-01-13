@@ -206,6 +206,79 @@ void main() {
 `;
 
 /**
+ * GEOMETRY_WARS_SHADER - Full Geometry Wars visual style
+ * 
+ * Implements the complete Geometry Wars look:
+ * - Extreme bloom/glow with multiple passes
+ * - Additive color blending
+ * - High saturation neon colors
+ * - Dark background with bright highlights
+ * - Crisp wireframe edges with intense halos
+ */
+export const GEOMETRY_WARS_SHADER = `
+precision mediump float;
+
+uniform sampler2D u_texture;
+uniform vec2 u_resolution;
+uniform float u_time;
+
+varying vec2 v_texCoord;
+
+void main() {
+  vec2 texelSize = 1.0 / u_resolution;
+  vec4 color = texture2D(u_texture, v_texCoord);
+  
+  // Extract brightness for bloom
+  float brightness = dot(color.rgb, vec3(0.299, 0.587, 0.114));
+  vec3 bloomColor = vec3(0.0);
+  
+  // Strong bloom for Geometry Wars look
+  // Multiple sampling rings for intense glow
+  float blurRadius = 14.0;
+  
+  // Low threshold - bright elements glow
+  if (brightness > 0.1) {
+    float sampleCount = 0.0;
+    
+    // Ring 1: Close samples (8 directions)
+    for (int i = 0; i < 8; i++) {
+      float angle = 6.28318 * float(i) / 8.0;
+      vec2 offset = vec2(cos(angle), sin(angle)) * blurRadius * 0.5 * texelSize;
+      bloomColor += texture2D(u_texture, v_texCoord + offset).rgb * 1.0;
+      sampleCount += 1.0;
+    }
+    
+    // Ring 2: Medium samples (8 directions)
+    for (int i = 0; i < 8; i++) {
+      float angle = 6.28318 * float(i) / 8.0 + 0.39;
+      vec2 offset = vec2(cos(angle), sin(angle)) * blurRadius * texelSize;
+      bloomColor += texture2D(u_texture, v_texCoord + offset).rgb * 0.7;
+      sampleCount += 0.7;
+    }
+    
+    bloomColor /= sampleCount;
+  }
+  
+  // Strong saturation boost for neon look
+  vec3 finalColor = color.rgb;
+  float lum = dot(finalColor, vec3(0.299, 0.587, 0.114));
+  finalColor = mix(vec3(lum), finalColor, 1.8); // High saturation
+  
+  // Add bloom with strong intensity (Geometry Wars signature)
+  finalColor += bloomColor * 4.0;
+  
+  // Strong contrast for dark background / bright foreground
+  finalColor = (finalColor - 0.5) * 1.6 + 0.5;
+  
+  // Brightness boost for vibrant neon look
+  finalColor *= 1.2;
+  
+  // Clamp and output
+  gl_FragColor = vec4(clamp(finalColor, 0.0, 1.0), color.a);
+}
+`;
+
+/**
  * PSYCHEDELIC_BLAST - Highly visible shader with dramatic effects
  * 
  * This shader combines multiple striking visual effects to create an unmistakable style:

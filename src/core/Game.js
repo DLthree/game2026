@@ -72,6 +72,14 @@ export class Game {
   update(dt) {
     if (this.isGameOver || this.isPaused) return;
 
+    // Update Geometry Wars renderer if active
+    const visualStyleSystem = this.renderSystem.getVisualStyleSystem();
+    const isGeometryWars = visualStyleSystem.getCurrentStyle() === 7; // VisualStyle.GEOMETRY_WARS
+    if (isGeometryWars) {
+      const gwRenderer = visualStyleSystem.getGeometryWarsRenderer();
+      gwRenderer.update(dt, this);
+    }
+
     // Update player movement
     const speed = 200;
     const keyboardVel = this.inputSystem.getMovementVelocity(speed);
@@ -96,6 +104,15 @@ export class Game {
     }
 
     this.player.update(dt, this.canvas.width, this.canvas.height);
+    
+    // Spawn trail particles in Geometry Wars mode
+    if (isGeometryWars) {
+      const gwRenderer = visualStyleSystem.getGeometryWarsRenderer();
+      const moving = Math.abs(this.player.vel.x) > 10 || Math.abs(this.player.vel.y) > 10;
+      if (moving && Math.random() < 0.3) {
+        gwRenderer.spawnTrailParticle(this.player.pos.x, this.player.pos.y, gwRenderer.colors.player, 4);
+      }
+    }
 
     // Spawn enemies
     const now = Date.now();
@@ -114,6 +131,14 @@ export class Game {
         this.health -= 10;
         this.enemies.splice(i, 1);
         
+        // Geometry Wars effects on collision
+        if (isGeometryWars) {
+          const gwRenderer = visualStyleSystem.getGeometryWarsRenderer();
+          gwRenderer.spawnImpactParticles(enemy.pos.x, enemy.pos.y, gwRenderer.colors.enemy, 8);
+          gwRenderer.addCameraShake(0.5);
+          gwRenderer.deformGrid(enemy.pos.x, enemy.pos.y, 0.8);
+        }
+        
         if (this.health <= 0) {
           this.isGameOver = true;
           this.gameOverElement.style.display = 'block';
@@ -131,6 +156,12 @@ export class Game {
     for (let i = this.projectiles.length - 1; i >= 0; i--) {
       const projectile = this.projectiles[i];
       projectile.update(dt);
+      
+      // Spawn trail particles in Geometry Wars mode
+      if (isGeometryWars && Math.random() < 0.5) {
+        const gwRenderer = visualStyleSystem.getGeometryWarsRenderer();
+        gwRenderer.spawnTrailParticle(projectile.pos.x, projectile.pos.y, gwRenderer.colors.projectile, 2);
+      }
 
       // Remove if out of bounds
       if (projectile.isOutOfBounds(this.canvas.width, this.canvas.height)) {
@@ -149,6 +180,21 @@ export class Game {
           if (isDead) {
             this.enemies.splice(j, 1);
             this.score += 10;
+            
+            // Geometry Wars effects on kill
+            if (isGeometryWars) {
+              const gwRenderer = visualStyleSystem.getGeometryWarsRenderer();
+              gwRenderer.spawnExplosion(enemy.pos.x, enemy.pos.y, gwRenderer.colors.explosion, 15);
+              gwRenderer.addShockwave(enemy.pos.x, enemy.pos.y, 80, gwRenderer.colors.shockwave, 0.4);
+              gwRenderer.addCameraShake(0.3);
+              gwRenderer.deformGrid(enemy.pos.x, enemy.pos.y, 1.0);
+              
+              // Big effects on score milestones
+              if (this.score % 100 === 0) {
+                gwRenderer.addMultiRingShockwave(enemy.pos.x, enemy.pos.y, 3);
+                gwRenderer.addCameraShake(1.0);
+              }
+            }
           }
           break;
         }
