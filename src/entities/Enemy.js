@@ -32,6 +32,13 @@ export class Enemy {
       } else if (enemyType.type === 'tank') {
         this.size = baseSize * 1.5;
         this.color = '#cc0000'; // Dark red for tanks
+      } else if (enemyType.type === 'asteroid') {
+        this.size = baseSize * 1.2;
+        this.color = '#888888'; // Gray for asteroids
+        // Asteroids start with random velocity direction
+        const angle = Math.random() * Math.PI * 2;
+        this.vel.x = Math.cos(angle) * this.speed;
+        this.vel.y = Math.sin(angle) * this.speed;
       } else {
         this.size = baseSize;
         this.color = '#ff0000'; // Red for basic
@@ -49,6 +56,14 @@ export class Enemy {
   }
 
   update(dt, targetPos) {
+    // Asteroids don't target the player, they just float with constant velocity
+    if (this.type === 'asteroid') {
+      this.pos.x += this.vel.x * dt;
+      this.pos.y += this.vel.y * dt;
+      return;
+    }
+    
+    // Other enemy types chase the player
     const dx = targetPos.x - this.pos.x;
     const dy = targetPos.y - this.pos.y;
     const dist = Math.sqrt(dx * dx + dy * dy);

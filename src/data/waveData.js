@@ -17,10 +17,10 @@ export const waveData = {
       spawnInterval: 1500, // milliseconds between enemy spawns
       enemyTypes: [
         {
-          type: 'basic',
+          type: 'asteroid',
           weight: 1.0,
           healthMultiplier: 1.0,
-          speedMultiplier: 1.0,
+          speedMultiplier: 0.8,
           damageMultiplier: 1.0
         }
       ]

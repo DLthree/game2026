@@ -177,7 +177,7 @@
             font-size: 18px;
             margin-bottom: 20px;
         }
-        #nextWaveButton, #restartWaveButton {
+        #nextWaveButton, #waveCompleteSkillTreeButton {
             padding: 15px 30px;
             background: #4CAF50;
             color: #fff;
@@ -189,15 +189,8 @@
             cursor: pointer;
             margin: 5px;
         }
-        #nextWaveButton:hover, #restartWaveButton:hover {
+        #nextWaveButton:hover, #waveCompleteSkillTreeButton:hover {
             background: #66BB6A;
-        }
-        #restartWaveButton {
-            background: #2196F3;
-            border-color: #1565C0;
-        }
-        #restartWaveButton:hover {
-            background: #42A5F5;
         }
     </style>
 </head>
@@ -211,10 +204,15 @@
     </div>
     <div id="gameOver">
         <div>GAME OVER</div>
-        <div style="font-size: 16px; margin-top: 10px;">Tap to restart Wave 1</div>
+        <div style="font-size: 16px; margin-top: 10px;">
+            <button id="gameOverSkillTreeButton" style="padding: 10px 20px; margin: 10px; background: #4CAF50; color: #fff; border: 2px solid #2E7D32; border-radius: 5px; font-family: monospace; font-size: 16px; font-weight: bold; cursor: pointer;">Skill Tree</button>
+            <button id="gameOverRestartButton" style="padding: 10px 20px; margin: 10px; background: #2196F3; color: #fff; border: 2px solid #1565C0; border-radius: 5px; font-family: monospace; font-size: 16px; font-weight: bold; cursor: pointer;">First Wave</button>
+        </div>
     </div>
     <button id="skillTreeToggle">Skill Tree</button>
     <button id="visualStyleToggle">Style: Geometry Wars</button>
+    <button id="debugSkipButton" style="position: absolute; top: 110px; right: 10px; padding: 5px 10px; background: #FF9800; color: #fff; border: 2px solid #E65100; border-radius: 5px; font-family: monospace; font-size: 12px; font-weight: bold; cursor: pointer;">Skip 10s</button>
+    <button id="debugNextWaveButton" style="position: absolute; top: 145px; right: 10px; padding: 5px 10px; background: #FF9800; color: #fff; border: 2px solid #E65100; border-radius: 5px; font-family: monospace; font-size: 12px; font-weight: bold; cursor: pointer;">Next Wave</button>
     <div id="skillTreeContainer">
         <div id="skillTreeHeader">
             <div id="skillTreeTitle">Skill Tree</div>
@@ -225,8 +223,8 @@
     <div id="waveComplete">
         <div id="waveCompleteTitle">WAVE COMPLETE!</div>
         <div id="waveCompleteText">Upgrade your skills before the next wave</div>
+        <button id="waveCompleteSkillTreeButton">Show Skill Tree</button>
         <button id="nextWaveButton">Next Wave</button>
-        <button id="restartWaveButton">Restart from Wave 1</button>
     </div>
     <script type="module" src="./src/main.js"></script>
 </body>
