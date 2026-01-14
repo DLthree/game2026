@@ -19,6 +19,8 @@ const skillTreeUI = new SkillTreeUI(skillTreeManager, 'skillTreeContent');
 // Setup skill tree toggle
 const toggleButton = document.getElementById('skillTreeToggle');
 const closeButton = document.getElementById('skillTreeClose');
+const nextWaveButton = document.getElementById('nextWaveButton');
+const restartWaveButton = document.getElementById('restartWaveButton');
 
 toggleButton.addEventListener('click', () => {
   if (skillTreeUI.isVisible()) {
@@ -33,6 +35,14 @@ toggleButton.addEventListener('click', () => {
 closeButton.addEventListener('click', () => {
   skillTreeUI.hide();
   game.resume();
+});
+
+nextWaveButton.addEventListener('click', () => {
+  game.advanceToNextWave();
+});
+
+restartWaveButton.addEventListener('click', () => {
+  game.restartFromWave1();
 });
 
 // Setup visual style toggle
