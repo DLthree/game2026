@@ -80,11 +80,14 @@ export class Enemy {
     const dy = targetPos.y - this.pos.y;
     const dist = Math.sqrt(dx * dx + dy * dy);
     
-    this.vel.x = (dx / dist) * this.speed;
-    this.vel.y = (dy / dist) * this.speed;
-    
-    this.pos.x += this.vel.x * dt;
-    this.pos.y += this.vel.y * dt;
+    // Prevent division by zero when enemy is at exact same position as target
+    if (dist > 0) {
+      this.vel.x = (dx / dist) * this.speed;
+      this.vel.y = (dy / dist) * this.speed;
+      
+      this.pos.x += this.vel.x * dt;
+      this.pos.y += this.vel.y * dt;
+    }
   }
 
   draw(ctx) {

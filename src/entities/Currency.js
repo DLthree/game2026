@@ -31,7 +31,8 @@ export class Currency {
       
       if (dist < pickupRadius && dist > 0) {
         // Magnetic pull strength increases linearly as currency gets closer to player
-        // At pickupRadius edge: pull = 0, At player position: pull = magneticPullForce
+        // At pickup radius edge: pull = 0, At player center: pull = magneticPullForce
+        // Formula: force = magneticPullForce * (1 - distance/radius)
         const pullStrength = this.magneticPullForce * (1 - dist / pickupRadius);
         this.vel.x += (dx / dist) * pullStrength * dt;
         this.vel.y += (dy / dist) * pullStrength * dt;
