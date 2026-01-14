@@ -130,9 +130,18 @@ export class Game {
       
       // Check for interaction with player ship (knock banner around)
       if (this.waveBanner.containsPoint(this.player.pos.x, this.player.pos.y)) {
-        const forceX = this.player.vel.x * 0.3;
-        const forceY = this.player.vel.y * 0.3;
-        this.waveBanner.applyImpulse(forceX, forceY);
+        // Calculate direction from banner center to player
+        const dx = this.player.pos.x - this.waveBanner.pos.x;
+        const dy = this.player.pos.y - this.waveBanner.pos.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        
+        if (dist > 0) {
+          // Apply strong impulse to banner away from player
+          const bounceForce = 3.0; // Much stronger bounce
+          const forceX = (dx / dist) * this.player.vel.x * bounceForce + (dx / dist) * 100;
+          const forceY = (dy / dist) * this.player.vel.y * bounceForce + (dy / dist) * 100;
+          this.waveBanner.applyImpulse(forceX, forceY);
+        }
       }
       
       // Remove banner when expired
@@ -279,9 +288,10 @@ export class Game {
     }
 
     // Update currencies
+    const CURRENCY_PICKUP_RADIUS = 100; // Distance at which currency starts moving towards player
     for (let i = this.currencies.length - 1; i >= 0; i--) {
       const currency = this.currencies[i];
-      currency.update(dt);
+      currency.update(dt, this.player.pos, CURRENCY_PICKUP_RADIUS);
       
       // Check for pickup by player
       const dx = currency.pos.x - this.player.pos.x;
@@ -342,9 +352,14 @@ export class Game {
       y = this.canvas.height + 20;
     }
 
+    // Pick a random point on screen as initial target for enemy navigation
+    const targetX = Math.random() * this.canvas.width;
+    const targetY = Math.random() * this.canvas.height;
+    const targetPos = { x: targetX, y: targetY };
+
     // Get enemy type from wave system
     const enemyType = this.waveSystem.getRandomEnemyType();
-    this.enemies.push(new Enemy(x, y, enemyType));
+    this.enemies.push(new Enemy(x, y, enemyType, targetPos));
   }
 
   shootAtNearestEnemy() {

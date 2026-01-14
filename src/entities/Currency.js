@@ -19,8 +19,22 @@ export class Currency {
     this.friction = 0.95;
   }
 
-  update(dt) {
+  update(dt, playerPos = null, pickupRadius = 100) {
     this.age += dt;
+    
+    // Apply magnetic pull towards player if within pickup radius
+    if (playerPos) {
+      const dx = playerPos.x - this.pos.x;
+      const dy = playerPos.y - this.pos.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      
+      if (dist < pickupRadius && dist > 0) {
+        // Magnetic pull strength increases as currency gets closer
+        const pullStrength = 400 * (1 - dist / pickupRadius);
+        this.vel.x += (dx / dist) * pullStrength * dt;
+        this.vel.y += (dy / dist) * pullStrength * dt;
+      }
+    }
     
     // Apply friction
     this.vel.x *= this.friction;

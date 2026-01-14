@@ -7,9 +7,10 @@
  * @implements {Square}
  */
 export class Enemy {
-  constructor(x, y, enemyType = null) {
+  constructor(x, y, enemyType = null, targetPos = null) {
     this.pos = { x, y };
     this.vel = { x: 0, y: 0 };
+    this.targetPos = targetPos; // Optional target position for navigation
     
     // Default values
     const baseHealth = 1;
@@ -35,10 +36,21 @@ export class Enemy {
       } else if (enemyType.type === 'asteroid') {
         this.size = baseSize * 1.2;
         this.color = '#888888'; // Gray for asteroids
-        // Asteroids start with random velocity direction
-        const angle = Math.random() * Math.PI * 2;
-        this.vel.x = Math.cos(angle) * this.speed;
-        this.vel.y = Math.sin(angle) * this.speed;
+        // Asteroids navigate towards their target position if provided
+        if (this.targetPos) {
+          const dx = this.targetPos.x - x;
+          const dy = this.targetPos.y - y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist > 0) {
+            this.vel.x = (dx / dist) * this.speed;
+            this.vel.y = (dy / dist) * this.speed;
+          }
+        } else {
+          // Fallback: random velocity direction
+          const angle = Math.random() * Math.PI * 2;
+          this.vel.x = Math.cos(angle) * this.speed;
+          this.vel.y = Math.sin(angle) * this.speed;
+        }
       } else {
         this.size = baseSize;
         this.color = '#ff0000'; // Red for basic
