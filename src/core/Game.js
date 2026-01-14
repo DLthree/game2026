@@ -15,6 +15,7 @@ export class Game {
     this.AUTO_SHOOT_RANGE = 250;
     this.BANNER_BOUNCE_MULTIPLIER = 3.0;
     this.BANNER_BASE_PUSH_FORCE = 100;
+    this.CURRENCY_PICKUP_RADIUS = 100; // Distance at which currency starts moving towards player
     
     this.score = 0;
     this.health = 100;
@@ -143,8 +144,8 @@ export class Game {
           const dirY = dy / dist;
           
           // Apply strong impulse to banner away from player
-          const forceX = dirX * this.player.vel.x * this.BANNER_BOUNCE_MULTIPLIER + dirX * this.BANNER_BASE_PUSH_FORCE;
-          const forceY = dirY * this.player.vel.y * this.BANNER_BOUNCE_MULTIPLIER + dirY * this.BANNER_BASE_PUSH_FORCE;
+          const forceX = dirX * (this.player.vel.x * this.BANNER_BOUNCE_MULTIPLIER + this.BANNER_BASE_PUSH_FORCE);
+          const forceY = dirY * (this.player.vel.y * this.BANNER_BOUNCE_MULTIPLIER + this.BANNER_BASE_PUSH_FORCE);
           this.waveBanner.applyImpulse(forceX, forceY);
         }
       }
@@ -293,10 +294,9 @@ export class Game {
     }
 
     // Update currencies
-    const CURRENCY_PICKUP_RADIUS = 100; // Distance at which currency starts moving towards player
     for (let i = this.currencies.length - 1; i >= 0; i--) {
       const currency = this.currencies[i];
-      currency.update(dt, this.player.pos, CURRENCY_PICKUP_RADIUS);
+      currency.update(dt, this.player.pos, this.CURRENCY_PICKUP_RADIUS);
       
       // Check for pickup by player
       const dx = currency.pos.x - this.player.pos.x;
