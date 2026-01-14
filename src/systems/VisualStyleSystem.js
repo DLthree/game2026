@@ -19,7 +19,7 @@ import {
   updateTextureFromCanvas,
   renderFullscreenQuad
 } from './ShaderUtils.js';
-import { GEOMETRY_DASH_BLOOM_SHADER, GEOMETRY_WARS_SHADER, CLEAN_GLTEST_SHADER, CLEAN_GLSTYLE_SHADER, PSYCHEDELIC_BLAST_SHADER } from './Shaders.js';
+import { GEOMETRY_WARS_SHADER } from './Shaders.js';
 import { GeometryWarsRenderer } from './GeometryWarsRenderer.js';
 
 /**
@@ -28,14 +28,8 @@ import { GeometryWarsRenderer } from './GeometryWarsRenderer.js';
  * @enum {number}
  */
 export const VisualStyle = {
-  BLOOM_GEOMETRY: 0,
+  GEOMETRY_WARS: 0,
   CLEAN_MINIMAL: 1,
-  GHOST_TRAILS: 2,
-  CRT_ANALOG: 3,
-  CLEAN_GLTEST: 4,
-  CLEAN_GLSTYLE: 5,
-  PSYCHEDELIC_BLAST: 6,
-  GEOMETRY_WARS: 7,
 };
 
 /**
@@ -43,14 +37,8 @@ export const VisualStyle = {
  * @type {Object.<number, string>}
  */
 export const StyleNames = {
-  [VisualStyle.BLOOM_GEOMETRY]: 'Bloom Geometry',
-  [VisualStyle.CLEAN_MINIMAL]: 'Clean Minimal',
-  [VisualStyle.GHOST_TRAILS]: 'Ghost Trails',
-  [VisualStyle.CRT_ANALOG]: 'CRT Analog',
-  [VisualStyle.CLEAN_GLTEST]: 'Clean GL Test',
-  [VisualStyle.CLEAN_GLSTYLE]: 'Clean GL Style',
-  [VisualStyle.PSYCHEDELIC_BLAST]: 'Psychedelic Blast',
   [VisualStyle.GEOMETRY_WARS]: 'Geometry Wars',
+  [VisualStyle.CLEAN_MINIMAL]: 'Clean Minimal',
 };
 
 /**
@@ -58,42 +46,14 @@ export const StyleNames = {
  * @type {Object.<number, Object>}
  */
 export const StyleConfig = {
-  [VisualStyle.BLOOM_GEOMETRY]: {
-    useWebGL: true,             // Now uses WebGL shader for bloom
+  [VisualStyle.GEOMETRY_WARS]: {
+    useWebGL: true,             // This style requires WebGL for bloom
+    useGeometryWarsRenderer: true, // Enable full Geometry Wars renderer
   },
   
   [VisualStyle.CLEAN_MINIMAL]: {
     contrast: 1.2,              // Color contrast multiplier
     sharpness: true,            // Disable image smoothing
-  },
-  
-  [VisualStyle.GHOST_TRAILS]: {
-    trailAlpha: 0.25,           // Alpha fade for trails (lower = longer trails)
-    trailLength: 8,             // Number of trail frames to composite
-  },
-  
-  [VisualStyle.CRT_ANALOG]: {
-    scanlineIntensity: 0.4,     // Scanline darkness (0-1)
-    scanlineCount: 2,           // Pixels between scanlines
-    vignetteStrength: 0.3,      // Vignette darkness at edges
-    noiseIntensity: 0.05,       // Random noise alpha
-  },
-  
-  [VisualStyle.CLEAN_GLTEST]: {
-    useWebGL: true,             // This style requires WebGL
-  },
-  
-  [VisualStyle.CLEAN_GLSTYLE]: {
-    useWebGL: true,             // This style requires WebGL
-  },
-  
-  [VisualStyle.PSYCHEDELIC_BLAST]: {
-    useWebGL: true,             // This style requires WebGL
-  },
-  
-  [VisualStyle.GEOMETRY_WARS]: {
-    useWebGL: true,             // This style requires WebGL for bloom
-    useGeometryWarsRenderer: true, // Enable full Geometry Wars renderer
   },
 };
 
@@ -107,7 +67,7 @@ export class VisualStyleSystem {
   constructor(canvas) {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
-    this.currentStyle = VisualStyle.BLOOM_GEOMETRY;
+    this.currentStyle = VisualStyle.GEOMETRY_WARS;
     
     // Create offscreen canvases for post-processing
     this.offscreenCanvas = document.createElement('canvas');
@@ -148,34 +108,6 @@ export class VisualStyleSystem {
     // Create shader programs
     this.shaderPrograms = {};
     
-    // BLOOM_GEOMETRY shader (Geometry Dash style)
-    this.shaderPrograms[VisualStyle.BLOOM_GEOMETRY] = createShaderProgram(
-      this.gl,
-      FULLSCREEN_VERTEX_SHADER,
-      GEOMETRY_DASH_BLOOM_SHADER
-    );
-    
-    // CLEAN_GLTEST shader
-    this.shaderPrograms[VisualStyle.CLEAN_GLTEST] = createShaderProgram(
-      this.gl,
-      FULLSCREEN_VERTEX_SHADER,
-      CLEAN_GLTEST_SHADER
-    );
-    
-    // CLEAN_GLSTYLE shader
-    this.shaderPrograms[VisualStyle.CLEAN_GLSTYLE] = createShaderProgram(
-      this.gl,
-      FULLSCREEN_VERTEX_SHADER,
-      CLEAN_GLSTYLE_SHADER
-    );
-    
-    // PSYCHEDELIC_BLAST shader
-    this.shaderPrograms[VisualStyle.PSYCHEDELIC_BLAST] = createShaderProgram(
-      this.gl,
-      FULLSCREEN_VERTEX_SHADER,
-      PSYCHEDELIC_BLAST_SHADER
-    );
-    
     // GEOMETRY_WARS shader
     this.shaderPrograms[VisualStyle.GEOMETRY_WARS] = createShaderProgram(
       this.gl,
@@ -215,6 +147,12 @@ export class VisualStyleSystem {
       this.glCanvas.height = this.canvas.height;
       this.gl.viewport(0, 0, this.glCanvas.width, this.glCanvas.height);
     }
+    
+    // Reinitialize Geometry Wars grid and starfield with new canvas size
+    if (this.geometryWarsRenderer) {
+      this.geometryWarsRenderer.initGrid();
+      this.geometryWarsRenderer.initStarfield();
+    }
   }
   
   /**
@@ -238,13 +176,15 @@ export class VisualStyleSystem {
   }
   
   /**
-   * Cycle to next visual style
+   * Toggle between visual styles
    */
   nextStyle() {
-    const styles = Object.keys(StyleConfig).map(Number);
-    const currentIndex = styles.indexOf(this.currentStyle);
-    const nextIndex = (currentIndex + 1) % styles.length;
-    this.setStyle(styles[nextIndex]);
+    // Toggle between Geometry Wars and Clean Minimal
+    if (this.currentStyle === VisualStyle.GEOMETRY_WARS) {
+      this.setStyle(VisualStyle.CLEAN_MINIMAL);
+    } else {
+      this.setStyle(VisualStyle.GEOMETRY_WARS);
+    }
   }
   
   /**
@@ -263,29 +203,11 @@ export class VisualStyleSystem {
    */
   applyPostProcessing() {
     switch (this.currentStyle) {
-      case VisualStyle.BLOOM_GEOMETRY:
-        this.applyShaderStyle(VisualStyle.BLOOM_GEOMETRY);
+      case VisualStyle.GEOMETRY_WARS:
+        this.applyGeometryWars();
         break;
       case VisualStyle.CLEAN_MINIMAL:
         this.applyCleanMinimal();
-        break;
-      case VisualStyle.GHOST_TRAILS:
-        this.applyGhostTrails();
-        break;
-      case VisualStyle.CRT_ANALOG:
-        this.applyCRTAnalog();
-        break;
-      case VisualStyle.CLEAN_GLTEST:
-        this.applyShaderStyle(VisualStyle.CLEAN_GLTEST);
-        break;
-      case VisualStyle.CLEAN_GLSTYLE:
-        this.applyShaderStyle(VisualStyle.CLEAN_GLSTYLE);
-        break;
-      case VisualStyle.PSYCHEDELIC_BLAST:
-        this.applyShaderStyle(VisualStyle.PSYCHEDELIC_BLAST);
-        break;
-      case VisualStyle.GEOMETRY_WARS:
-        this.applyGeometryWars();
         break;
     }
   }
