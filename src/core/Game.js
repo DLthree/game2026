@@ -138,9 +138,13 @@ export class Game {
         const dist = Math.sqrt(dx * dx + dy * dy);
         
         if (dist > 0) {
+          // Normalize direction
+          const dirX = dx / dist;
+          const dirY = dy / dist;
+          
           // Apply strong impulse to banner away from player
-          const forceX = (dx / dist) * this.player.vel.x * this.BANNER_BOUNCE_MULTIPLIER + (dx / dist) * this.BANNER_BASE_PUSH_FORCE;
-          const forceY = (dy / dist) * this.player.vel.y * this.BANNER_BOUNCE_MULTIPLIER + (dy / dist) * this.BANNER_BASE_PUSH_FORCE;
+          const forceX = dirX * this.player.vel.x * this.BANNER_BOUNCE_MULTIPLIER + dirX * this.BANNER_BASE_PUSH_FORCE;
+          const forceY = dirY * this.player.vel.y * this.BANNER_BOUNCE_MULTIPLIER + dirY * this.BANNER_BASE_PUSH_FORCE;
           this.waveBanner.applyImpulse(forceX, forceY);
         }
       }
