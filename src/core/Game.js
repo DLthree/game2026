@@ -1,4 +1,4 @@
-import { Player, Enemy, Projectile, WaveBanner } from '../entities/index.js';
+import { Player, Enemy, Projectile, WaveBanner, Currency } from '../entities/index.js';
 import { InputSystem, CollisionSystem, RenderSystem, VisualStyle, WaveSystem } from '../systems/index.js';
 
 export class Game {
@@ -6,10 +6,13 @@ export class Game {
     this.canvas = canvas;
     this.enemies = [];
     this.projectiles = [];
+    this.currencies = [];
     this.waveBanner = null;
     
     // Game constants
     this.WAVE_COMPLETE_HEALTH_REWARD = 30;
+    this.BULLET_RANGE = 300;
+    this.AUTO_SHOOT_RANGE = 250;
     
     this.score = 0;
     this.health = 100;
@@ -73,6 +76,7 @@ export class Game {
     this.player.reset(this.canvas.width / 2, this.canvas.height / 2);
     this.enemies = [];
     this.projectiles = [];
+    this.currencies = [];
     this.waveBanner = null;
     this.score = 0;
     this.health = this.maxHealth;
@@ -122,6 +126,13 @@ export class Game {
           const forceY = projectile.vel.y * 0.5;
           this.waveBanner.applyImpulse(forceX, forceY);
         }
+      }
+      
+      // Check for interaction with player ship (knock banner around)
+      if (this.waveBanner.containsPoint(this.player.pos.x, this.player.pos.y)) {
+        const forceX = this.player.vel.x * 0.3;
+        const forceY = this.player.vel.y * 0.3;
+        this.waveBanner.applyImpulse(forceX, forceY);
       }
       
       // Remove banner when expired
@@ -243,7 +254,9 @@ export class Game {
           
           if (isDead) {
             this.enemies.splice(j, 1);
-            this.score += 10;
+            
+            // Drop currency instead of immediately adding score
+            this.currencies.push(new Currency(enemy.pos.x, enemy.pos.y, 10, 'gold'));
             
             // Geometry Wars effects on kill
             if (isGeometryWars) {
@@ -262,6 +275,36 @@ export class Game {
           }
           break;
         }
+      }
+    }
+
+    // Update currencies
+    for (let i = this.currencies.length - 1; i >= 0; i--) {
+      const currency = this.currencies[i];
+      currency.update(dt);
+      
+      // Check for pickup by player
+      const dx = currency.pos.x - this.player.pos.x;
+      const dy = currency.pos.y - this.player.pos.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      const pickupRadius = this.player.size + currency.size;
+      
+      if (dist < pickupRadius) {
+        // Pick up currency and add to score
+        this.score += currency.amount;
+        
+        // Add to skill tree manager if available
+        if (window.skillTreeManager) {
+          window.skillTreeManager.addCurrency(currency.type, currency.amount);
+        }
+        
+        this.currencies.splice(i, 1);
+        continue;
+      }
+      
+      // Remove if expired or out of bounds
+      if (currency.isExpired() || currency.isOutOfBounds(this.canvas.width, this.canvas.height)) {
+        this.currencies.splice(i, 1);
       }
     }
 
@@ -319,7 +362,8 @@ export class Game {
       }
     }
 
-    if (nearestEnemy) {
+    // Only shoot if nearest enemy is within range
+    if (nearestEnemy && nearestDist <= this.AUTO_SHOOT_RANGE) {
       const dx = nearestEnemy.pos.x - this.player.pos.x;
       const dy = nearestEnemy.pos.y - this.player.pos.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
@@ -329,7 +373,7 @@ export class Game {
       const velY = (dy / dist) * speed;
 
       this.projectiles.push(
-        new Projectile(this.player.pos.x, this.player.pos.y, velX, velY)
+        new Projectile(this.player.pos.x, this.player.pos.y, velX, velY, this.BULLET_RANGE)
       );
     }
   }
@@ -339,11 +383,17 @@ export class Game {
     this.renderSystem.drawPlayer(this.player);
     this.renderSystem.drawEnemies(this.enemies);
     this.renderSystem.drawProjectiles(this.projectiles);
+    
+    // Draw currencies before post-processing
+    const ctx = this.canvas.getContext('2d');
+    for (const currency of this.currencies) {
+      currency.draw(ctx);
+    }
+    
     this.renderSystem.applyPostProcessing();
     
     // Draw wave banner AFTER post-processing so it appears on top
     if (this.waveBanner) {
-      const ctx = this.canvas.getContext('2d');
       this.waveBanner.draw(ctx);
     }
   }
@@ -353,6 +403,7 @@ export class Game {
     // Clear enemies and projectiles from previous wave
     this.enemies = [];
     this.projectiles = [];
+    this.currencies = [];
     
     // Restore some health as reward
     this.health = Math.min(this.maxHealth, this.health + this.WAVE_COMPLETE_HEALTH_REWARD);
@@ -378,6 +429,7 @@ export class Game {
     this.player.reset(this.canvas.width / 2, this.canvas.height / 2);
     this.enemies = [];
     this.projectiles = [];
+    this.currencies = [];
     this.waveBanner = null;
     this.score = 0;
     this.health = this.maxHealth;
@@ -390,6 +442,23 @@ export class Game {
     this.waveSystem.restart();
     this.showWaveBanner();
     this.isPaused = false;
+  }
+  
+  skipTime(seconds) {
+    // Skip forward in time (for debugging)
+    if (this.waveSystem.isWaveActive()) {
+      this.waveSystem.waveTimer += seconds;
+    }
+  }
+  
+  forceNextWave() {
+    // Force complete current wave (for debugging)
+    if (this.waveSystem.isWaveActive()) {
+      const wave = this.waveSystem.getCurrentWave();
+      if (wave) {
+        this.waveSystem.waveTimer = wave.duration;
+      }
+    }
   }
 
   gameLoop = (timestamp) => {

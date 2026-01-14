@@ -20,7 +20,11 @@ const skillTreeUI = new SkillTreeUI(skillTreeManager, 'skillTreeContent');
 const toggleButton = document.getElementById('skillTreeToggle');
 const closeButton = document.getElementById('skillTreeClose');
 const nextWaveButton = document.getElementById('nextWaveButton');
-const restartWaveButton = document.getElementById('restartWaveButton');
+const waveCompleteSkillTreeButton = document.getElementById('waveCompleteSkillTreeButton');
+const gameOverSkillTreeButton = document.getElementById('gameOverSkillTreeButton');
+const gameOverRestartButton = document.getElementById('gameOverRestartButton');
+const debugSkipButton = document.getElementById('debugSkipButton');
+const debugNextWaveButton = document.getElementById('debugNextWaveButton');
 
 toggleButton.addEventListener('click', () => {
   if (skillTreeUI.isVisible()) {
@@ -41,8 +45,24 @@ nextWaveButton.addEventListener('click', () => {
   game.advanceToNextWave();
 });
 
-restartWaveButton.addEventListener('click', () => {
-  game.restartFromWave1();
+waveCompleteSkillTreeButton.addEventListener('click', () => {
+  skillTreeUI.show();
+});
+
+gameOverSkillTreeButton.addEventListener('click', () => {
+  skillTreeUI.show();
+});
+
+gameOverRestartButton.addEventListener('click', () => {
+  game.handleRestart();
+});
+
+debugSkipButton.addEventListener('click', () => {
+  game.skipTime(10);
+});
+
+debugNextWaveButton.addEventListener('click', () => {
+  game.forceNextWave();
 });
 
 // Setup visual style toggle

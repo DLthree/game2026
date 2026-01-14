@@ -7,20 +7,28 @@
  * @implements {Triangle}
  */
 export class Projectile {
-  constructor(x, y, velX, velY) {
+  constructor(x, y, velX, velY, range = 300) {
     this.pos = { x, y };
+    this.startPos = { x, y };
     this.vel = { x: velX, y: velY };
     this.size = 8;
     this.color = '#ffff00';
+    this.range = range;
+    this.distanceTraveled = 0;
   }
 
   update(dt) {
-    this.pos.x += this.vel.x * dt;
-    this.pos.y += this.vel.y * dt;
+    const dx = this.vel.x * dt;
+    const dy = this.vel.y * dt;
+    this.pos.x += dx;
+    this.pos.y += dy;
+    this.distanceTraveled += Math.sqrt(dx * dx + dy * dy);
   }
 
   draw(ctx) {
-    ctx.fillStyle = this.color;
+    // Draw wireframe triangle
+    ctx.strokeStyle = this.color;
+    ctx.lineWidth = 2;
     ctx.beginPath();
     
     const angle = Math.atan2(this.vel.y, this.vel.x);
@@ -40,10 +48,14 @@ export class Projectile {
     );
     
     ctx.closePath();
-    ctx.fill();
+    ctx.stroke();
   }
 
   isOutOfBounds(width, height) {
+    // Check if exceeded range
+    if (this.distanceTraveled >= this.range) {
+      return true;
+    }
     return this.pos.x < 0 || this.pos.x > width || 
            this.pos.y < 0 || this.pos.y > height;
   }
