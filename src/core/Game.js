@@ -1,5 +1,5 @@
 import { Player, Enemy, Projectile } from '../entities/index.js';
-import { InputSystem, CollisionSystem, RenderSystem } from '../systems/index.js';
+import { InputSystem, CollisionSystem, RenderSystem, VisualStyle } from '../systems/index.js';
 
 export class Game {
   constructor(canvas) {
@@ -74,7 +74,7 @@ export class Game {
 
     // Update Geometry Wars renderer if active
     const visualStyleSystem = this.renderSystem.getVisualStyleSystem();
-    const isGeometryWars = visualStyleSystem.getCurrentStyle() === 7; // VisualStyle.GEOMETRY_WARS
+    const isGeometryWars = visualStyleSystem.getCurrentStyle() === VisualStyle.GEOMETRY_WARS;
     if (isGeometryWars) {
       const gwRenderer = visualStyleSystem.getGeometryWarsRenderer();
       gwRenderer.update(dt, this);
