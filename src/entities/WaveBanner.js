@@ -10,6 +10,10 @@ export class WaveBanner {
     this.canvasWidth = canvasWidth;
     this.canvasHeight = canvasHeight;
     
+    // Constants
+    this.INITIAL_VELOCITY_RANGE = 100;
+    this.ANGULAR_IMPULSE_DIVISOR = 100;
+    
     // Start in center of screen
     this.pos = { 
       x: canvasWidth / 2, 
@@ -18,8 +22,8 @@ export class WaveBanner {
     
     // Initial random velocity for some movement
     this.vel = {
-      x: (Math.random() - 0.5) * 100,
-      y: (Math.random() - 0.5) * 100
+      x: (Math.random() - 0.5) * this.INITIAL_VELOCITY_RANGE,
+      y: (Math.random() - 0.5) * this.INITIAL_VELOCITY_RANGE
     };
     
     // Physics properties
@@ -46,7 +50,7 @@ export class WaveBanner {
   applyImpulse(forceX, forceY) {
     this.vel.x += forceX / this.mass;
     this.vel.y += forceY / this.mass;
-    this.angularVelocity += (forceX + forceY) / (this.mass * 100);
+    this.angularVelocity += (forceX + forceY) / (this.mass * this.ANGULAR_IMPULSE_DIVISOR);
   }
   
   /**

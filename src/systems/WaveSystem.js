@@ -135,6 +135,8 @@ export class WaveSystem {
   
   /**
    * Check if we should spawn an enemy based on wave parameters
+   * @param {number} timeSinceLastSpawn - Time in milliseconds since last enemy spawn
+   * @returns {boolean}
    */
   shouldSpawnEnemy(timeSinceLastSpawn) {
     const wave = this.getCurrentWave();

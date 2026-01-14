@@ -8,6 +8,9 @@ export class Game {
     this.projectiles = [];
     this.waveBanner = null;
     
+    // Game constants
+    this.WAVE_COMPLETE_HEALTH_REWARD = 30;
+    
     this.score = 0;
     this.health = 100;
     this.maxHealth = 100;
@@ -352,7 +355,7 @@ export class Game {
     this.projectiles = [];
     
     // Restore some health as reward
-    this.health = Math.min(this.maxHealth, this.health + 30);
+    this.health = Math.min(this.maxHealth, this.health + this.WAVE_COMPLETE_HEALTH_REWARD);
     
     // Hide wave complete modal
     this.hideWaveComplete();
