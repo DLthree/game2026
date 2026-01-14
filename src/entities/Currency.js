@@ -17,6 +17,7 @@ export class Currency {
     this.age = 0;
     this.color = this.type === 'gold' ? '#FFD700' : '#FF69B4';
     this.friction = 0.95;
+    this.magneticPullForce = 400; // Base force for pulling currency towards player
   }
 
   update(dt, playerPos = null, pickupRadius = 100) {
@@ -30,7 +31,7 @@ export class Currency {
       
       if (dist < pickupRadius && dist > 0) {
         // Magnetic pull strength increases as currency gets closer
-        const pullStrength = 400 * (1 - dist / pickupRadius);
+        const pullStrength = this.magneticPullForce * (1 - dist / pickupRadius);
         this.vel.x += (dx / dist) * pullStrength * dt;
         this.vel.y += (dy / dist) * pullStrength * dt;
       }

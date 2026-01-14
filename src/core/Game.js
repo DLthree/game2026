@@ -13,6 +13,8 @@ export class Game {
     this.WAVE_COMPLETE_HEALTH_REWARD = 30;
     this.BULLET_RANGE = 300;
     this.AUTO_SHOOT_RANGE = 250;
+    this.BANNER_BOUNCE_MULTIPLIER = 3.0;
+    this.BANNER_BASE_PUSH_FORCE = 100;
     
     this.score = 0;
     this.health = 100;
@@ -137,9 +139,8 @@ export class Game {
         
         if (dist > 0) {
           // Apply strong impulse to banner away from player
-          const bounceForce = 3.0; // Much stronger bounce
-          const forceX = (dx / dist) * this.player.vel.x * bounceForce + (dx / dist) * 100;
-          const forceY = (dy / dist) * this.player.vel.y * bounceForce + (dy / dist) * 100;
+          const forceX = (dx / dist) * this.player.vel.x * this.BANNER_BOUNCE_MULTIPLIER + (dx / dist) * this.BANNER_BASE_PUSH_FORCE;
+          const forceY = (dy / dist) * this.player.vel.y * this.BANNER_BOUNCE_MULTIPLIER + (dy / dist) * this.BANNER_BASE_PUSH_FORCE;
           this.waveBanner.applyImpulse(forceX, forceY);
         }
       }
