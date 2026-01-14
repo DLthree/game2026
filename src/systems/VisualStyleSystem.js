@@ -73,13 +73,6 @@ export class VisualStyleSystem {
     this.offscreenCanvas = document.createElement('canvas');
     this.offscreenCtx = this.offscreenCanvas.getContext('2d');
     
-    this.bloomCanvas = document.createElement('canvas');
-    this.bloomCtx = this.bloomCanvas.getContext('2d');
-    
-    // Trail history for GHOST_TRAILS style
-    this.trailFrames = [];
-    this.maxTrailFrames = 8;
-    
     // Initialize WebGL for shader-based styles
     this.initWebGL();
     
@@ -137,10 +130,6 @@ export class VisualStyleSystem {
     this.offscreenCanvas.width = this.canvas.width;
     this.offscreenCanvas.height = this.canvas.height;
     
-    // Bloom canvas is only used by legacy canvas-based styles
-    this.bloomCanvas.width = this.canvas.width * 0.5;
-    this.bloomCanvas.height = this.canvas.height * 0.5;
-    
     // Update WebGL canvas size
     if (this.webglSupported && this.glCanvas) {
       this.glCanvas.width = this.canvas.width;
@@ -170,8 +159,6 @@ export class VisualStyleSystem {
   setStyle(style) {
     if (style in StyleConfig) {
       this.currentStyle = style;
-      // Clear trail history when switching styles
-      this.trailFrames = [];
     }
   }
   
