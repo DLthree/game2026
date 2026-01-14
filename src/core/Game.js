@@ -13,6 +13,7 @@ export class Game {
     this.maxHealth = 100;
     this.isGameOver = false;
     this.isPaused = false;
+    this.waveCompleteShown = false;
     
     this.lastEnemySpawn = 0;
     this.lastShot = 0;
@@ -73,6 +74,7 @@ export class Game {
     this.score = 0;
     this.health = this.maxHealth;
     this.isGameOver = false;
+    this.waveCompleteShown = false;
     this.lastEnemySpawn = 0;
     this.lastShot = 0;
     this.gameOverElement.style.display = 'none';
@@ -92,6 +94,7 @@ export class Game {
     const waveCompleteElement = document.getElementById('waveComplete');
     waveCompleteElement.classList.add('visible');
     this.isPaused = true;
+    this.waveCompleteShown = true;
   }
   
   hideWaveComplete() {
@@ -125,7 +128,7 @@ export class Game {
     }
     
     // Check if wave just completed
-    if (this.waveSystem.isWaveComplete()) {
+    if (this.waveSystem.isWaveComplete() && !this.waveCompleteShown) {
       this.showWaveComplete();
       return; // Pause game until player advances
     }
@@ -263,7 +266,15 @@ export class Game {
     this.scoreElement.textContent = this.score.toString();
     this.healthElement.textContent = Math.max(0, Math.floor(this.health)).toString();
     this.waveElement.textContent = this.waveSystem.getCurrentWaveNumber().toString();
-    const timeRemaining = Math.ceil(this.waveSystem.getWaveTimeRemaining());
+    
+    // Show full duration during banner, countdown during active wave
+    let timeRemaining;
+    if (this.waveSystem.isBannerActive()) {
+      const wave = this.waveSystem.getCurrentWave();
+      timeRemaining = wave ? wave.duration : 0;
+    } else {
+      timeRemaining = Math.ceil(this.waveSystem.getWaveTimeRemaining());
+    }
     this.waveTimeElement.textContent = timeRemaining.toString();
   }
 
@@ -325,14 +336,13 @@ export class Game {
     this.renderSystem.drawPlayer(this.player);
     this.renderSystem.drawEnemies(this.enemies);
     this.renderSystem.drawProjectiles(this.projectiles);
+    this.renderSystem.applyPostProcessing();
     
-    // Draw wave banner if active
+    // Draw wave banner AFTER post-processing so it appears on top
     if (this.waveBanner) {
       const ctx = this.canvas.getContext('2d');
       this.waveBanner.draw(ctx);
     }
-    
-    this.renderSystem.applyPostProcessing();
   }
 
   
@@ -347,6 +357,9 @@ export class Game {
     // Hide wave complete modal
     this.hideWaveComplete();
     
+    // Reset wave complete flag
+    this.waveCompleteShown = false;
+    
     // Advance wave system
     this.waveSystem.advanceToNextWave();
     
@@ -359,8 +372,21 @@ export class Game {
   
   restartFromWave1() {
     // Full restart
-    this.handleRestart();
+    this.player.reset(this.canvas.width / 2, this.canvas.height / 2);
+    this.enemies = [];
+    this.projectiles = [];
+    this.waveBanner = null;
+    this.score = 0;
+    this.health = this.maxHealth;
+    this.isGameOver = false;
+    this.waveCompleteShown = false;
+    this.lastEnemySpawn = 0;
+    this.lastShot = 0;
+    
     this.hideWaveComplete();
+    this.waveSystem.restart();
+    this.showWaveBanner();
+    this.isPaused = false;
   }
 
   gameLoop = (timestamp) => {

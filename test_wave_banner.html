@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Wave Banner</title>
+</head>
+<body style="background: #000; margin: 0; padding: 20px;">
+    <canvas id="testCanvas" width="800" height="600" style="border: 2px solid #333;"></canvas>
+    <script type="module">
+        import { WaveBanner } from './src/entities/WaveBanner.js';
+        
+        const canvas = document.getElementById('testCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        const banner = new WaveBanner(1, canvas.width, canvas.height);
+        
+        function draw() {
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            banner.update(0.016);
+            banner.draw(ctx);
+            
+            requestAnimationFrame(draw);
+        }
+        
+        draw();
+    </script>
+</body>
+</html>
