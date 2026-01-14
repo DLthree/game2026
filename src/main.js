@@ -26,6 +26,12 @@ const gameOverRestartButton = document.getElementById('gameOverRestartButton');
 const debugSkipButton = document.getElementById('debugSkipButton');
 const debugNextWaveButton = document.getElementById('debugNextWaveButton');
 
+// Hide the main gameplay skill tree toggle button
+toggleButton.style.display = 'none';
+
+// Track if skill tree was opened from wave complete screen
+let openedFromWaveComplete = false;
+
 toggleButton.addEventListener('click', () => {
   if (skillTreeUI.isVisible()) {
     skillTreeUI.hide();
@@ -38,7 +44,14 @@ toggleButton.addEventListener('click', () => {
 
 closeButton.addEventListener('click', () => {
   skillTreeUI.hide();
-  game.resume();
+  
+  // If skill tree was opened from wave complete, start next wave
+  if (openedFromWaveComplete) {
+    openedFromWaveComplete = false;
+    game.advanceToNextWave();
+  } else {
+    game.resume();
+  }
 });
 
 nextWaveButton.addEventListener('click', () => {
@@ -46,6 +59,9 @@ nextWaveButton.addEventListener('click', () => {
 });
 
 waveCompleteSkillTreeButton.addEventListener('click', () => {
+  openedFromWaveComplete = true;
+  game.hideWaveComplete();
+  game.pause();
   skillTreeUI.show();
 });
 

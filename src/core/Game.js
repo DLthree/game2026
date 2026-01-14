@@ -13,6 +13,9 @@ export class Game {
     this.WAVE_COMPLETE_HEALTH_REWARD = 30;
     this.BULLET_RANGE = 300;
     this.AUTO_SHOOT_RANGE = 250;
+    this.BANNER_BOUNCE_MULTIPLIER = 3.0;
+    this.BANNER_BASE_PUSH_FORCE = 100;
+    this.CURRENCY_PICKUP_RADIUS = 100; // Distance at which currency starts moving towards player
     
     this.score = 0;
     this.health = 100;
@@ -130,9 +133,21 @@ export class Game {
       
       // Check for interaction with player ship (knock banner around)
       if (this.waveBanner.containsPoint(this.player.pos.x, this.player.pos.y)) {
-        const forceX = this.player.vel.x * 0.3;
-        const forceY = this.player.vel.y * 0.3;
-        this.waveBanner.applyImpulse(forceX, forceY);
+        // Calculate direction from banner center to player
+        const dx = this.player.pos.x - this.waveBanner.pos.x;
+        const dy = this.player.pos.y - this.waveBanner.pos.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        
+        if (dist > 0) {
+          // Normalize direction
+          const dirX = dx / dist;
+          const dirY = dy / dist;
+          
+          // Apply strong impulse to banner away from player
+          const forceX = dirX * (this.player.vel.x * this.BANNER_BOUNCE_MULTIPLIER + this.BANNER_BASE_PUSH_FORCE);
+          const forceY = dirY * (this.player.vel.y * this.BANNER_BOUNCE_MULTIPLIER + this.BANNER_BASE_PUSH_FORCE);
+          this.waveBanner.applyImpulse(forceX, forceY);
+        }
       }
       
       // Remove banner when expired
@@ -281,7 +296,7 @@ export class Game {
     // Update currencies
     for (let i = this.currencies.length - 1; i >= 0; i--) {
       const currency = this.currencies[i];
-      currency.update(dt);
+      currency.update(dt, this.player.pos, this.CURRENCY_PICKUP_RADIUS);
       
       // Check for pickup by player
       const dx = currency.pos.x - this.player.pos.x;
@@ -342,9 +357,14 @@ export class Game {
       y = this.canvas.height + 20;
     }
 
+    // Pick a random point on screen as initial target for enemy navigation
+    const targetX = Math.random() * this.canvas.width;
+    const targetY = Math.random() * this.canvas.height;
+    const targetPos = { x: targetX, y: targetY };
+
     // Get enemy type from wave system
     const enemyType = this.waveSystem.getRandomEnemyType();
-    this.enemies.push(new Enemy(x, y, enemyType));
+    this.enemies.push(new Enemy(x, y, enemyType, targetPos));
   }
 
   shootAtNearestEnemy() {
