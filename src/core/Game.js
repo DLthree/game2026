@@ -1,14 +1,16 @@
-import { Player, Enemy, Projectile } from '../entities/index.js';
-import { InputSystem, CollisionSystem, RenderSystem, VisualStyle } from '../systems/index.js';
+import { Player, Enemy, Projectile, WaveBanner } from '../entities/index.js';
+import { InputSystem, CollisionSystem, RenderSystem, VisualStyle, WaveSystem } from '../systems/index.js';
 
 export class Game {
   constructor(canvas) {
     this.canvas = canvas;
     this.enemies = [];
     this.projectiles = [];
+    this.waveBanner = null;
     
     this.score = 0;
     this.health = 100;
+    this.maxHealth = 100;
     this.isGameOver = false;
     this.isPaused = false;
     
@@ -20,6 +22,7 @@ export class Game {
     this.inputSystem = new InputSystem(canvas, () => this.handleRestart());
     this.collisionSystem = new CollisionSystem();
     this.renderSystem = new RenderSystem(canvas);
+    this.waveSystem = new WaveSystem();
 
     // Initialize player
     this.player = new Player(canvas.width / 2, canvas.height / 2);
@@ -28,9 +31,14 @@ export class Game {
     this.scoreElement = document.getElementById('score');
     this.healthElement = document.getElementById('health');
     this.gameOverElement = document.getElementById('gameOver');
+    this.waveElement = document.getElementById('wave');
+    this.waveTimeElement = document.getElementById('waveTime');
 
     // Setup canvas resize
     this.setupResize();
+    
+    // Start with wave banner
+    this.showWaveBanner();
   }
 
   setupResize() {
@@ -61,16 +69,66 @@ export class Game {
     this.player.reset(this.canvas.width / 2, this.canvas.height / 2);
     this.enemies = [];
     this.projectiles = [];
+    this.waveBanner = null;
     this.score = 0;
-    this.health = 100;
+    this.health = this.maxHealth;
     this.isGameOver = false;
     this.lastEnemySpawn = 0;
     this.lastShot = 0;
     this.gameOverElement.style.display = 'none';
+    
+    // Restart wave system
+    this.waveSystem.restart();
+    this.showWaveBanner();
+  }
+  
+  showWaveBanner() {
+    const waveNumber = this.waveSystem.getCurrentWaveNumber();
+    this.waveBanner = new WaveBanner(waveNumber, this.canvas.width, this.canvas.height);
+  }
+  
+  showWaveComplete() {
+    // Show wave complete modal with skill tree
+    const waveCompleteElement = document.getElementById('waveComplete');
+    waveCompleteElement.classList.add('visible');
+    this.isPaused = true;
+  }
+  
+  hideWaveComplete() {
+    const waveCompleteElement = document.getElementById('waveComplete');
+    waveCompleteElement.classList.remove('visible');
   }
 
   update(dt) {
     if (this.isGameOver || this.isPaused) return;
+    
+    // Update wave system
+    this.waveSystem.update(dt);
+    
+    // Update wave banner if active
+    if (this.waveBanner) {
+      this.waveBanner.update(dt);
+      
+      // Check for interaction with projectiles (knock banner around)
+      for (const projectile of this.projectiles) {
+        if (this.waveBanner.containsPoint(projectile.pos.x, projectile.pos.y)) {
+          const forceX = projectile.vel.x * 0.5;
+          const forceY = projectile.vel.y * 0.5;
+          this.waveBanner.applyImpulse(forceX, forceY);
+        }
+      }
+      
+      // Remove banner when expired
+      if (this.waveBanner.isExpired()) {
+        this.waveBanner = null;
+      }
+    }
+    
+    // Check if wave just completed
+    if (this.waveSystem.isWaveComplete()) {
+      this.showWaveComplete();
+      return; // Pause game until player advances
+    }
 
     // Update Geometry Wars renderer if active
     const visualStyleSystem = this.renderSystem.getVisualStyleSystem();
@@ -114,9 +172,9 @@ export class Game {
       }
     }
 
-    // Spawn enemies
+    // Spawn enemies based on wave configuration
     const now = Date.now();
-    if (now - this.lastEnemySpawn > 1000) {
+    if (this.waveSystem.shouldSpawnEnemy(now - this.lastEnemySpawn)) {
       this.lastEnemySpawn = now;
       this.spawnEnemy();
     }
@@ -128,7 +186,7 @@ export class Game {
 
       // Check collision with player
       if (this.collisionSystem.checkPlayerEnemyCollision(this.player, enemy)) {
-        this.health -= 10;
+        this.health -= enemy.damage;
         this.enemies.splice(i, 1);
         
         // Geometry Wars effects on collision
@@ -203,7 +261,10 @@ export class Game {
 
     // Update UI
     this.scoreElement.textContent = this.score.toString();
-    this.healthElement.textContent = this.health.toString();
+    this.healthElement.textContent = Math.max(0, Math.floor(this.health)).toString();
+    this.waveElement.textContent = this.waveSystem.getCurrentWaveNumber().toString();
+    const timeRemaining = Math.ceil(this.waveSystem.getWaveTimeRemaining());
+    this.waveTimeElement.textContent = timeRemaining.toString();
   }
 
   spawnEnemy() {
@@ -224,7 +285,9 @@ export class Game {
       y = this.canvas.height + 20;
     }
 
-    this.enemies.push(new Enemy(x, y));
+    // Get enemy type from wave system
+    const enemyType = this.waveSystem.getRandomEnemyType();
+    this.enemies.push(new Enemy(x, y, enemyType));
   }
 
   shootAtNearestEnemy() {
@@ -262,7 +325,42 @@ export class Game {
     this.renderSystem.drawPlayer(this.player);
     this.renderSystem.drawEnemies(this.enemies);
     this.renderSystem.drawProjectiles(this.projectiles);
+    
+    // Draw wave banner if active
+    if (this.waveBanner) {
+      const ctx = this.canvas.getContext('2d');
+      this.waveBanner.draw(ctx);
+    }
+    
     this.renderSystem.applyPostProcessing();
+  }
+
+  
+  advanceToNextWave() {
+    // Clear enemies and projectiles from previous wave
+    this.enemies = [];
+    this.projectiles = [];
+    
+    // Restore some health as reward
+    this.health = Math.min(this.maxHealth, this.health + 30);
+    
+    // Hide wave complete modal
+    this.hideWaveComplete();
+    
+    // Advance wave system
+    this.waveSystem.advanceToNextWave();
+    
+    // Show new wave banner
+    this.showWaveBanner();
+    
+    // Resume game
+    this.isPaused = false;
+  }
+  
+  restartFromWave1() {
+    // Full restart
+    this.handleRestart();
+    this.hideWaveComplete();
   }
 
   gameLoop = (timestamp) => {

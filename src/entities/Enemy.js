@@ -7,12 +7,45 @@
  * @implements {Square}
  */
 export class Enemy {
-  constructor(x, y) {
+  constructor(x, y, enemyType = null) {
     this.pos = { x, y };
     this.vel = { x: 0, y: 0 };
-    this.size = 15;
-    this.color = '#ff0000';
-    this.health = 1;
+    
+    // Default values
+    const baseHealth = 1;
+    const baseSpeed = 50;
+    const baseSize = 15;
+    const baseDamage = 10;
+    
+    // Apply enemy type modifiers if provided
+    if (enemyType) {
+      this.type = enemyType.type;
+      this.health = baseHealth * enemyType.healthMultiplier;
+      this.maxHealth = this.health;
+      this.speed = baseSpeed * enemyType.speedMultiplier;
+      this.damage = baseDamage * enemyType.damageMultiplier;
+      
+      // Visual differences based on type
+      if (enemyType.type === 'fast') {
+        this.size = baseSize * 0.8;
+        this.color = '#ff6600'; // Orange for fast enemies
+      } else if (enemyType.type === 'tank') {
+        this.size = baseSize * 1.5;
+        this.color = '#cc0000'; // Dark red for tanks
+      } else {
+        this.size = baseSize;
+        this.color = '#ff0000'; // Red for basic
+      }
+    } else {
+      // Legacy: no type specified
+      this.type = 'basic';
+      this.health = baseHealth;
+      this.maxHealth = this.health;
+      this.speed = baseSpeed;
+      this.damage = baseDamage;
+      this.size = baseSize;
+      this.color = '#ff0000';
+    }
   }
 
   update(dt, targetPos) {
@@ -20,9 +53,8 @@ export class Enemy {
     const dy = targetPos.y - this.pos.y;
     const dist = Math.sqrt(dx * dx + dy * dy);
     
-    const speed = 50;
-    this.vel.x = (dx / dist) * speed;
-    this.vel.y = (dy / dist) * speed;
+    this.vel.x = (dx / dist) * this.speed;
+    this.vel.y = (dy / dist) * this.speed;
     
     this.pos.x += this.vel.x * dt;
     this.pos.y += this.vel.y * dt;
