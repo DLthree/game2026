@@ -579,7 +579,28 @@ export class GeometryWarsRenderer {
     ctx.lineJoin = 'round';
     
     // Draw outline based on entity type
-    if (entity.radius !== undefined) {
+    // Check for projectiles FIRST (they have both vel and size)
+    if (entity.vel !== undefined && entity.distanceTraveled !== undefined) {
+      // Triangle (projectile) - must check before size check since projectiles have size too
+      const angle = Math.atan2(entity.vel.y, entity.vel.x);
+      const size = entity.size || 8;
+      
+      ctx.beginPath();
+      ctx.moveTo(
+        entity.pos.x + Math.cos(angle) * size,
+        entity.pos.y + Math.sin(angle) * size
+      );
+      ctx.lineTo(
+        entity.pos.x + Math.cos(angle + 2.4) * size,
+        entity.pos.y + Math.sin(angle + 2.4) * size
+      );
+      ctx.lineTo(
+        entity.pos.x + Math.cos(angle - 2.4) * size,
+        entity.pos.y + Math.sin(angle - 2.4) * size
+      );
+      ctx.closePath();
+      ctx.stroke();
+    } else if (entity.radius !== undefined) {
       // Circle (player)
       ctx.beginPath();
       ctx.arc(entity.pos.x, entity.pos.y, entity.radius, 0, Math.PI * 2);
@@ -602,26 +623,6 @@ export class GeometryWarsRenderer {
       ctx.lineTo(entity.pos.x + size, entity.pos.y + size);
       ctx.moveTo(entity.pos.x + size, entity.pos.y - size);
       ctx.lineTo(entity.pos.x - size, entity.pos.y + size);
-      ctx.stroke();
-    } else if (entity.vel !== undefined) {
-      // Triangle (projectile)
-      const angle = Math.atan2(entity.vel.y, entity.vel.x);
-      const size = entity.size || 8;
-      
-      ctx.beginPath();
-      ctx.moveTo(
-        entity.pos.x + Math.cos(angle) * size,
-        entity.pos.y + Math.sin(angle) * size
-      );
-      ctx.lineTo(
-        entity.pos.x + Math.cos(angle + 2.4) * size,
-        entity.pos.y + Math.sin(angle + 2.4) * size
-      );
-      ctx.lineTo(
-        entity.pos.x + Math.cos(angle - 2.4) * size,
-        entity.pos.y + Math.sin(angle - 2.4) * size
-      );
-      ctx.closePath();
       ctx.stroke();
     }
     
