@@ -29,7 +29,6 @@ import { GeometryWarsRenderer } from './GeometryWarsRenderer.js';
  */
 export const VisualStyle = {
   GEOMETRY_WARS: 0,
-  CLEAN_MINIMAL: 1,
 };
 
 /**
@@ -38,7 +37,6 @@ export const VisualStyle = {
  */
 export const StyleNames = {
   [VisualStyle.GEOMETRY_WARS]: 'Geometry Wars',
-  [VisualStyle.CLEAN_MINIMAL]: 'Clean Minimal',
 };
 
 /**
@@ -49,11 +47,6 @@ export const StyleConfig = {
   [VisualStyle.GEOMETRY_WARS]: {
     useWebGL: true,             // This style requires WebGL for bloom
     useGeometryWarsRenderer: true, // Enable full Geometry Wars renderer
-  },
-  
-  [VisualStyle.CLEAN_MINIMAL]: {
-    contrast: 1.2,              // Color contrast multiplier
-    sharpness: true,            // Disable image smoothing
   },
 };
 
@@ -163,15 +156,10 @@ export class VisualStyleSystem {
   }
   
   /**
-   * Toggle between visual styles
+   * Toggle between visual styles (no-op - only Geometry Wars style is available)
    */
   nextStyle() {
-    // Toggle between Geometry Wars and Clean Minimal
-    if (this.currentStyle === VisualStyle.GEOMETRY_WARS) {
-      this.setStyle(VisualStyle.CLEAN_MINIMAL);
-    } else {
-      this.setStyle(VisualStyle.GEOMETRY_WARS);
-    }
+    // Only Geometry Wars style available, method kept for API compatibility
   }
   
   /**
@@ -189,14 +177,8 @@ export class VisualStyleSystem {
    * Called after scene is drawn to the scene context
    */
   applyPostProcessing() {
-    switch (this.currentStyle) {
-      case VisualStyle.GEOMETRY_WARS:
-        this.applyGeometryWars();
-        break;
-      case VisualStyle.CLEAN_MINIMAL:
-        this.applyCleanMinimal();
-        break;
-    }
+    // Only Geometry Wars style is available
+    this.applyGeometryWars();
   }
   
   /**
@@ -255,103 +237,6 @@ export class VisualStyleSystem {
   }
   
   /**
-   * CLEAN_MINIMAL: High contrast, sharp, no post-processing
-   * 
-   * Process:
-   * - Scene drawn directly to main canvas
-   * - Image smoothing disabled for pixel-perfect rendering
-   * - No additional effects
-   */
-  applyCleanMinimal() {
-    // Scene is already drawn directly to main canvas
-    // No post-processing needed - style is defined by absence of effects
-    this.ctx.imageSmoothingEnabled = false;
-  }
-  
-  /**
-   * GHOST_TRAILS: Motion trails via alpha-faded frame persistence
-   * 
-   * Process:
-   * 1. Capture current frame to trail history
-   * 2. Clear canvas with semi-transparent fill (fade effect)
-   * 3. Draw recent trail frames with decreasing alpha
-   * 4. Draw current frame on top
-   */
-  applyGhostTrails() {
-    const config = StyleConfig[VisualStyle.GHOST_TRAILS];
-    
-    // Capture current frame
-    const frameCanvas = document.createElement('canvas');
-    frameCanvas.width = this.canvas.width;
-    frameCanvas.height = this.canvas.height;
-    const frameCtx = frameCanvas.getContext('2d');
-    frameCtx.drawImage(this.canvas, 0, 0);
-    
-    // Add to trail history
-    this.trailFrames.push(frameCanvas);
-    if (this.trailFrames.length > this.maxTrailFrames) {
-      this.trailFrames.shift();
-    }
-    
-    // Clear with alpha fade
-    this.ctx.fillStyle = `rgba(26, 26, 46, ${config.trailAlpha})`;
-    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-    
-    // Draw trail frames with decreasing alpha
-    for (let i = 0; i < this.trailFrames.length - 1; i++) {
-      const alpha = (i + 1) / this.trailFrames.length * 0.5;
-      this.ctx.globalAlpha = alpha;
-      this.ctx.drawImage(this.trailFrames[i], 0, 0);
-    }
-    
-    // Draw current frame at full opacity
-    this.ctx.globalAlpha = 1;
-    if (this.trailFrames.length > 0) {
-      this.ctx.drawImage(this.trailFrames[this.trailFrames.length - 1], 0, 0);
-    }
-  }
-  
-  /**
-   * CRT_ANALOG: Retro CRT monitor effect with scanlines and vignette
-   * 
-   * Process:
-   * 1. Scene drawn to main canvas
-   * 2. Apply scanline overlay
-   * 3. Apply vignette darkening at edges
-   * 4. Add subtle noise for analog feel
-   */
-  applyCRTAnalog() {
-    const config = StyleConfig[VisualStyle.CRT_ANALOG];
-    
-    // Apply scanlines
-    this.ctx.fillStyle = `rgba(0, 0, 0, ${config.scanlineIntensity})`;
-    for (let y = 0; y < this.canvas.height; y += config.scanlineCount) {
-      this.ctx.fillRect(0, y, this.canvas.width, 1);
-    }
-    
-    // Apply vignette
-    const gradient = this.ctx.createRadialGradient(
-      this.canvas.width / 2, this.canvas.height / 2, 0,
-      this.canvas.width / 2, this.canvas.height / 2, this.canvas.width * 0.7
-    );
-    gradient.addColorStop(0, 'rgba(0, 0, 0, 0)');
-    gradient.addColorStop(1, `rgba(0, 0, 0, ${config.vignetteStrength})`);
-    this.ctx.fillStyle = gradient;
-    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-    
-    // Add noise
-    this.ctx.globalAlpha = config.noiseIntensity;
-    for (let i = 0; i < 100; i++) {
-      const x = Math.random() * this.canvas.width;
-      const y = Math.random() * this.canvas.height;
-      const brightness = Math.random() * 255;
-      this.ctx.fillStyle = `rgb(${brightness}, ${brightness}, ${brightness})`;
-      this.ctx.fillRect(x, y, 1, 1);
-    }
-    this.ctx.globalAlpha = 1;
-  }
-  
-  /**
    * Apply WebGL shader-based style
    * 
    * Process:
@@ -363,8 +248,7 @@ export class VisualStyleSystem {
    */
   applyShaderStyle(style) {
     if (!this.webglSupported) {
-      console.warn('WebGL not supported, falling back to clean minimal style');
-      this.applyCleanMinimal();
+      console.warn('WebGL not supported, bloom effects and advanced visual features will be disabled');
       return;
     }
     
@@ -418,12 +302,8 @@ export class VisualStyleSystem {
    */
   clearScene() {
     const ctx = this.getSceneContext();
-    // Use dark background for all styles, especially Geometry Wars
-    if (this.currentStyle === VisualStyle.GEOMETRY_WARS) {
-      ctx.fillStyle = '#000000'; // Pure black for Geometry Wars
-    } else {
-      ctx.fillStyle = '#1a1a2e'; // Dark blue for other styles
-    }
+    // Pure black background for Geometry Wars
+    ctx.fillStyle = '#000000';
     ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
   }
   

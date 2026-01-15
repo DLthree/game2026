@@ -131,25 +131,6 @@ export class Game {
         }
       }
       
-      // Check for interaction with player ship (knock banner around)
-      if (this.waveBanner.containsPoint(this.player.pos.x, this.player.pos.y)) {
-        // Calculate direction from banner center to player
-        const dx = this.player.pos.x - this.waveBanner.pos.x;
-        const dy = this.player.pos.y - this.waveBanner.pos.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        
-        if (dist > 0) {
-          // Normalize direction
-          const dirX = dx / dist;
-          const dirY = dy / dist;
-          
-          // Apply strong impulse to banner away from player
-          const forceX = dirX * (this.player.vel.x * this.BANNER_BOUNCE_MULTIPLIER + this.BANNER_BASE_PUSH_FORCE);
-          const forceY = dirY * (this.player.vel.y * this.BANNER_BOUNCE_MULTIPLIER + this.BANNER_BASE_PUSH_FORCE);
-          this.waveBanner.applyImpulse(forceX, forceY);
-        }
-      }
-      
       // Remove banner when expired
       if (this.waveBanner.isExpired()) {
         this.waveBanner = null;
@@ -302,7 +283,7 @@ export class Game {
       const dx = currency.pos.x - this.player.pos.x;
       const dy = currency.pos.y - this.player.pos.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
-      const pickupRadius = this.player.size + currency.size;
+      const pickupRadius = this.player.radius + currency.size;
       
       if (dist < pickupRadius) {
         // Pick up currency and add to score
