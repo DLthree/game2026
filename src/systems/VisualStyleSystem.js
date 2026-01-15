@@ -156,10 +156,10 @@ export class VisualStyleSystem {
   }
   
   /**
-   * Toggle between visual styles (no-op since only one style exists)
+   * Toggle between visual styles (no-op - only Geometry Wars style is available)
    */
   nextStyle() {
-    // Only Geometry Wars style available, do nothing
+    // Only Geometry Wars style available, method kept for API compatibility
   }
   
   /**
@@ -248,7 +248,7 @@ export class VisualStyleSystem {
    */
   applyShaderStyle(style) {
     if (!this.webglSupported) {
-      console.warn('WebGL not supported, visual effects will be limited');
+      console.warn('WebGL not supported, bloom effects and advanced visual features will be disabled');
       return;
     }
     
