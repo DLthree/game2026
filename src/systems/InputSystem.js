@@ -179,6 +179,9 @@ export class InputSystem {
   /**
    * Internal helper to calculate velocity from current drag state
    * @private
+   * @param {Vector2} playerPos - Current player position
+   * @param {number} maxSpeed - Maximum player speed
+   * @returns {{ x: number, y: number }|null} - Velocity vector scaled by drag length, or null if below minimum
    */
   _calculateVelocityFromDrag(playerPos, maxSpeed) {
     // Calculate drag vector from player position to current touch position
