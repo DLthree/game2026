@@ -45,15 +45,18 @@ export class SkillTreeUI {
     this.maxAutoCenterScale = 1.0;
     this.currencyPanelHeight = 40;
     
-    // Tooltip size constants
-    this.TOOLTIP_WIDTH = 525; // 50% increase from 350
-    this.TOOLTIP_HEIGHT = 270; // 50% increase from 180
-    this.TOOLTIP_FONT_SIZE_TITLE = 22; // Increased from 16
-    this.TOOLTIP_FONT_SIZE_BODY = 15; // Increased from 12
-    this.TOOLTIP_FONT_SIZE_DETAILS = 13; // Increased from 12
-    this.TOOLTIP_LINE_HEIGHT = 24; // Increased from 18
-    this.TOOLTIP_PADDING = 20; // Increased from 15
-    this.TOOLTIP_MARGIN = 10; // Margin from canvas edge
+    // Tooltip configuration
+    this.tooltipWidth = 525; // 50% increase from 350
+    this.tooltipHeight = 270; // 50% increase from 180
+    this.tooltipFontSizeTitle = 22; // Increased from 16
+    this.tooltipFontSizeBody = 15; // Increased from 12
+    this.tooltipFontSizeDetails = 13; // Increased from 12
+    this.tooltipLineHeight = 24; // Increased from 18
+    this.tooltipPadding = 20; // Increased from 15
+    this.tooltipMargin = 10; // Margin from canvas edge
+    this.tooltipSpacingLarge = 5; // Space after major sections
+    this.tooltipSpacingSmall = 3; // Space after minor sections
+    this.tooltipSpacingPrereq = -2; // Tighter spacing for prerequisite list
     
     this.setupCanvas();
     this.setupEventListeners();
@@ -444,10 +447,10 @@ export class SkillTreeUI {
     const skillState = this.manager.getSkillState(skill.id);
     const canPurchase = this.manager.canPurchaseSkill(skill.id);
     
-    const panelWidth = this.TOOLTIP_WIDTH;
-    const panelHeight = this.TOOLTIP_HEIGHT;
-    const panelX = this.canvas.width - panelWidth - this.TOOLTIP_MARGIN;
-    const panelY = this.currencyPanelHeight + this.TOOLTIP_MARGIN; // Position below currency panel
+    const panelWidth = this.tooltipWidth;
+    const panelHeight = this.tooltipHeight;
+    const panelX = this.canvas.width - panelWidth - this.tooltipMargin;
+    const panelY = this.currencyPanelHeight + this.tooltipMargin;
 
     this.ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
     this.ctx.fillRect(panelX, panelY, panelWidth, panelHeight);
@@ -456,30 +459,33 @@ export class SkillTreeUI {
     this.ctx.lineWidth = 2;
     this.ctx.strokeRect(panelX, panelY, panelWidth, panelHeight);
 
-    let textY = panelY + this.TOOLTIP_PADDING;
-    const textX = panelX + this.TOOLTIP_PADDING;
-    const lineHeight = this.TOOLTIP_LINE_HEIGHT;
+    let textY = panelY + this.tooltipPadding;
+    const textX = panelX + this.tooltipPadding;
+    const lineHeight = this.tooltipLineHeight;
 
+    // Skill name (title)
     this.ctx.fillStyle = '#FFF';
-    this.ctx.font = `bold ${this.TOOLTIP_FONT_SIZE_TITLE}px monospace`;
+    this.ctx.font = `bold ${this.tooltipFontSizeTitle}px monospace`;
     this.ctx.textAlign = 'left';
     this.ctx.fillText(skill.name, textX, textY);
-    textY += lineHeight + 5;
+    textY += lineHeight + this.tooltipSpacingLarge;
 
-    this.ctx.font = `${this.TOOLTIP_FONT_SIZE_BODY}px monospace`;
+    // Skill description (body text)
+    this.ctx.font = `${this.tooltipFontSizeBody}px monospace`;
     this.ctx.fillStyle = '#AAA';
     this.ctx.fillText(skill.description, textX, textY);
-    textY += lineHeight + 5;
+    textY += lineHeight + this.tooltipSpacingLarge;
 
-    this.ctx.font = `${this.TOOLTIP_FONT_SIZE_DETAILS}px monospace`;
+    // Level information
+    this.ctx.font = `${this.tooltipFontSizeDetails}px monospace`;
     this.ctx.fillStyle = '#FFF';
     this.ctx.fillText(`Level: ${skillState.currentLevel}/${skill.maxLevel}`, textX, textY);
-    textY += lineHeight + 3;
+    textY += lineHeight + this.tooltipSpacingSmall;
 
+    // Cost or max level indicator
     if (skillState.currentLevel < skill.maxLevel) {
       const cost = skill.costs[skillState.currentLevel];
       this.ctx.fillStyle = '#FFD700';
-      let costText = 'Cost: ';
       
       const costParts = [];
       for (const [currencyId, amount] of Object.entries(cost)) {
@@ -490,15 +496,16 @@ export class SkillTreeUI {
         costParts.push(`${amount} ${currencyData.name}${hasEnough ? '' : ' ⚠'}`);
       }
       
-      costText += costParts.join(', ');
+      const costText = 'Cost: ' + costParts.join(', ');
       this.ctx.fillText(costText, textX, textY);
-      textY += lineHeight + 5;
+      textY += lineHeight + this.tooltipSpacingLarge;
     } else {
       this.ctx.fillStyle = '#FFD700';
       this.ctx.fillText('MAX LEVEL', textX, textY);
-      textY += lineHeight + 5;
+      textY += lineHeight + this.tooltipSpacingLarge;
     }
 
+    // Prerequisites
     if (skill.prerequisites.length > 0) {
       this.ctx.fillStyle = '#AAA';
       this.ctx.fillText('Prerequisites:', textX, textY);
@@ -511,14 +518,15 @@ export class SkillTreeUI {
         
         this.ctx.fillStyle = met ? '#4CAF50' : '#F44336';
         this.ctx.fillText(`  ${met ? '✓' : '✗'} ${prereqSkill.name}`, textX, textY);
-        textY += lineHeight - 2;
+        textY += lineHeight + this.tooltipSpacingPrereq;
       }
     }
 
+    // Purchase prompt
     if (canPurchase) {
       this.ctx.fillStyle = '#4CAF50';
-      this.ctx.font = `bold ${this.TOOLTIP_FONT_SIZE_DETAILS}px monospace`;
-      const bottomTextY = panelY + panelHeight - this.TOOLTIP_PADDING;
+      this.ctx.font = `bold ${this.tooltipFontSizeDetails}px monospace`;
+      const bottomTextY = panelY + panelHeight - this.tooltipPadding;
       this.ctx.fillText('Double-click to purchase!', textX, bottomTextY);
     }
   }
