@@ -8,6 +8,7 @@ export class Game {
     this.projectiles = [];
     this.currencies = [];
     this.waveBanner = null;
+    this.gridEffects = [];
     
     // Game constants
     this.WAVE_COMPLETE_HEALTH_REWARD = 30;
@@ -16,6 +17,7 @@ export class Game {
     this.BANNER_BOUNCE_MULTIPLIER = 3.0;
     this.BANNER_BASE_PUSH_FORCE = 100;
     this.CURRENCY_PICKUP_RADIUS = 100; // Distance at which currency starts moving towards player
+    this.MAX_GRID_EFFECTS = 10; // Limit for performance
     
     this.score = 0;
     this.health = 100;
@@ -29,7 +31,7 @@ export class Game {
     this.lastTime = 0;
 
     // Initialize systems
-    this.inputSystem = new InputSystem(canvas, () => this.handleRestart());
+    this.inputSystem = new InputSystem(canvas, () => this.handleRestart(), (x, y) => this.createGridEffect(x, y));
     this.collisionSystem = new CollisionSystem();
     this.renderSystem = new RenderSystem(canvas);
     this.waveSystem = new WaveSystem();
@@ -81,6 +83,7 @@ export class Game {
     this.projectiles = [];
     this.currencies = [];
     this.waveBanner = null;
+    this.gridEffects = [];
     this.score = 0;
     this.health = this.maxHealth;
     this.isGameOver = false;
@@ -92,6 +95,25 @@ export class Game {
     // Restart wave system
     this.waveSystem.restart();
     this.showWaveBanner();
+  }
+  
+  createGridEffect(x, y) {
+    // Don't create effects during game over
+    if (this.isGameOver) return;
+    
+    // Limit number of simultaneous effects for performance
+    if (this.gridEffects.length >= this.MAX_GRID_EFFECTS) {
+      this.gridEffects.shift(); // Remove oldest effect
+    }
+    
+    // Create new grid effect
+    this.gridEffects.push({
+      x: x,
+      y: y,
+      age: 0,
+      duration: 0.8, // 0.8 seconds fade duration
+      radius: 120 // 120 pixel radius
+    });
   }
   
   showWaveBanner() {
@@ -117,6 +139,17 @@ export class Game {
     
     // Update wave system
     this.waveSystem.update(dt);
+    
+    // Update grid effects
+    for (let i = this.gridEffects.length - 1; i >= 0; i--) {
+      const effect = this.gridEffects[i];
+      effect.age += dt;
+      
+      // Remove expired effects
+      if (effect.age >= effect.duration) {
+        this.gridEffects.splice(i, 1);
+      }
+    }
     
     // Update wave banner if active
     if (this.waveBanner) {
@@ -381,6 +414,10 @@ export class Game {
 
   draw() {
     this.renderSystem.clear();
+    
+    // Draw grid effects behind everything else
+    this.renderSystem.drawGridEffects(this.gridEffects);
+    
     this.renderSystem.drawPlayer(this.player);
     this.renderSystem.drawEnemies(this.enemies);
     this.renderSystem.drawProjectiles(this.projectiles);
