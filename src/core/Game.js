@@ -96,11 +96,14 @@ export class Game {
 
   handleCurrencyTap(x, y) {
     // Check if tap is on a currency item
+    // Using 10px buffer (matches TAP_THRESHOLD_DISTANCE in InputSystem)
+    const hitBuffer = 10;
+    
     for (let i = this.currencies.length - 1; i >= 0; i--) {
       const currency = this.currencies[i];
       
       // Use Currency's containsPoint method with buffer
-      if (currency.containsPoint(x, y, 10)) {
+      if (currency.containsPoint(x, y, hitBuffer)) {
         // Collect currency immediately
         this.score += currency.amount;
         
