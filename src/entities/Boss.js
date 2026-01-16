@@ -127,7 +127,6 @@ export class Boss {
 
   draw(ctx) {
     this.drawBody(ctx);
-    this.drawDashEffect(ctx);
     this.drawEyes(ctx);
   }
   
@@ -140,9 +139,8 @@ export class Boss {
     ctx.lineTo(this.pos.x - this.size, this.pos.y); // Left
     ctx.closePath();
     ctx.fill();
-  }
-  
-  drawDashEffect(ctx) {
+    
+    // Add dash glow effect
     if (this.isDashing) {
       ctx.strokeStyle = Boss.DASH_COLOR;
       ctx.lineWidth = 4;
