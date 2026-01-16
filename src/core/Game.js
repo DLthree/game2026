@@ -407,6 +407,9 @@ export class Game {
     this.renderSystem.applyPostProcessing();
     
     // Draw drag line AFTER post-processing so it appears on top
+    // Note: We render directly to main canvas here (not via RenderSystem) because
+    // RenderSystem draws to the scene context which gets post-processed. The drag line
+    // needs to appear above all post-processing effects.
     const dragState = this.inputSystem.getDragState();
     if (dragState.active && dragState.currentPos) {
       const dx = dragState.currentPos.x - this.player.pos.x;
