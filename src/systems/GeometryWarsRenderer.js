@@ -573,7 +573,14 @@ export class GeometryWarsRenderer {
     }
     
     ctx.save();
-    ctx.strokeStyle = color;
+    
+    // Check if this is an asteroid enemy and use different color
+    if (entity.type === 'asteroid') {
+      ctx.strokeStyle = '#00ccff'; // Cyan/light blue for asteroids
+    } else {
+      ctx.strokeStyle = color;
+    }
+    
     ctx.lineWidth = this.config.wireframeLineWidth;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
@@ -611,19 +618,43 @@ export class GeometryWarsRenderer {
       ctx.arc(entity.pos.x, entity.pos.y, entity.radius * 0.5, 0, Math.PI * 2);
       ctx.stroke();
     } else if (entity.size !== undefined) {
-      // Square (enemy)
+      // Enemy rendering - different shapes for different types
       const size = entity.size;
-      ctx.beginPath();
-      ctx.rect(entity.pos.x - size, entity.pos.y - size, size * 2, size * 2);
-      ctx.stroke();
       
-      // Add diagonal cross
-      ctx.beginPath();
-      ctx.moveTo(entity.pos.x - size, entity.pos.y - size);
-      ctx.lineTo(entity.pos.x + size, entity.pos.y + size);
-      ctx.moveTo(entity.pos.x + size, entity.pos.y - size);
-      ctx.lineTo(entity.pos.x - size, entity.pos.y + size);
-      ctx.stroke();
+      if (entity.type === 'asteroid') {
+        // Diamond/octagon shape for asteroids (aimless enemies)
+        ctx.beginPath();
+        // Draw a diamond shape
+        ctx.moveTo(entity.pos.x, entity.pos.y - size);
+        ctx.lineTo(entity.pos.x + size, entity.pos.y);
+        ctx.lineTo(entity.pos.x, entity.pos.y + size);
+        ctx.lineTo(entity.pos.x - size, entity.pos.y);
+        ctx.closePath();
+        ctx.stroke();
+        
+        // Add inner diamond detail
+        const innerSize = size * 0.5;
+        ctx.beginPath();
+        ctx.moveTo(entity.pos.x, entity.pos.y - innerSize);
+        ctx.lineTo(entity.pos.x + innerSize, entity.pos.y);
+        ctx.lineTo(entity.pos.x, entity.pos.y + innerSize);
+        ctx.lineTo(entity.pos.x - innerSize, entity.pos.y);
+        ctx.closePath();
+        ctx.stroke();
+      } else {
+        // Square with cross for aggressive enemies (basic, fast, tank)
+        ctx.beginPath();
+        ctx.rect(entity.pos.x - size, entity.pos.y - size, size * 2, size * 2);
+        ctx.stroke();
+        
+        // Add diagonal cross
+        ctx.beginPath();
+        ctx.moveTo(entity.pos.x - size, entity.pos.y - size);
+        ctx.lineTo(entity.pos.x + size, entity.pos.y + size);
+        ctx.moveTo(entity.pos.x + size, entity.pos.y - size);
+        ctx.lineTo(entity.pos.x - size, entity.pos.y + size);
+        ctx.stroke();
+      }
     }
     
     ctx.restore();
