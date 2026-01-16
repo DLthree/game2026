@@ -27,6 +27,8 @@ export class Game {
     this.BANNER_BASE_PUSH_FORCE = 100;
     this.CURRENCY_PICKUP_RADIUS = 100; // Distance at which currency starts moving towards player
     this.MAX_GRID_EFFECTS = 10; // Limit for performance
+    this.GRID_EFFECT_DURATION = 0.8; // Grid fade duration in seconds
+    this.GRID_EFFECT_RADIUS = 120; // Grid effect radius in pixels
     
     this.score = 0;
     this.health = 100;
@@ -120,8 +122,8 @@ export class Game {
       x: x,
       y: y,
       age: 0,
-      duration: 0.8, // 0.8 seconds fade duration
-      radius: 120 // 120 pixel radius
+      duration: this.GRID_EFFECT_DURATION,
+      radius: this.GRID_EFFECT_RADIUS
     });
   }
   
@@ -151,14 +153,11 @@ export class Game {
     
     // Update grid effects
     for (let i = this.gridEffects.length - 1; i >= 0; i--) {
-      const effect = this.gridEffects[i];
-      effect.age += dt;
-      
-      // Remove expired effects
-      if (effect.age >= effect.duration) {
-        this.gridEffects.splice(i, 1);
-      }
+      this.gridEffects[i].age += dt;
     }
+    
+    // Remove expired effects
+    this.gridEffects = this.gridEffects.filter(effect => effect.age < effect.duration);
     
     // Update wave banner if active
     if (this.waveBanner) {

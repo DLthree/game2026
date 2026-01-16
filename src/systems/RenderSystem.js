@@ -10,6 +10,9 @@ export class RenderSystem {
     }
     this.ctx = ctx;
     
+    // Grid effect constants
+    this.GRID_CELL_SIZE = 20; // Size of grid cells in pixels
+    
     // Initialize visual style system
     this.visualStyleSystem = new VisualStyleSystem(canvas);
   }
@@ -78,7 +81,7 @@ export class RenderSystem {
   
   drawGridEffect(ctx, effect) {
     const alpha = 1 - (effect.age / effect.duration);
-    const cellSize = 20;
+    const cellSize = this.GRID_CELL_SIZE;
     const radius = effect.radius;
     
     ctx.save();
