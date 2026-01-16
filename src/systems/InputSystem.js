@@ -3,6 +3,17 @@
  */
 
 export class InputSystem {
+  // Drag configuration constants
+  static MIN_DRAG_DISTANCE = 20; // Minimum drag distance to activate (pixels)
+  static MAX_DRAG_DISTANCE = 150; // Maximum effective drag distance (pixels)
+  static MIN_SPEED_MULTIPLIER = 0.2; // Minimum speed at MIN_DRAG_DISTANCE (20% of max)
+  static MAX_SPEED_MULTIPLIER = 1.0; // Maximum speed at MAX_DRAG_DISTANCE (100% of max)
+  
+  // Drag line visual constants
+  static DRAG_LINE_COLOR = '#00ffff'; // Cyan
+  static DRAG_LINE_WIDTH = 3;
+  static DRAG_LINE_ENDPOINT_RADIUS = 5;
+  
   constructor(canvas, onRestart) {
     this.canvas = canvas;
     this.onRestart = onRestart;
@@ -18,9 +29,6 @@ export class InputSystem {
     };
     // Velocity set by last drag (persists after release)
     this.dragVelocity = null;
-    
-    this.MIN_DRAG_DISTANCE = 20; // Minimum drag distance to activate
-    this.MAX_DRAG_DISTANCE = 150; // Maximum effective drag distance
     
     this.setupListeners();
   }
@@ -120,11 +128,6 @@ export class InputSystem {
     };
   }
 
-  updateTouchPosition(touch) {
-    const pos = this.getTouchCanvasPosition(touch);
-    this.targetPos = { x: pos.x, y: pos.y };
-  }
-
   getMovementVelocity(speed) {
     const vel = { x: 0, y: 0 };
 
@@ -159,33 +162,46 @@ export class InputSystem {
   getDragVelocity(playerPos, maxSpeed) {
     // If actively dragging, calculate real-time velocity
     if (this.dragState.active && this.dragState.startPos && this.dragState.currentPos) {
-      // Calculate drag vector from player position to current touch position
-      const dx = this.dragState.currentPos.x - playerPos.x;
-      const dy = this.dragState.currentPos.y - playerPos.y;
-      const dragLength = Math.sqrt(dx * dx + dy * dy);
+      const velocity = this._calculateVelocityFromDrag(playerPos, maxSpeed);
       
-      // Check minimum drag distance
-      if (dragLength < this.MIN_DRAG_DISTANCE) {
-        return null;
+      // Store velocity for persistence after release
+      if (velocity) {
+        this.dragVelocity = velocity;
       }
       
-      // Calculate velocity based on drag length (capped at MAX_DRAG_DISTANCE)
-      const clampedLength = Math.min(dragLength, this.MAX_DRAG_DISTANCE);
-      const speedMultiplier = clampedLength / this.MAX_DRAG_DISTANCE; // 0 to 1
-      const speed = maxSpeed * (0.2 + speedMultiplier * 0.8); // 20% to 100% of max speed
-      
-      // Normalize direction and apply speed
-      const velX = (dx / dragLength) * speed;
-      const velY = (dy / dragLength) * speed;
-      
-      // Store this as the current drag velocity
-      this.dragVelocity = { x: velX, y: velY };
-      
-      return { x: velX, y: velY };
+      return velocity;
     }
     
     // If not actively dragging, return the persisted velocity from last drag
     return this.dragVelocity;
+  }
+  
+  /**
+   * Internal helper to calculate velocity from current drag state
+   * @private
+   */
+  _calculateVelocityFromDrag(playerPos, maxSpeed) {
+    // Calculate drag vector from player position to current touch position
+    const dx = this.dragState.currentPos.x - playerPos.x;
+    const dy = this.dragState.currentPos.y - playerPos.y;
+    const dragLength = Math.sqrt(dx * dx + dy * dy);
+    
+    // Check minimum drag distance
+    if (dragLength < InputSystem.MIN_DRAG_DISTANCE) {
+      return null;
+    }
+    
+    // Calculate velocity based on drag length (capped at MAX_DRAG_DISTANCE)
+    const clampedLength = Math.min(dragLength, InputSystem.MAX_DRAG_DISTANCE);
+    const normalizedLength = clampedLength / InputSystem.MAX_DRAG_DISTANCE; // 0 to 1
+    const speedRange = InputSystem.MAX_SPEED_MULTIPLIER - InputSystem.MIN_SPEED_MULTIPLIER;
+    const speed = maxSpeed * (InputSystem.MIN_SPEED_MULTIPLIER + normalizedLength * speedRange);
+    
+    // Normalize direction and apply speed
+    const velX = (dx / dragLength) * speed;
+    const velY = (dy / dragLength) * speed;
+    
+    return { x: velX, y: velY };
   }
   
   /**

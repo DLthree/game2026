@@ -411,32 +411,7 @@ export class Game {
     // RenderSystem draws to the scene context which gets post-processed. The drag line
     // needs to appear above all post-processing effects.
     const dragState = this.inputSystem.getDragState();
-    if (dragState.active && dragState.currentPos) {
-      const dx = dragState.currentPos.x - this.player.pos.x;
-      const dy = dragState.currentPos.y - this.player.pos.y;
-      const dragLength = Math.sqrt(dx * dx + dy * dy);
-      
-      // Only draw if drag exceeds minimum distance
-      if (dragLength >= this.inputSystem.MIN_DRAG_DISTANCE) {
-        ctx.save();
-        ctx.strokeStyle = '#00ffff';
-        ctx.lineWidth = 3;
-        ctx.lineCap = 'round';
-        
-        ctx.beginPath();
-        ctx.moveTo(this.player.pos.x, this.player.pos.y);
-        ctx.lineTo(dragState.currentPos.x, dragState.currentPos.y);
-        ctx.stroke();
-        
-        // Draw endpoint circle as indicator
-        ctx.fillStyle = '#00ffff';
-        ctx.beginPath();
-        ctx.arc(dragState.currentPos.x, dragState.currentPos.y, 5, 0, Math.PI * 2);
-        ctx.fill();
-        
-        ctx.restore();
-      }
-    }
+    this.renderSystem.drawDragLine(this.player, dragState, ctx);
     
     // Draw wave banner AFTER post-processing so it appears on top
     if (this.waveBanner) {
