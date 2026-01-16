@@ -97,4 +97,11 @@ export class Currency {
     return this.pos.x < -margin || this.pos.x > width + margin ||
            this.pos.y < -margin || this.pos.y > height + margin;
   }
+
+  containsPoint(x, y, buffer = 10) {
+    const dx = x - this.pos.x;
+    const dy = y - this.pos.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    return dist < this.size + buffer;
+  }
 }

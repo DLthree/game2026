@@ -16,6 +16,7 @@ export class Game {
     this.BANNER_BOUNCE_MULTIPLIER = 3.0;
     this.BANNER_BASE_PUSH_FORCE = 100;
     this.CURRENCY_PICKUP_RADIUS = 100; // Distance at which currency starts moving towards player
+    this.CURRENCY_TAP_BUFFER = 10; // Extra pixels around currency for easier tap targeting
     
     this.score = 0;
     this.health = 100;
@@ -29,7 +30,7 @@ export class Game {
     this.lastTime = 0;
 
     // Initialize systems
-    this.inputSystem = new InputSystem(canvas, () => this.handleRestart());
+    this.inputSystem = new InputSystem(canvas, () => this.handleRestart(), (x, y) => this.handleCurrencyTap(x, y));
     this.collisionSystem = new CollisionSystem();
     this.renderSystem = new RenderSystem(canvas);
     this.waveSystem = new WaveSystem();
@@ -92,6 +93,31 @@ export class Game {
     // Restart wave system
     this.waveSystem.restart();
     this.showWaveBanner();
+  }
+
+  collectCurrency(currency) {
+    // Award currency to player
+    this.score += currency.amount;
+    
+    // Add to skill tree manager if available
+    if (window.skillTreeManager) {
+      window.skillTreeManager.addCurrency(currency.type, currency.amount);
+    }
+  }
+
+  handleCurrencyTap(x, y) {
+    // Check if tap is on a currency item
+    for (let i = this.currencies.length - 1; i >= 0; i--) {
+      const currency = this.currencies[i];
+      
+      // Use Currency's containsPoint method with tap buffer
+      if (currency.containsPoint(x, y, this.CURRENCY_TAP_BUFFER)) {
+        this.collectCurrency(currency);
+        this.currencies.splice(i, 1);
+        return true; // Currency was collected
+      }
+    }
+    return false; // No currency at this position
   }
   
   showWaveBanner() {
@@ -286,14 +312,7 @@ export class Game {
       const pickupRadius = this.player.radius + currency.size;
       
       if (dist < pickupRadius) {
-        // Pick up currency and add to score
-        this.score += currency.amount;
-        
-        // Add to skill tree manager if available
-        if (window.skillTreeManager) {
-          window.skillTreeManager.addCurrency(currency.type, currency.amount);
-        }
-        
+        this.collectCurrency(currency);
         this.currencies.splice(i, 1);
         continue;
       }
