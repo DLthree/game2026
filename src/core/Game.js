@@ -10,6 +10,10 @@ import {
   SPLITTER_CHILD_MAX_SPEED
 } from '../entities/EnemyConfig.js';
 
+/**
+ * @typedef {import('../types/index.js').GridEffect} GridEffect
+ */
+
 export class Game {
   constructor(canvas) {
     this.canvas = canvas;
@@ -108,6 +112,11 @@ export class Game {
     this.showWaveBanner();
   }
   
+  /**
+   * Create a grid lighting effect at the specified position
+   * @param {number} x - X coordinate of the effect center
+   * @param {number} y - Y coordinate of the effect center
+   */
   createGridEffect(x, y) {
     // Don't create effects during game over
     if (this.isGameOver) return;
@@ -119,8 +128,8 @@ export class Game {
     
     // Create new grid effect
     this.gridEffects.push({
-      x: x,
-      y: y,
+      x,
+      y,
       age: 0,
       duration: this.GRID_EFFECT_DURATION,
       radius: this.GRID_EFFECT_RADIUS

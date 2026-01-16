@@ -1,6 +1,10 @@
 import { Player, Enemy, Projectile } from '../entities/index.js';
 import { VisualStyleSystem, VisualStyle } from './VisualStyleSystem.js';
 
+/**
+ * @typedef {import('../types/index.js').GridEffect} GridEffect
+ */
+
 export class RenderSystem {
   constructor(canvas) {
     this.canvas = canvas;
@@ -12,6 +16,7 @@ export class RenderSystem {
     
     // Grid effect constants
     this.GRID_CELL_SIZE = 20; // Size of grid cells in pixels
+    this.GRID_ALPHA_MULTIPLIER = 0.5; // Opacity multiplier for grid lines
     
     // Initialize visual style system
     this.visualStyleSystem = new VisualStyleSystem(canvas);
@@ -71,6 +76,10 @@ export class RenderSystem {
     }
   }
   
+  /**
+   * Draw all active grid lighting effects
+   * @param {GridEffect[]} gridEffects - Array of active grid effects
+   */
   drawGridEffects(gridEffects) {
     const ctx = this.visualStyleSystem.getSceneContext();
     
@@ -79,31 +88,37 @@ export class RenderSystem {
     }
   }
   
+  /**
+   * Draw a single grid lighting effect with optimized batched line drawing
+   * @param {CanvasRenderingContext2D} ctx - Canvas context to draw on
+   * @param {GridEffect} effect - Grid effect to render
+   */
   drawGridEffect(ctx, effect) {
     const alpha = 1 - (effect.age / effect.duration);
     const cellSize = this.GRID_CELL_SIZE;
     const radius = effect.radius;
     
     ctx.save();
-    ctx.strokeStyle = `rgba(0, 200, 255, ${alpha * 0.5})`;
+    ctx.strokeStyle = `rgba(0, 200, 255, ${alpha * this.GRID_ALPHA_MULTIPLIER})`;
     ctx.lineWidth = 1;
+    
+    // Batch all lines into a single path for better performance
+    ctx.beginPath();
     
     // Draw vertical lines
     for (let x = -radius; x <= radius; x += cellSize) {
-      ctx.beginPath();
       ctx.moveTo(effect.x + x, effect.y - radius);
       ctx.lineTo(effect.x + x, effect.y + radius);
-      ctx.stroke();
     }
     
     // Draw horizontal lines
     for (let y = -radius; y <= radius; y += cellSize) {
-      ctx.beginPath();
       ctx.moveTo(effect.x - radius, effect.y + y);
       ctx.lineTo(effect.x + radius, effect.y + y);
-      ctx.stroke();
     }
     
+    // Single stroke call for all lines
+    ctx.stroke();
     ctx.restore();
   }
   
