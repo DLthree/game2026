@@ -18,6 +18,14 @@ export class Enemy {
     const baseSize = 15;
     const baseDamage = 10;
     
+    // Default currency rewards
+    this.currencyRewards = {
+      gold: 10,
+      experience: 5,
+      gemDropRate: 0.1,
+      gemAmount: 1
+    };
+    
     // Apply enemy type modifiers if provided
     if (enemyType) {
       this.type = enemyType.type;
@@ -25,6 +33,11 @@ export class Enemy {
       this.maxHealth = this.health;
       this.speed = baseSpeed * enemyType.speedMultiplier;
       this.damage = baseDamage * enemyType.damageMultiplier;
+      
+      // Store currency rewards from enemy type
+      if (enemyType.currencyRewards) {
+        this.currencyRewards = enemyType.currencyRewards;
+      }
       
       // Visual differences based on type
       if (enemyType.type === 'fast') {

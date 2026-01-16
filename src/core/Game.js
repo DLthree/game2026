@@ -43,6 +43,9 @@ export class Game {
     this.gameOverElement = document.getElementById('gameOver');
     this.waveElement = document.getElementById('wave');
     this.waveTimeElement = document.getElementById('waveTime');
+    this.goldElement = document.getElementById('gold');
+    this.gemsElement = document.getElementById('gems');
+    this.experienceElement = document.getElementById('experience');
 
     // Setup canvas resize
     this.setupResize();
@@ -251,8 +254,23 @@ export class Game {
           if (isDead) {
             this.enemies.splice(j, 1);
             
-            // Drop currency instead of immediately adding score
-            this.currencies.push(new Currency(enemy.pos.x, enemy.pos.y, 10, 'gold'));
+            // Drop gold currency
+            const goldAmount = enemy.currencyRewards.gold;
+            this.currencies.push(new Currency(enemy.pos.x, enemy.pos.y, goldAmount, 'gold'));
+            
+            // Auto-award experience (no pickup required)
+            const experienceAmount = enemy.currencyRewards.experience;
+            this.score += experienceAmount;
+            if (window.skillTreeManager) {
+              window.skillTreeManager.addCurrency('experience', experienceAmount);
+            }
+            
+            // Drop gems based on probability
+            const gemDropRate = enemy.currencyRewards.gemDropRate;
+            const gemAmount = enemy.currencyRewards.gemAmount;
+            if (Math.random() < gemDropRate) {
+              this.currencies.push(new Currency(enemy.pos.x, enemy.pos.y, gemAmount, 'gems'));
+            }
             
             // Geometry Wars effects on kill
             if (isGeometryWars) {
@@ -308,6 +326,13 @@ export class Game {
     this.scoreElement.textContent = this.score.toString();
     this.healthElement.textContent = Math.max(0, Math.floor(this.health)).toString();
     this.waveElement.textContent = this.waveSystem.getCurrentWaveNumber().toString();
+    
+    // Update currency displays from SkillTreeManager
+    if (window.skillTreeManager) {
+      this.goldElement.textContent = window.skillTreeManager.getCurrency('gold').toString();
+      this.gemsElement.textContent = window.skillTreeManager.getCurrency('gems').toString();
+      this.experienceElement.textContent = window.skillTreeManager.getCurrency('experience').toString();
+    }
     
     // Show full duration during banner, countdown during active wave
     let timeRemaining;

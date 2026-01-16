@@ -21,7 +21,13 @@ export const waveData = {
           weight: 1.0,
           healthMultiplier: 1.0,
           speedMultiplier: 0.8,
-          damageMultiplier: 1.0
+          damageMultiplier: 1.0,
+          currencyRewards: {
+            gold: 8,
+            experience: 5,
+            gemDropRate: 0.1,
+            gemAmount: 1
+          }
         }
       ]
     },
@@ -38,7 +44,13 @@ export const waveData = {
           weight: 1.0,
           healthMultiplier: 1.5,
           speedMultiplier: 1.1,
-          damageMultiplier: 1.0
+          damageMultiplier: 1.0,
+          currencyRewards: {
+            gold: 10,
+            experience: 5,
+            gemDropRate: 0.1,
+            gemAmount: 1
+          }
         }
       ]
     },
@@ -55,14 +67,26 @@ export const waveData = {
           weight: 0.7,
           healthMultiplier: 2.0,
           speedMultiplier: 1.2,
-          damageMultiplier: 1.0
+          damageMultiplier: 1.0,
+          currencyRewards: {
+            gold: 10,
+            experience: 5,
+            gemDropRate: 0.1,
+            gemAmount: 1
+          }
         },
         {
           type: 'fast',
           weight: 0.3,
           healthMultiplier: 1.0,
           speedMultiplier: 1.8,
-          damageMultiplier: 1.0
+          damageMultiplier: 1.0,
+          currencyRewards: {
+            gold: 8,
+            experience: 8,
+            gemDropRate: 0.15,
+            gemAmount: 1
+          }
         }
       ]
     },
@@ -79,14 +103,26 @@ export const waveData = {
           weight: 0.6,
           healthMultiplier: 2.5,
           speedMultiplier: 1.3,
-          damageMultiplier: 1.5
+          damageMultiplier: 1.5,
+          currencyRewards: {
+            gold: 10,
+            experience: 5,
+            gemDropRate: 0.1,
+            gemAmount: 1
+          }
         },
         {
           type: 'fast',
           weight: 0.4,
           healthMultiplier: 1.5,
           speedMultiplier: 2.0,
-          damageMultiplier: 1.0
+          damageMultiplier: 1.0,
+          currencyRewards: {
+            gold: 8,
+            experience: 8,
+            gemDropRate: 0.15,
+            gemAmount: 1
+          }
         }
       ]
     },
@@ -103,21 +139,39 @@ export const waveData = {
           weight: 0.5,
           healthMultiplier: 3.0,
           speedMultiplier: 1.4,
-          damageMultiplier: 1.5
+          damageMultiplier: 1.5,
+          currencyRewards: {
+            gold: 10,
+            experience: 5,
+            gemDropRate: 0.1,
+            gemAmount: 1
+          }
         },
         {
           type: 'fast',
           weight: 0.3,
           healthMultiplier: 2.0,
           speedMultiplier: 2.2,
-          damageMultiplier: 1.5
+          damageMultiplier: 1.5,
+          currencyRewards: {
+            gold: 8,
+            experience: 8,
+            gemDropRate: 0.15,
+            gemAmount: 1
+          }
         },
         {
           type: 'tank',
           weight: 0.2,
           healthMultiplier: 5.0,
           speedMultiplier: 0.8,
-          damageMultiplier: 2.0
+          damageMultiplier: 2.0,
+          currencyRewards: {
+            gold: 15,
+            experience: 15,
+            gemDropRate: 0.3,
+            gemAmount: 2
+          }
         }
       ]
     },
@@ -134,21 +188,39 @@ export const waveData = {
           weight: 0.4,
           healthMultiplier: 3.5,
           speedMultiplier: 1.5,
-          damageMultiplier: 2.0
+          damageMultiplier: 2.0,
+          currencyRewards: {
+            gold: 10,
+            experience: 5,
+            gemDropRate: 0.1,
+            gemAmount: 1
+          }
         },
         {
           type: 'fast',
           weight: 0.3,
           healthMultiplier: 2.5,
           speedMultiplier: 2.5,
-          damageMultiplier: 1.5
+          damageMultiplier: 1.5,
+          currencyRewards: {
+            gold: 8,
+            experience: 8,
+            gemDropRate: 0.15,
+            gemAmount: 1
+          }
         },
         {
           type: 'tank',
           weight: 0.3,
           healthMultiplier: 6.0,
           speedMultiplier: 0.9,
-          damageMultiplier: 2.5
+          damageMultiplier: 2.5,
+          currencyRewards: {
+            gold: 15,
+            experience: 15,
+            gemDropRate: 0.3,
+            gemAmount: 2
+          }
         }
       ]
     },
@@ -165,21 +237,39 @@ export const waveData = {
           weight: 0.3,
           healthMultiplier: 4.0,
           speedMultiplier: 1.6,
-          damageMultiplier: 2.0
+          damageMultiplier: 2.0,
+          currencyRewards: {
+            gold: 10,
+            experience: 5,
+            gemDropRate: 0.1,
+            gemAmount: 1
+          }
         },
         {
           type: 'fast',
           weight: 0.3,
           healthMultiplier: 3.0,
           speedMultiplier: 2.8,
-          damageMultiplier: 2.0
+          damageMultiplier: 2.0,
+          currencyRewards: {
+            gold: 8,
+            experience: 8,
+            gemDropRate: 0.15,
+            gemAmount: 1
+          }
         },
         {
           type: 'tank',
           weight: 0.4,
           healthMultiplier: 7.0,
           speedMultiplier: 1.0,
-          damageMultiplier: 3.0
+          damageMultiplier: 3.0,
+          currencyRewards: {
+            gold: 15,
+            experience: 15,
+            gemDropRate: 0.3,
+            gemAmount: 2
+          }
         }
       ]
     },
@@ -196,21 +286,39 @@ export const waveData = {
           weight: 0.25,
           healthMultiplier: 5.0,
           speedMultiplier: 1.7,
-          damageMultiplier: 2.5
+          damageMultiplier: 2.5,
+          currencyRewards: {
+            gold: 10,
+            experience: 5,
+            gemDropRate: 0.1,
+            gemAmount: 1
+          }
         },
         {
           type: 'fast',
           weight: 0.35,
           healthMultiplier: 3.5,
           speedMultiplier: 3.0,
-          damageMultiplier: 2.0
+          damageMultiplier: 2.0,
+          currencyRewards: {
+            gold: 8,
+            experience: 8,
+            gemDropRate: 0.15,
+            gemAmount: 1
+          }
         },
         {
           type: 'tank',
           weight: 0.4,
           healthMultiplier: 8.5,
           speedMultiplier: 1.1,
-          damageMultiplier: 3.5
+          damageMultiplier: 3.5,
+          currencyRewards: {
+            gold: 15,
+            experience: 15,
+            gemDropRate: 0.3,
+            gemAmount: 2
+          }
         }
       ]
     },
@@ -227,21 +335,39 @@ export const waveData = {
           weight: 0.2,
           healthMultiplier: 6.0,
           speedMultiplier: 1.8,
-          damageMultiplier: 3.0
+          damageMultiplier: 3.0,
+          currencyRewards: {
+            gold: 10,
+            experience: 5,
+            gemDropRate: 0.1,
+            gemAmount: 1
+          }
         },
         {
           type: 'fast',
           weight: 0.4,
           healthMultiplier: 4.0,
           speedMultiplier: 3.5,
-          damageMultiplier: 2.5
+          damageMultiplier: 2.5,
+          currencyRewards: {
+            gold: 8,
+            experience: 8,
+            gemDropRate: 0.15,
+            gemAmount: 1
+          }
         },
         {
           type: 'tank',
           weight: 0.4,
           healthMultiplier: 10.0,
           speedMultiplier: 1.2,
-          damageMultiplier: 4.0
+          damageMultiplier: 4.0,
+          currencyRewards: {
+            gold: 15,
+            experience: 15,
+            gemDropRate: 0.3,
+            gemAmount: 2
+          }
         }
       ]
     },
@@ -258,21 +384,39 @@ export const waveData = {
           weight: 0.15,
           healthMultiplier: 7.0,
           speedMultiplier: 2.0,
-          damageMultiplier: 3.5
+          damageMultiplier: 3.5,
+          currencyRewards: {
+            gold: 10,
+            experience: 5,
+            gemDropRate: 0.1,
+            gemAmount: 1
+          }
         },
         {
           type: 'fast',
           weight: 0.35,
           healthMultiplier: 5.0,
           speedMultiplier: 4.0,
-          damageMultiplier: 3.0
+          damageMultiplier: 3.0,
+          currencyRewards: {
+            gold: 8,
+            experience: 8,
+            gemDropRate: 0.15,
+            gemAmount: 1
+          }
         },
         {
           type: 'tank',
           weight: 0.5,
           healthMultiplier: 12.0,
           speedMultiplier: 1.3,
-          damageMultiplier: 5.0
+          damageMultiplier: 5.0,
+          currencyRewards: {
+            gold: 15,
+            experience: 15,
+            gemDropRate: 0.3,
+            gemAmount: 2
+          }
         }
       ]
     }

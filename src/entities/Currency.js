@@ -15,7 +15,18 @@ export class Currency {
     this.size = 8;
     this.lifetime = 10.0; // seconds before disappearing
     this.age = 0;
-    this.color = this.type === 'gold' ? '#FFD700' : '#FF69B4';
+    
+    // Set color based on type (matching skillTreeData.js)
+    if (type === 'gold') {
+      this.color = '#FFD700'; // Gold
+    } else if (type === 'gems') {
+      this.color = '#FF69B4'; // Pink
+    } else if (type === 'experience') {
+      this.color = '#00CED1'; // Cyan
+    } else {
+      this.color = '#FFFFFF'; // White fallback
+    }
+    
     this.friction = 0.95;
     this.magneticPullForce = 400; // Base force for pulling currency towards player
   }
@@ -58,32 +69,55 @@ export class Currency {
     
     ctx.save();
     ctx.globalAlpha = opacity;
-    
-    // Draw star shape for currency
     ctx.fillStyle = this.color;
     ctx.strokeStyle = this.color;
     ctx.lineWidth = 2;
     
-    const spikes = 5;
-    const outerRadius = this.size;
-    const innerRadius = this.size * 0.5;
-    
-    ctx.beginPath();
-    for (let i = 0; i < spikes * 2; i++) {
-      const radius = i % 2 === 0 ? outerRadius : innerRadius;
-      const angle = (Math.PI / spikes) * i;
-      const x = this.pos.x + Math.cos(angle) * radius;
-      const y = this.pos.y + Math.sin(angle) * radius;
+    if (this.type === 'gold') {
+      // Draw star shape for gold
+      const spikes = 5;
+      const outerRadius = this.size;
+      const innerRadius = this.size * 0.5;
       
-      if (i === 0) {
-        ctx.moveTo(x, y);
-      } else {
-        ctx.lineTo(x, y);
+      ctx.beginPath();
+      for (let i = 0; i < spikes * 2; i++) {
+        const radius = i % 2 === 0 ? outerRadius : innerRadius;
+        const angle = (Math.PI / spikes) * i;
+        const x = this.pos.x + Math.cos(angle) * radius;
+        const y = this.pos.y + Math.sin(angle) * radius;
+        
+        if (i === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
       }
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+    } else if (this.type === 'gems') {
+      // Draw diamond shape for gems
+      ctx.beginPath();
+      ctx.moveTo(this.pos.x, this.pos.y - this.size);
+      ctx.lineTo(this.pos.x + this.size * 0.6, this.pos.y);
+      ctx.lineTo(this.pos.x, this.pos.y + this.size);
+      ctx.lineTo(this.pos.x - this.size * 0.6, this.pos.y);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+    } else if (this.type === 'experience') {
+      // Draw circle/orb for experience
+      ctx.beginPath();
+      ctx.arc(this.pos.x, this.pos.y, this.size, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      
+      // Add inner glow effect
+      ctx.globalAlpha = opacity * 0.5;
+      ctx.beginPath();
+      ctx.arc(this.pos.x, this.pos.y, this.size * 0.6, 0, Math.PI * 2);
+      ctx.fill();
     }
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
     
     ctx.restore();
   }
