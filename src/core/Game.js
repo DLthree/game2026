@@ -259,6 +259,7 @@ export class Game {
             this.currencies.push(new Currency(enemy.pos.x, enemy.pos.y, goldAmount, 'gold'));
             
             // Auto-award experience (no pickup required)
+            // Score tracks total points from all sources including experience
             const experienceAmount = enemy.currencyRewards.experience;
             this.score += experienceAmount;
             if (window.skillTreeManager) {

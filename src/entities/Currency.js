@@ -117,6 +117,7 @@ export class Currency {
       ctx.beginPath();
       ctx.arc(this.pos.x, this.pos.y, this.size * 0.6, 0, Math.PI * 2);
       ctx.fill();
+      ctx.globalAlpha = opacity;
     }
     
     ctx.restore();
