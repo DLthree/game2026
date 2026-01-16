@@ -68,6 +68,42 @@ export class RenderSystem {
     }
   }
   
+  drawGridEffects(gridEffects) {
+    const ctx = this.visualStyleSystem.getSceneContext();
+    
+    for (const effect of gridEffects) {
+      this.drawGridEffect(ctx, effect);
+    }
+  }
+  
+  drawGridEffect(ctx, effect) {
+    const alpha = 1 - (effect.age / effect.duration);
+    const cellSize = 20;
+    const radius = effect.radius;
+    
+    ctx.save();
+    ctx.strokeStyle = `rgba(0, 200, 255, ${alpha * 0.5})`;
+    ctx.lineWidth = 1;
+    
+    // Draw vertical lines
+    for (let x = -radius; x <= radius; x += cellSize) {
+      ctx.beginPath();
+      ctx.moveTo(effect.x + x, effect.y - radius);
+      ctx.lineTo(effect.x + x, effect.y + radius);
+      ctx.stroke();
+    }
+    
+    // Draw horizontal lines
+    for (let y = -radius; y <= radius; y += cellSize) {
+      ctx.beginPath();
+      ctx.moveTo(effect.x - radius, effect.y + y);
+      ctx.lineTo(effect.x + radius, effect.y + y);
+      ctx.stroke();
+    }
+    
+    ctx.restore();
+  }
+  
   /**
    * Apply post-processing effects based on current visual style
    * Should be called after all entities are drawn
