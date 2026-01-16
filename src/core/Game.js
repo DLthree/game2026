@@ -1,5 +1,6 @@
 import { Player, Enemy, Projectile, WaveBanner, Currency } from '../entities/index.js';
 import { InputSystem, CollisionSystem, RenderSystem, VisualStyle, WaveSystem } from '../systems/index.js';
+import { DEFAULT_CURRENCY_REWARDS } from '../data/currencyConfig.js';
 
 export class Game {
   constructor(canvas) {
@@ -43,6 +44,9 @@ export class Game {
     this.gameOverElement = document.getElementById('gameOver');
     this.waveElement = document.getElementById('wave');
     this.waveTimeElement = document.getElementById('waveTime');
+    this.goldElement = document.getElementById('gold');
+    this.gemsElement = document.getElementById('gems');
+    this.experienceElement = document.getElementById('experience');
 
     // Setup canvas resize
     this.setupResize();
@@ -251,8 +255,27 @@ export class Game {
           if (isDead) {
             this.enemies.splice(j, 1);
             
-            // Drop currency instead of immediately adding score
-            this.currencies.push(new Currency(enemy.pos.x, enemy.pos.y, 10, 'gold'));
+            // Get currency rewards with fallback to default values
+            const rewards = enemy.currencyRewards || DEFAULT_CURRENCY_REWARDS;
+            
+            // Drop gold currency
+            const goldAmount = rewards.gold || DEFAULT_CURRENCY_REWARDS.gold;
+            this.currencies.push(new Currency(enemy.pos.x, enemy.pos.y, goldAmount, 'gold'));
+            
+            // Auto-award experience (no pickup required)
+            // Score tracks total points from all sources including experience
+            const experienceAmount = rewards.experience || DEFAULT_CURRENCY_REWARDS.experience;
+            this.score += experienceAmount;
+            if (window.skillTreeManager) {
+              window.skillTreeManager.addCurrency('experience', experienceAmount);
+            }
+            
+            // Drop gems based on probability
+            const gemDropRate = rewards.gemDropRate || DEFAULT_CURRENCY_REWARDS.gemDropRate;
+            const gemAmount = rewards.gemAmount || DEFAULT_CURRENCY_REWARDS.gemAmount;
+            if (Math.random() < gemDropRate) {
+              this.currencies.push(new Currency(enemy.pos.x, enemy.pos.y, gemAmount, 'gems'));
+            }
             
             // Geometry Wars effects on kill
             if (isGeometryWars) {
@@ -308,6 +331,19 @@ export class Game {
     this.scoreElement.textContent = this.score.toString();
     this.healthElement.textContent = Math.max(0, Math.floor(this.health)).toString();
     this.waveElement.textContent = this.waveSystem.getCurrentWaveNumber().toString();
+    
+    // Update currency displays from SkillTreeManager
+    if (window.skillTreeManager) {
+      if (this.goldElement) {
+        this.goldElement.textContent = window.skillTreeManager.getCurrency('gold').toString();
+      }
+      if (this.gemsElement) {
+        this.gemsElement.textContent = window.skillTreeManager.getCurrency('gems').toString();
+      }
+      if (this.experienceElement) {
+        this.experienceElement.textContent = window.skillTreeManager.getCurrency('experience').toString();
+      }
+    }
     
     // Show full duration during banner, countdown during active wave
     let timeRemaining;

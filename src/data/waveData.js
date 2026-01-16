@@ -7,6 +7,11 @@
  * - Enemy strength multipliers
  */
 
+import { DEFAULT_CURRENCY_REWARDS_BY_TYPE } from './currencyConfig.js';
+
+// Use centralized currency rewards configuration
+const DEFAULT_CURRENCY_REWARDS = DEFAULT_CURRENCY_REWARDS_BY_TYPE;
+
 export const waveData = {
   waves: [
     // Wave 1 - Tutorial
@@ -21,7 +26,8 @@ export const waveData = {
           weight: 1.0,
           healthMultiplier: 1.0,
           speedMultiplier: 0.8,
-          damageMultiplier: 1.0
+          damageMultiplier: 1.0,
+          currencyRewards: DEFAULT_CURRENCY_REWARDS.asteroid
         }
       ]
     },
@@ -38,7 +44,8 @@ export const waveData = {
           weight: 1.0,
           healthMultiplier: 1.5,
           speedMultiplier: 1.1,
-          damageMultiplier: 1.0
+          damageMultiplier: 1.0,
+          currencyRewards: DEFAULT_CURRENCY_REWARDS.basic
         }
       ]
     },
@@ -55,14 +62,16 @@ export const waveData = {
           weight: 0.7,
           healthMultiplier: 2.0,
           speedMultiplier: 1.2,
-          damageMultiplier: 1.0
+          damageMultiplier: 1.0,
+          currencyRewards: DEFAULT_CURRENCY_REWARDS.basic
         },
         {
           type: 'fast',
           weight: 0.3,
           healthMultiplier: 1.0,
           speedMultiplier: 1.8,
-          damageMultiplier: 1.0
+          damageMultiplier: 1.0,
+          currencyRewards: DEFAULT_CURRENCY_REWARDS.fast
         }
       ]
     },
@@ -79,14 +88,16 @@ export const waveData = {
           weight: 0.6,
           healthMultiplier: 2.5,
           speedMultiplier: 1.3,
-          damageMultiplier: 1.5
+          damageMultiplier: 1.5,
+          currencyRewards: DEFAULT_CURRENCY_REWARDS.basic
         },
         {
           type: 'fast',
           weight: 0.4,
           healthMultiplier: 1.5,
           speedMultiplier: 2.0,
-          damageMultiplier: 1.0
+          damageMultiplier: 1.0,
+          currencyRewards: DEFAULT_CURRENCY_REWARDS.fast
         }
       ]
     },
@@ -103,21 +114,24 @@ export const waveData = {
           weight: 0.5,
           healthMultiplier: 3.0,
           speedMultiplier: 1.4,
-          damageMultiplier: 1.5
+          damageMultiplier: 1.5,
+          currencyRewards: DEFAULT_CURRENCY_REWARDS.basic
         },
         {
           type: 'fast',
           weight: 0.3,
           healthMultiplier: 2.0,
           speedMultiplier: 2.2,
-          damageMultiplier: 1.5
+          damageMultiplier: 1.5,
+          currencyRewards: DEFAULT_CURRENCY_REWARDS.fast
         },
         {
           type: 'tank',
           weight: 0.2,
           healthMultiplier: 5.0,
           speedMultiplier: 0.8,
-          damageMultiplier: 2.0
+          damageMultiplier: 2.0,
+          currencyRewards: DEFAULT_CURRENCY_REWARDS.tank
         }
       ]
     },
@@ -134,21 +148,24 @@ export const waveData = {
           weight: 0.4,
           healthMultiplier: 3.5,
           speedMultiplier: 1.5,
-          damageMultiplier: 2.0
+          damageMultiplier: 2.0,
+          currencyRewards: DEFAULT_CURRENCY_REWARDS.basic
         },
         {
           type: 'fast',
           weight: 0.3,
           healthMultiplier: 2.5,
           speedMultiplier: 2.5,
-          damageMultiplier: 1.5
+          damageMultiplier: 1.5,
+          currencyRewards: DEFAULT_CURRENCY_REWARDS.fast
         },
         {
           type: 'tank',
           weight: 0.3,
           healthMultiplier: 6.0,
           speedMultiplier: 0.9,
-          damageMultiplier: 2.5
+          damageMultiplier: 2.5,
+          currencyRewards: DEFAULT_CURRENCY_REWARDS.tank
         }
       ]
     },
@@ -165,21 +182,24 @@ export const waveData = {
           weight: 0.3,
           healthMultiplier: 4.0,
           speedMultiplier: 1.6,
-          damageMultiplier: 2.0
+          damageMultiplier: 2.0,
+          currencyRewards: DEFAULT_CURRENCY_REWARDS.basic
         },
         {
           type: 'fast',
           weight: 0.3,
           healthMultiplier: 3.0,
           speedMultiplier: 2.8,
-          damageMultiplier: 2.0
+          damageMultiplier: 2.0,
+          currencyRewards: DEFAULT_CURRENCY_REWARDS.fast
         },
         {
           type: 'tank',
           weight: 0.4,
           healthMultiplier: 7.0,
           speedMultiplier: 1.0,
-          damageMultiplier: 3.0
+          damageMultiplier: 3.0,
+          currencyRewards: DEFAULT_CURRENCY_REWARDS.tank
         }
       ]
     },
@@ -196,21 +216,24 @@ export const waveData = {
           weight: 0.25,
           healthMultiplier: 5.0,
           speedMultiplier: 1.7,
-          damageMultiplier: 2.5
+          damageMultiplier: 2.5,
+          currencyRewards: DEFAULT_CURRENCY_REWARDS.basic
         },
         {
           type: 'fast',
           weight: 0.35,
           healthMultiplier: 3.5,
           speedMultiplier: 3.0,
-          damageMultiplier: 2.0
+          damageMultiplier: 2.0,
+          currencyRewards: DEFAULT_CURRENCY_REWARDS.fast
         },
         {
           type: 'tank',
           weight: 0.4,
           healthMultiplier: 8.5,
           speedMultiplier: 1.1,
-          damageMultiplier: 3.5
+          damageMultiplier: 3.5,
+          currencyRewards: DEFAULT_CURRENCY_REWARDS.tank
         }
       ]
     },
@@ -227,21 +250,24 @@ export const waveData = {
           weight: 0.2,
           healthMultiplier: 6.0,
           speedMultiplier: 1.8,
-          damageMultiplier: 3.0
+          damageMultiplier: 3.0,
+          currencyRewards: DEFAULT_CURRENCY_REWARDS.basic
         },
         {
           type: 'fast',
           weight: 0.4,
           healthMultiplier: 4.0,
           speedMultiplier: 3.5,
-          damageMultiplier: 2.5
+          damageMultiplier: 2.5,
+          currencyRewards: DEFAULT_CURRENCY_REWARDS.fast
         },
         {
           type: 'tank',
           weight: 0.4,
           healthMultiplier: 10.0,
           speedMultiplier: 1.2,
-          damageMultiplier: 4.0
+          damageMultiplier: 4.0,
+          currencyRewards: DEFAULT_CURRENCY_REWARDS.tank
         }
       ]
     },
@@ -258,21 +284,24 @@ export const waveData = {
           weight: 0.15,
           healthMultiplier: 7.0,
           speedMultiplier: 2.0,
-          damageMultiplier: 3.5
+          damageMultiplier: 3.5,
+          currencyRewards: DEFAULT_CURRENCY_REWARDS.basic
         },
         {
           type: 'fast',
           weight: 0.35,
           healthMultiplier: 5.0,
           speedMultiplier: 4.0,
-          damageMultiplier: 3.0
+          damageMultiplier: 3.0,
+          currencyRewards: DEFAULT_CURRENCY_REWARDS.fast
         },
         {
           type: 'tank',
           weight: 0.5,
           healthMultiplier: 12.0,
           speedMultiplier: 1.3,
-          damageMultiplier: 5.0
+          damageMultiplier: 5.0,
+          currencyRewards: DEFAULT_CURRENCY_REWARDS.tank
         }
       ]
     }

@@ -3,6 +3,16 @@
  * Dropped by enemies and needs to be picked up by the player
  */
 
+import { CURRENCY_COLORS } from '../data/currencyConfig.js';
+
+const SHAPE_CONSTANTS = {
+  STAR_SPIKES: 5,
+  STAR_INNER_RADIUS_RATIO: 0.5,
+  DIAMOND_WIDTH_RATIO: 0.6,
+  ORB_INNER_GLOW_RATIO: 0.6,
+  ORB_GLOW_OPACITY: 0.5
+};
+
 export class Currency {
   constructor(x, y, amount = 10, type = 'gold') {
     this.pos = { x, y };
@@ -15,7 +25,7 @@ export class Currency {
     this.size = 8;
     this.lifetime = 10.0; // seconds before disappearing
     this.age = 0;
-    this.color = this.type === 'gold' ? '#FFD700' : '#FF69B4';
+    this.color = CURRENCY_COLORS[type] || '#FFFFFF'; // White fallback for unknown types
     this.friction = 0.95;
     this.magneticPullForce = 400; // Base force for pulling currency towards player
   }
@@ -58,15 +68,26 @@ export class Currency {
     
     ctx.save();
     ctx.globalAlpha = opacity;
-    
-    // Draw star shape for currency
     ctx.fillStyle = this.color;
     ctx.strokeStyle = this.color;
     ctx.lineWidth = 2;
     
-    const spikes = 5;
+    // Delegate to type-specific drawing method
+    if (this.type === 'gold') {
+      this.drawStar(ctx);
+    } else if (this.type === 'gems') {
+      this.drawDiamond(ctx);
+    } else if (this.type === 'experience') {
+      this.drawOrb(ctx, opacity);
+    }
+    
+    ctx.restore();
+  }
+
+  drawStar(ctx) {
+    const spikes = SHAPE_CONSTANTS.STAR_SPIKES;
     const outerRadius = this.size;
-    const innerRadius = this.size * 0.5;
+    const innerRadius = this.size * SHAPE_CONSTANTS.STAR_INNER_RADIUS_RATIO;
     
     ctx.beginPath();
     for (let i = 0; i < spikes * 2; i++) {
@@ -84,8 +105,35 @@ export class Currency {
     ctx.closePath();
     ctx.fill();
     ctx.stroke();
+  }
+
+  drawDiamond(ctx) {
+    const width = this.size * SHAPE_CONSTANTS.DIAMOND_WIDTH_RATIO;
     
-    ctx.restore();
+    ctx.beginPath();
+    ctx.moveTo(this.pos.x, this.pos.y - this.size);
+    ctx.lineTo(this.pos.x + width, this.pos.y);
+    ctx.lineTo(this.pos.x, this.pos.y + this.size);
+    ctx.lineTo(this.pos.x - width, this.pos.y);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+  }
+
+  drawOrb(ctx, opacity) {
+    // Draw outer circle
+    ctx.beginPath();
+    ctx.arc(this.pos.x, this.pos.y, this.size, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    
+    // Add inner glow effect
+    const innerRadius = this.size * SHAPE_CONSTANTS.ORB_INNER_GLOW_RATIO;
+    ctx.globalAlpha = opacity * SHAPE_CONSTANTS.ORB_GLOW_OPACITY;
+    ctx.beginPath();
+    ctx.arc(this.pos.x, this.pos.y, innerRadius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = opacity;
   }
 
   isExpired() {

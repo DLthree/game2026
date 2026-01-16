@@ -3,6 +3,8 @@
  * @typedef {import('../types/index.js').Vector2} Vector2
  */
 
+import { DEFAULT_CURRENCY_REWARDS } from '../data/currencyConfig.js';
+
 /**
  * @implements {Square}
  */
@@ -25,6 +27,9 @@ export class Enemy {
       this.maxHealth = this.health;
       this.speed = baseSpeed * enemyType.speedMultiplier;
       this.damage = baseDamage * enemyType.damageMultiplier;
+      
+      // Store currency rewards from enemy type (with validation)
+      this.currencyRewards = enemyType.currencyRewards || DEFAULT_CURRENCY_REWARDS;
       
       // Visual differences based on type
       if (enemyType.type === 'fast') {
@@ -64,6 +69,7 @@ export class Enemy {
       this.damage = baseDamage;
       this.size = baseSize;
       this.color = '#ff0000';
+      this.currencyRewards = DEFAULT_CURRENCY_REWARDS;
     }
   }
 
