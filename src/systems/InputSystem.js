@@ -12,7 +12,7 @@ export class InputSystem {
     this.targetPos = null;
     this.touchStartPos = null;
     this.touchStartTime = 0;
-    this.TAP_THRESHOLD_DISTANCE = 10; // Maximum distance for tap vs drag (also used as currency hit buffer)
+    this.TAP_THRESHOLD_DISTANCE = 10; // Maximum distance for tap vs drag
     this.TAP_THRESHOLD_TIME = 300; // Maximum time in ms for tap
     this.setupListeners();
   }

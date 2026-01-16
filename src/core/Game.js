@@ -16,6 +16,7 @@ export class Game {
     this.BANNER_BOUNCE_MULTIPLIER = 3.0;
     this.BANNER_BASE_PUSH_FORCE = 100;
     this.CURRENCY_PICKUP_RADIUS = 100; // Distance at which currency starts moving towards player
+    this.CURRENCY_TAP_BUFFER = 10; // Extra pixels around currency for easier tap targeting
     
     this.score = 0;
     this.health = 100;
@@ -96,14 +97,11 @@ export class Game {
 
   handleCurrencyTap(x, y) {
     // Check if tap is on a currency item
-    // Using 10px buffer (matches TAP_THRESHOLD_DISTANCE in InputSystem)
-    const hitBuffer = 10;
-    
     for (let i = this.currencies.length - 1; i >= 0; i--) {
       const currency = this.currencies[i];
       
-      // Use Currency's containsPoint method with buffer
-      if (currency.containsPoint(x, y, hitBuffer)) {
+      // Use Currency's containsPoint method with tap buffer
+      if (currency.containsPoint(x, y, this.CURRENCY_TAP_BUFFER)) {
         // Collect currency immediately
         this.score += currency.amount;
         
