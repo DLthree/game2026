@@ -49,6 +49,18 @@ export class Game {
     this.bossHealthContainer = document.getElementById('bossHealthContainer');
     this.bossHealthBar = document.getElementById('bossHealthBar');
     this.bossHealthText = document.getElementById('bossHealthText');
+    
+    // Setup event delegation for victory buttons
+    this.gameOverElement.addEventListener('click', (e) => {
+      if (e.target.id === 'victorySkillTreeButton') {
+        const skillTreeContainer = document.getElementById('skillTreeContainer');
+        if (skillTreeContainer) {
+          skillTreeContainer.classList.add('visible');
+        }
+      } else if (e.target.id === 'victoryRestartButton') {
+        this.handleRestart();
+      }
+    });
 
     // Setup canvas resize
     this.setupResize();
@@ -338,10 +350,9 @@ export class Game {
           // Boss defeated! Award big rewards
           this.currencies.push(new Currency(this.boss.pos.x, this.boss.pos.y, 500, 'gold'));
           
-          // Add gems and experience if skill tree manager is available
+          // Add gems if skill tree manager is available
           if (window.skillTreeManager) {
             window.skillTreeManager.addCurrency('gems', 20);
-            window.skillTreeManager.addExperience(100);
           }
           
           // Geometry Wars effects on boss kill
@@ -491,13 +502,12 @@ export class Game {
     this.renderSystem.drawEnemies(this.enemies);
     this.renderSystem.drawProjectiles(this.projectiles);
     
-    // Draw boss if active
+    // Draw boss and currencies before post-processing
     const ctx = this.canvas.getContext('2d');
     if (this.boss) {
       this.boss.draw(ctx);
     }
     
-    // Draw currencies before post-processing
     for (const currency of this.currencies) {
       currency.draw(ctx);
     }
@@ -589,25 +599,6 @@ export class Game {
       </div>
     `;
     this.gameOverElement.style.display = 'block';
-    
-    // Add event listeners to new buttons
-    const victorySkillTreeButton = document.getElementById('victorySkillTreeButton');
-    const victoryRestartButton = document.getElementById('victoryRestartButton');
-    
-    if (victorySkillTreeButton) {
-      victorySkillTreeButton.addEventListener('click', () => {
-        const skillTreeContainer = document.getElementById('skillTreeContainer');
-        if (skillTreeContainer) {
-          skillTreeContainer.classList.add('visible');
-        }
-      });
-    }
-    
-    if (victoryRestartButton) {
-      victoryRestartButton.addEventListener('click', () => {
-        this.handleRestart();
-      });
-    }
   }
   
   skipTime(seconds) {

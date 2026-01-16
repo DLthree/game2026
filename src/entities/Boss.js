@@ -1,18 +1,22 @@
 /**
  * @typedef {import('../types/index.js').Vector2} Vector2
+ * @typedef {import('../types/index.js').Square} Square
  */
 
 /**
  * Boss Entity - Final boss for Wave 10
  * Features: High health, unique appearance, dash attack pattern
+ * @implements {Square}
  */
 export class Boss {
   constructor(x, y) {
     this.pos = { x, y };
     this.vel = { x: 0, y: 0 };
     
-    // Boss properties - 10x tank health (tank has healthMultiplier of 12 at wave 10)
-    const tankBaseHealth = 1 * 12; // Tank at wave 10
+    // Boss properties - 10x tank health
+    // Tank enemy base health is 1, with multipliers applied by wave config
+    // Wave 10 tanks would have ~12 health, so boss has 120
+    const tankBaseHealth = 12;
     this.health = tankBaseHealth * 10;
     this.maxHealth = this.health;
     this.speed = 40; // Slower than regular enemies
