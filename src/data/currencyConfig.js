@@ -13,10 +13,34 @@ export const CURRENCY_COLORS = {
   experience: skillTreeData.currencies.experience.color
 };
 
-// Default currency rewards for fallback scenarios
-export const DEFAULT_CURRENCY_REWARDS = {
-  gold: 10,
-  experience: 5,
-  gemDropRate: 0.1,
-  gemAmount: 1
+// Default currency rewards by enemy type
+export const DEFAULT_CURRENCY_REWARDS_BY_TYPE = {
+  asteroid: {
+    gold: 8,
+    experience: 5,
+    gemDropRate: 0.1,
+    gemAmount: 1
+  },
+  basic: {
+    gold: 10,
+    experience: 5,
+    gemDropRate: 0.1,
+    gemAmount: 1
+  },
+  fast: {
+    gold: 8,
+    experience: 8,
+    gemDropRate: 0.15,
+    gemAmount: 1
+  },
+  tank: {
+    gold: 15,
+    experience: 15,
+    gemDropRate: 0.3,
+    gemAmount: 2
+  }
 };
+
+// Generic fallback for unknown types
+export const DEFAULT_CURRENCY_REWARDS = DEFAULT_CURRENCY_REWARDS_BY_TYPE.basic;
+

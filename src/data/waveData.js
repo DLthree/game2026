@@ -7,33 +7,10 @@
  * - Enemy strength multipliers
  */
 
-// Default currency rewards by enemy type
-const DEFAULT_CURRENCY_REWARDS = {
-  asteroid: {
-    gold: 8,
-    experience: 5,
-    gemDropRate: 0.1,
-    gemAmount: 1
-  },
-  basic: {
-    gold: 10,
-    experience: 5,
-    gemDropRate: 0.1,
-    gemAmount: 1
-  },
-  fast: {
-    gold: 8,
-    experience: 8,
-    gemDropRate: 0.15,
-    gemAmount: 1
-  },
-  tank: {
-    gold: 15,
-    experience: 15,
-    gemDropRate: 0.3,
-    gemAmount: 2
-  }
-};
+import { DEFAULT_CURRENCY_REWARDS_BY_TYPE } from './currencyConfig.js';
+
+// Use centralized currency rewards configuration
+const DEFAULT_CURRENCY_REWARDS = DEFAULT_CURRENCY_REWARDS_BY_TYPE;
 
 export const waveData = {
   waves: [
