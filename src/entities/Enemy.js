@@ -3,6 +3,8 @@
  * @typedef {import('../types/index.js').Vector2} Vector2
  */
 
+import { DEFAULT_CURRENCY_REWARDS } from '../data/currencyConfig.js';
+
 /**
  * @implements {Square}
  */
@@ -27,12 +29,7 @@ export class Enemy {
       this.damage = baseDamage * enemyType.damageMultiplier;
       
       // Store currency rewards from enemy type (with validation)
-      this.currencyRewards = enemyType.currencyRewards || {
-        gold: 10,
-        experience: 5,
-        gemDropRate: 0.1,
-        gemAmount: 1
-      };
+      this.currencyRewards = enemyType.currencyRewards || DEFAULT_CURRENCY_REWARDS;
       
       // Visual differences based on type
       if (enemyType.type === 'fast') {
@@ -72,12 +69,7 @@ export class Enemy {
       this.damage = baseDamage;
       this.size = baseSize;
       this.color = '#ff0000';
-      this.currencyRewards = {
-        gold: 10,
-        experience: 5,
-        gemDropRate: 0.1,
-        gemAmount: 1
-      };
+      this.currencyRewards = DEFAULT_CURRENCY_REWARDS;
     }
   }
 

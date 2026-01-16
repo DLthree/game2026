@@ -1,5 +1,6 @@
 import { Player, Enemy, Projectile, WaveBanner, Currency } from '../entities/index.js';
 import { InputSystem, CollisionSystem, RenderSystem, VisualStyle, WaveSystem } from '../systems/index.js';
+import { DEFAULT_CURRENCY_REWARDS } from '../data/currencyConfig.js';
 
 export class Game {
   constructor(canvas) {
@@ -254,29 +255,24 @@ export class Game {
           if (isDead) {
             this.enemies.splice(j, 1);
             
-            // Get currency rewards with fallback values
-            const rewards = enemy.currencyRewards || {
-              gold: 10,
-              experience: 5,
-              gemDropRate: 0.1,
-              gemAmount: 1
-            };
+            // Get currency rewards with fallback to default values
+            const rewards = enemy.currencyRewards || DEFAULT_CURRENCY_REWARDS;
             
             // Drop gold currency
-            const goldAmount = rewards.gold || 10;
+            const goldAmount = rewards.gold || DEFAULT_CURRENCY_REWARDS.gold;
             this.currencies.push(new Currency(enemy.pos.x, enemy.pos.y, goldAmount, 'gold'));
             
             // Auto-award experience (no pickup required)
             // Score tracks total points from all sources including experience
-            const experienceAmount = rewards.experience || 5;
+            const experienceAmount = rewards.experience || DEFAULT_CURRENCY_REWARDS.experience;
             this.score += experienceAmount;
             if (window.skillTreeManager) {
               window.skillTreeManager.addCurrency('experience', experienceAmount);
             }
             
             // Drop gems based on probability
-            const gemDropRate = rewards.gemDropRate || 0.1;
-            const gemAmount = rewards.gemAmount || 1;
+            const gemDropRate = rewards.gemDropRate || DEFAULT_CURRENCY_REWARDS.gemDropRate;
+            const gemAmount = rewards.gemAmount || DEFAULT_CURRENCY_REWARDS.gemAmount;
             if (Math.random() < gemDropRate) {
               this.currencies.push(new Currency(enemy.pos.x, enemy.pos.y, gemAmount, 'gems'));
             }

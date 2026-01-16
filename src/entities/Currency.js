@@ -3,12 +3,7 @@
  * Dropped by enemies and needs to be picked up by the player
  */
 
-// Currency visual constants (matching skillTreeData.js)
-const CURRENCY_COLORS = {
-  gold: '#FFD700',
-  gems: '#FF69B4',
-  experience: '#00CED1'
-};
+import { CURRENCY_COLORS } from '../data/currencyConfig.js';
 
 const SHAPE_CONSTANTS = {
   STAR_SPIKES: 5,
