@@ -95,6 +95,16 @@ export class Game {
     this.showWaveBanner();
   }
 
+  collectCurrency(currency) {
+    // Award currency to player
+    this.score += currency.amount;
+    
+    // Add to skill tree manager if available
+    if (window.skillTreeManager) {
+      window.skillTreeManager.addCurrency(currency.type, currency.amount);
+    }
+  }
+
   handleCurrencyTap(x, y) {
     // Check if tap is on a currency item
     for (let i = this.currencies.length - 1; i >= 0; i--) {
@@ -102,15 +112,7 @@ export class Game {
       
       // Use Currency's containsPoint method with tap buffer
       if (currency.containsPoint(x, y, this.CURRENCY_TAP_BUFFER)) {
-        // Collect currency immediately
-        this.score += currency.amount;
-        
-        // Add to skill tree manager if available
-        if (window.skillTreeManager) {
-          window.skillTreeManager.addCurrency(currency.type, currency.amount);
-        }
-        
-        // Remove currency
+        this.collectCurrency(currency);
         this.currencies.splice(i, 1);
         return true; // Currency was collected
       }
@@ -310,14 +312,7 @@ export class Game {
       const pickupRadius = this.player.radius + currency.size;
       
       if (dist < pickupRadius) {
-        // Pick up currency and add to score
-        this.score += currency.amount;
-        
-        // Add to skill tree manager if available
-        if (window.skillTreeManager) {
-          window.skillTreeManager.addCurrency(currency.type, currency.amount);
-        }
-        
+        this.collectCurrency(currency);
         this.currencies.splice(i, 1);
         continue;
       }

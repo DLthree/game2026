@@ -59,12 +59,13 @@ export class InputSystem {
         this.onRestart();
       }
       const touch = e.touches[0];
-      const rect = this.canvas.getBoundingClientRect();
-      const touchX = (touch.clientX - rect.left) * (this.canvas.width / rect.width);
-      const touchY = (touch.clientY - rect.top) * (this.canvas.height / rect.height);
       
       // Store touch start info for tap detection
-      this.touchStartPos = { x: touchX, y: touchY };
+      const rect = this.canvas.getBoundingClientRect();
+      this.touchStartPos = {
+        x: (touch.clientX - rect.left) * (this.canvas.width / rect.width),
+        y: (touch.clientY - rect.top) * (this.canvas.height / rect.height)
+      };
       this.touchStartTime = Date.now();
       
       this.updateTouchPosition(touch);
