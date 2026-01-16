@@ -3,12 +3,17 @@
  */
 
 export class InputSystem {
-  constructor(canvas, onRestart) {
+  constructor(canvas, onRestart, onCurrencyTap) {
     this.canvas = canvas;
     this.onRestart = onRestart;
+    this.onCurrencyTap = onCurrencyTap;
     this.keys = { w: false, a: false, s: false, d: false };
     this.mouse = { x: 0, y: 0, down: false };
     this.targetPos = null;
+    this.touchStartPos = null;
+    this.touchStartTime = 0;
+    this.TAP_THRESHOLD_DISTANCE = 10; // Maximum distance for tap vs drag
+    this.TAP_THRESHOLD_TIME = 300; // Maximum time in ms for tap
     this.setupListeners();
   }
 
@@ -31,6 +36,12 @@ export class InputSystem {
       }
       this.mouse.down = true;
       this.updateMousePosition(e);
+      
+      // Try to collect currency on click
+      if (this.onCurrencyTap && this.onCurrencyTap(this.mouse.x, this.mouse.y)) {
+        // Currency was collected, don't set as movement target
+        return;
+      }
     });
 
     this.canvas.addEventListener('mousemove', (e) => {
@@ -48,6 +59,14 @@ export class InputSystem {
         this.onRestart();
       }
       const touch = e.touches[0];
+      const rect = this.canvas.getBoundingClientRect();
+      const touchX = (touch.clientX - rect.left) * (this.canvas.width / rect.width);
+      const touchY = (touch.clientY - rect.top) * (this.canvas.height / rect.height);
+      
+      // Store touch start info for tap detection
+      this.touchStartPos = { x: touchX, y: touchY };
+      this.touchStartTime = Date.now();
+      
       this.updateTouchPosition(touch);
     }, { passive: false });
 
@@ -59,7 +78,28 @@ export class InputSystem {
 
     this.canvas.addEventListener('touchend', (e) => {
       e.preventDefault();
+      
+      // Check if this was a tap (not a drag)
+      if (this.touchStartPos && this.onCurrencyTap) {
+        const touchDuration = Date.now() - this.touchStartTime;
+        const rect = this.canvas.getBoundingClientRect();
+        
+        // Get end position (use last known targetPos or touchStartPos)
+        const endX = this.targetPos ? this.targetPos.x : this.touchStartPos.x;
+        const endY = this.targetPos ? this.targetPos.y : this.touchStartPos.y;
+        
+        const dx = endX - this.touchStartPos.x;
+        const dy = endY - this.touchStartPos.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        
+        // If it was a quick tap with minimal movement, try to collect currency
+        if (touchDuration < this.TAP_THRESHOLD_TIME && dist < this.TAP_THRESHOLD_DISTANCE) {
+          this.onCurrencyTap(this.touchStartPos.x, this.touchStartPos.y);
+        }
+      }
+      
       this.targetPos = null;
+      this.touchStartPos = null;
     }, { passive: false });
   }
 

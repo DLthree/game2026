@@ -29,7 +29,7 @@ export class Game {
     this.lastTime = 0;
 
     // Initialize systems
-    this.inputSystem = new InputSystem(canvas, () => this.handleRestart());
+    this.inputSystem = new InputSystem(canvas, () => this.handleRestart(), (x, y) => this.handleCurrencyTap(x, y));
     this.collisionSystem = new CollisionSystem();
     this.renderSystem = new RenderSystem(canvas);
     this.waveSystem = new WaveSystem();
@@ -92,6 +92,62 @@ export class Game {
     // Restart wave system
     this.waveSystem.restart();
     this.showWaveBanner();
+  }
+
+  handleCurrencyTap(x, y) {
+    // Check if tap is on a currency item
+    for (let i = this.currencies.length - 1; i >= 0; i--) {
+      const currency = this.currencies[i];
+      
+      // Use Currency's containsPoint method with buffer
+      if (currency.containsPoint(x, y, 10)) {
+        // Collect currency immediately
+        this.score += currency.amount;
+        
+        // Add to skill tree manager if available
+        if (window.skillTreeManager) {
+          window.skillTreeManager.addCurrency(currency.type, currency.amount);
+        }
+        
+        // Add visual feedback with brief flash
+        this.flashCurrencyCollection(currency.pos.x, currency.pos.y);
+        
+        // Remove currency
+        this.currencies.splice(i, 1);
+        return true; // Currency was collected
+      }
+    }
+    return false; // No currency at this position
+  }
+
+  flashCurrencyCollection(x, y) {
+    // Simple visual feedback - add a temporary flash particle
+    // This creates a brief expanding circle at collection point
+    const ctx = this.canvas.getContext('2d');
+    const startTime = Date.now();
+    const duration = 200; // 200ms flash duration
+    
+    const drawFlash = () => {
+      const elapsed = Date.now() - startTime;
+      if (elapsed >= duration) return;
+      
+      const progress = elapsed / duration;
+      const radius = 15 * (1 + progress);
+      const opacity = 1 - progress;
+      
+      ctx.save();
+      ctx.globalAlpha = opacity;
+      ctx.strokeStyle = '#FFD700';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(x, y, radius, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+      
+      requestAnimationFrame(drawFlash);
+    };
+    
+    drawFlash();
   }
   
   showWaveBanner() {
