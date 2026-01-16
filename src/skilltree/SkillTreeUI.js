@@ -53,6 +53,7 @@ export class SkillTreeUI {
     this.TOOLTIP_FONT_SIZE_DETAILS = 13; // Increased from 12
     this.TOOLTIP_LINE_HEIGHT = 24; // Increased from 18
     this.TOOLTIP_PADDING = 20; // Increased from 15
+    this.TOOLTIP_MARGIN = 10; // Margin from canvas edge
     
     this.setupCanvas();
     this.setupEventListeners();
@@ -445,8 +446,8 @@ export class SkillTreeUI {
     
     const panelWidth = this.TOOLTIP_WIDTH;
     const panelHeight = this.TOOLTIP_HEIGHT;
-    const panelX = this.canvas.width - panelWidth - 10;
-    const panelY = this.currencyPanelHeight + 10; // Position below currency panel
+    const panelX = this.canvas.width - panelWidth - this.TOOLTIP_MARGIN;
+    const panelY = this.currencyPanelHeight + this.TOOLTIP_MARGIN; // Position below currency panel
 
     this.ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
     this.ctx.fillRect(panelX, panelY, panelWidth, panelHeight);
@@ -517,7 +518,8 @@ export class SkillTreeUI {
     if (canPurchase) {
       this.ctx.fillStyle = '#4CAF50';
       this.ctx.font = `bold ${this.TOOLTIP_FONT_SIZE_DETAILS}px monospace`;
-      this.ctx.fillText('Double-click to purchase!', textX, panelY + panelHeight - this.TOOLTIP_PADDING);
+      const bottomTextY = panelY + panelHeight - this.TOOLTIP_PADDING;
+      this.ctx.fillText('Double-click to purchase!', textX, bottomTextY);
     }
   }
 
