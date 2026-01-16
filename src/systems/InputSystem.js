@@ -82,15 +82,15 @@ export class InputSystem {
       // Check if this was a tap (not a drag)
       if (this.touchStartPos && this.onCurrencyTap) {
         const touchDuration = Date.now() - this.touchStartTime;
-        const rect = this.canvas.getBoundingClientRect();
         
-        // Get end position (use last known targetPos or touchStartPos)
-        const endX = this.targetPos ? this.targetPos.x : this.touchStartPos.x;
-        const endY = this.targetPos ? this.targetPos.y : this.touchStartPos.y;
-        
-        const dx = endX - this.touchStartPos.x;
-        const dy = endY - this.touchStartPos.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
+        // Calculate distance moved during touch
+        // If targetPos is set, it means touchmove was called
+        let dist = 0;
+        if (this.targetPos) {
+          const dx = this.targetPos.x - this.touchStartPos.x;
+          const dy = this.targetPos.y - this.touchStartPos.y;
+          dist = Math.sqrt(dx * dx + dy * dy);
+        }
         
         // If it was a quick tap with minimal movement, try to collect currency
         if (touchDuration < this.TAP_THRESHOLD_TIME && dist < this.TAP_THRESHOLD_DISTANCE) {

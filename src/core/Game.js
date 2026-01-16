@@ -109,45 +109,12 @@ export class Game {
           window.skillTreeManager.addCurrency(currency.type, currency.amount);
         }
         
-        // Add visual feedback with brief flash
-        this.flashCurrencyCollection(currency.pos.x, currency.pos.y);
-        
         // Remove currency
         this.currencies.splice(i, 1);
         return true; // Currency was collected
       }
     }
     return false; // No currency at this position
-  }
-
-  flashCurrencyCollection(x, y) {
-    // Simple visual feedback - add a temporary flash particle
-    // This creates a brief expanding circle at collection point
-    const ctx = this.canvas.getContext('2d');
-    const startTime = Date.now();
-    const duration = 200; // 200ms flash duration
-    
-    const drawFlash = () => {
-      const elapsed = Date.now() - startTime;
-      if (elapsed >= duration) return;
-      
-      const progress = elapsed / duration;
-      const radius = 15 * (1 + progress);
-      const opacity = 1 - progress;
-      
-      ctx.save();
-      ctx.globalAlpha = opacity;
-      ctx.strokeStyle = '#FFD700';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.arc(x, y, radius, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.restore();
-      
-      requestAnimationFrame(drawFlash);
-    };
-    
-    drawFlash();
   }
   
   showWaveBanner() {
