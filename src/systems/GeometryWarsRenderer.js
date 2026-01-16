@@ -618,13 +618,12 @@ export class GeometryWarsRenderer {
       ctx.arc(entity.pos.x, entity.pos.y, entity.radius * 0.5, 0, Math.PI * 2);
       ctx.stroke();
     } else if (entity.size !== undefined) {
-      // Enemy rendering - different shapes for different types
+      // Enemy - check for shape property
       const size = entity.size;
       
-      if (entity.type === 'asteroid') {
-        // Diamond/octagon shape for asteroids (aimless enemies)
+      if (entity.shape === 'diamond' || entity.type === 'asteroid') {
+        // Diamond shape for splitter and asteroid
         ctx.beginPath();
-        // Draw a diamond shape
         ctx.moveTo(entity.pos.x, entity.pos.y - size);
         ctx.lineTo(entity.pos.x + size, entity.pos.y);
         ctx.lineTo(entity.pos.x, entity.pos.y + size);
@@ -632,7 +631,7 @@ export class GeometryWarsRenderer {
         ctx.closePath();
         ctx.stroke();
         
-        // Add inner diamond detail
+        // Add inner diamond
         const innerSize = size * 0.5;
         ctx.beginPath();
         ctx.moveTo(entity.pos.x, entity.pos.y - innerSize);
@@ -641,8 +640,47 @@ export class GeometryWarsRenderer {
         ctx.lineTo(entity.pos.x - innerSize, entity.pos.y);
         ctx.closePath();
         ctx.stroke();
+      } else if (entity.shape === 'circle') {
+        // Circle shape for bomber
+        const pulseScale = entity.pulseTimer ? 1.0 + Math.sin(entity.pulseTimer * 6) * 0.15 : 1.0;
+        const radius = size * pulseScale;
+        
+        ctx.beginPath();
+        ctx.arc(entity.pos.x, entity.pos.y, radius, 0, Math.PI * 2);
+        ctx.stroke();
+        
+        // Add pulse ring
+        if (entity.pulseTimer) {
+          const ringScale = 1.0 + Math.sin(entity.pulseTimer * 6) * 0.3;
+          ctx.globalAlpha = 0.5;
+          ctx.beginPath();
+          ctx.arc(entity.pos.x, entity.pos.y, size * ringScale, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.globalAlpha = 1.0;
+        }
+      } else if (entity.shape === 'triangle') {
+        // Triangle shape for teleporter (pointing up)
+        ctx.globalAlpha = entity.fadeAlpha !== undefined ? entity.fadeAlpha : 1.0;
+        
+        ctx.beginPath();
+        ctx.moveTo(entity.pos.x, entity.pos.y - size);
+        ctx.lineTo(entity.pos.x + size, entity.pos.y + size);
+        ctx.lineTo(entity.pos.x - size, entity.pos.y + size);
+        ctx.closePath();
+        ctx.stroke();
+        
+        // Add inner triangle
+        const innerSize = size * 0.5;
+        ctx.beginPath();
+        ctx.moveTo(entity.pos.x, entity.pos.y - innerSize);
+        ctx.lineTo(entity.pos.x + innerSize, entity.pos.y + innerSize);
+        ctx.lineTo(entity.pos.x - innerSize, entity.pos.y + innerSize);
+        ctx.closePath();
+        ctx.stroke();
+        
+        ctx.globalAlpha = 1.0;
       } else {
-        // Square with cross for aggressive enemies (basic, fast, tank)
+        // Square (default for basic, fast, tank)
         ctx.beginPath();
         ctx.rect(entity.pos.x - size, entity.pos.y - size, size * 2, size * 2);
         ctx.stroke();
