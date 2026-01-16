@@ -199,4 +199,12 @@ export class WaveSystem {
   isGameComplete() {
     return this.state === WaveState.GAME_COMPLETE;
   }
+  
+  /**
+   * Check if current wave is a boss wave
+   */
+  isBossWave() {
+    const wave = this.getCurrentWave();
+    return wave && wave.isBossWave === true;
+  }
 }

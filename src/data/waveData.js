@@ -410,9 +410,10 @@ export const waveData = {
     // Wave 10 - Final Boss
     {
       id: 10,
-      name: "Wave 10 - FINAL",
-      duration: 60,
-      spawnInterval: 400,
+      name: "Wave 10 - FINAL BOSS",
+      duration: 120,
+      isBossWave: true,
+      spawnInterval: 2000,
       enemyTypes: [
         {
           type: 'asteroid',
@@ -423,45 +424,17 @@ export const waveData = {
         },
         {
           type: 'basic',
-          weight: 0.1,
-          healthMultiplier: 7.0,
-          speedMultiplier: 2.0,
-          damageMultiplier: 3.5
+          weight: 0.3,
+          healthMultiplier: 4.0,
+          speedMultiplier: 1.5,
+          damageMultiplier: 2.0
         },
         {
           type: 'fast',
-          weight: 0.3,
-          healthMultiplier: 5.0,
-          speedMultiplier: 4.0,
-          damageMultiplier: 3.0
-        },
-        {
-          type: 'tank',
-          weight: 0.4,
-          healthMultiplier: 12.0,
-          speedMultiplier: 1.3,
-          damageMultiplier: 5.0
-        },
-        {
-          type: 'splitter',
-          weight: 0.1,
-          healthMultiplier: 6.0,
-          speedMultiplier: 1.5,
-          damageMultiplier: 3.0
-        },
-        {
-          type: 'bomber',
-          weight: 0.05,
-          healthMultiplier: 4.0,
-          speedMultiplier: 1.1,
-          damageMultiplier: 3.0
-        },
-        {
-          type: 'teleporter',
-          weight: 0.05,
-          healthMultiplier: 4.0,
-          speedMultiplier: 1.4,
-          damageMultiplier: 3.5
+          weight: 0.7,
+          healthMultiplier: 3.0,
+          speedMultiplier: 2.5,
+          damageMultiplier: 1.5
         }
       ]
     }
