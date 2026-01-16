@@ -45,6 +45,15 @@ export class SkillTreeUI {
     this.maxAutoCenterScale = 1.0;
     this.currencyPanelHeight = 40;
     
+    // Tooltip size constants
+    this.TOOLTIP_WIDTH = 525; // 50% increase from 350
+    this.TOOLTIP_HEIGHT = 270; // 50% increase from 180
+    this.TOOLTIP_FONT_SIZE_TITLE = 22; // Increased from 16
+    this.TOOLTIP_FONT_SIZE_BODY = 15; // Increased from 12
+    this.TOOLTIP_FONT_SIZE_DETAILS = 13; // Increased from 12
+    this.TOOLTIP_LINE_HEIGHT = 24; // Increased from 18
+    this.TOOLTIP_PADDING = 20; // Increased from 15
+    
     this.setupCanvas();
     this.setupEventListeners();
   }
@@ -434,10 +443,10 @@ export class SkillTreeUI {
     const skillState = this.manager.getSkillState(skill.id);
     const canPurchase = this.manager.canPurchaseSkill(skill.id);
     
-    const panelWidth = 350;
-    const panelHeight = 180;
+    const panelWidth = this.TOOLTIP_WIDTH;
+    const panelHeight = this.TOOLTIP_HEIGHT;
     const panelX = this.canvas.width - panelWidth - 10;
-    const panelY = 50;
+    const panelY = this.currencyPanelHeight + 10; // Position below currency panel
 
     this.ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
     this.ctx.fillRect(panelX, panelY, panelWidth, panelHeight);
@@ -446,21 +455,22 @@ export class SkillTreeUI {
     this.ctx.lineWidth = 2;
     this.ctx.strokeRect(panelX, panelY, panelWidth, panelHeight);
 
-    let textY = panelY + 20;
-    const textX = panelX + 15;
-    const lineHeight = 18;
+    let textY = panelY + this.TOOLTIP_PADDING;
+    const textX = panelX + this.TOOLTIP_PADDING;
+    const lineHeight = this.TOOLTIP_LINE_HEIGHT;
 
     this.ctx.fillStyle = '#FFF';
-    this.ctx.font = 'bold 16px monospace';
+    this.ctx.font = `bold ${this.TOOLTIP_FONT_SIZE_TITLE}px monospace`;
     this.ctx.textAlign = 'left';
     this.ctx.fillText(skill.name, textX, textY);
     textY += lineHeight + 5;
 
-    this.ctx.font = '12px monospace';
+    this.ctx.font = `${this.TOOLTIP_FONT_SIZE_BODY}px monospace`;
     this.ctx.fillStyle = '#AAA';
     this.ctx.fillText(skill.description, textX, textY);
     textY += lineHeight + 5;
 
+    this.ctx.font = `${this.TOOLTIP_FONT_SIZE_DETAILS}px monospace`;
     this.ctx.fillStyle = '#FFF';
     this.ctx.fillText(`Level: ${skillState.currentLevel}/${skill.maxLevel}`, textX, textY);
     textY += lineHeight + 3;
@@ -506,8 +516,8 @@ export class SkillTreeUI {
 
     if (canPurchase) {
       this.ctx.fillStyle = '#4CAF50';
-      this.ctx.font = 'bold 12px monospace';
-      this.ctx.fillText('Double-click to purchase!', textX, panelY + panelHeight - 15);
+      this.ctx.font = `bold ${this.TOOLTIP_FONT_SIZE_DETAILS}px monospace`;
+      this.ctx.fillText('Double-click to purchase!', textX, panelY + panelHeight - this.TOOLTIP_PADDING);
     }
   }
 
