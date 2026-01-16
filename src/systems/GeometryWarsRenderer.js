@@ -635,7 +635,8 @@ export class GeometryWarsRenderer {
         ctx.stroke();
       } else if (entity.shape === 'circle') {
         // Circle shape for bomber
-        const pulseScale = entity.pulseTimer ? 1.0 + Math.sin(entity.pulseTimer * 6) * 0.15 : 1.0;
+        const pulseValue = entity.pulseTimer ? Math.sin(entity.pulseTimer * 6) : 0;
+        const pulseScale = 1.0 + pulseValue * 0.15;
         const radius = size * pulseScale;
         
         ctx.beginPath();
@@ -644,7 +645,7 @@ export class GeometryWarsRenderer {
         
         // Add pulse ring
         if (entity.pulseTimer) {
-          const ringScale = 1.0 + Math.sin(entity.pulseTimer * 6) * 0.3;
+          const ringScale = 1.0 + pulseValue * 0.3;
           ctx.globalAlpha = 0.5;
           ctx.beginPath();
           ctx.arc(entity.pos.x, entity.pos.y, size * ringScale, 0, Math.PI * 2);
