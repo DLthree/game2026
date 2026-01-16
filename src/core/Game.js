@@ -1,5 +1,14 @@
 import { Player, Enemy, Projectile, WaveBanner, Currency } from '../entities/index.js';
 import { InputSystem, CollisionSystem, RenderSystem, VisualStyle, WaveSystem } from '../systems/index.js';
+import { 
+  SPLITTER_MIN_CHILDREN, 
+  SPLITTER_MAX_CHILDREN,
+  SPLITTER_CHILD_HEALTH_MULTIPLIER,
+  SPLITTER_CHILD_SPEED_MULTIPLIER,
+  SPLITTER_CHILD_DAMAGE_MULTIPLIER,
+  SPLITTER_CHILD_MIN_SPEED,
+  SPLITTER_CHILD_MAX_SPEED
+} from '../entities/EnemyConfig.js';
 
 export class Game {
   constructor(canvas) {
@@ -467,18 +476,19 @@ export class Game {
     
     // Handle splitter enemy - split into smaller enemies
     if (enemy.splitOnDeath) {
-      const childCount = 2 + Math.floor(Math.random() * 2); // 2-3 children
+      const childCount = SPLITTER_MIN_CHILDREN + Math.floor(Math.random() * (SPLITTER_MAX_CHILDREN - SPLITTER_MIN_CHILDREN + 1));
+      
       for (let i = 0; i < childCount; i++) {
         const angle = (Math.PI * 2 / childCount) * i + Math.random() * 0.5;
         const childEnemy = new Enemy(enemy.pos.x, enemy.pos.y, {
           type: 'splitter_child',
-          healthMultiplier: 0.5,
-          speedMultiplier: 1.2,
-          damageMultiplier: 0.5
+          healthMultiplier: SPLITTER_CHILD_HEALTH_MULTIPLIER,
+          speedMultiplier: SPLITTER_CHILD_SPEED_MULTIPLIER,
+          damageMultiplier: SPLITTER_CHILD_DAMAGE_MULTIPLIER
         });
         
         // Give children random outward velocity
-        const speed = 100 + Math.random() * 50;
+        const speed = SPLITTER_CHILD_MIN_SPEED + Math.random() * (SPLITTER_CHILD_MAX_SPEED - SPLITTER_CHILD_MIN_SPEED);
         childEnemy.vel.x = Math.cos(angle) * speed;
         childEnemy.vel.y = Math.sin(angle) * speed;
         

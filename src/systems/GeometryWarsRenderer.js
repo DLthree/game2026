@@ -14,6 +14,8 @@
  * All effects are procedural - no sprite assets required.
  */
 
+import { BOMBER_PULSE_FREQUENCY, BOMBER_PULSE_SCALE, BOMBER_RING_SCALE } from '../entities/EnemyConfig.js';
+
 /**
  * Configuration for Geometry Wars visual effects
  */
@@ -642,8 +644,8 @@ export class GeometryWarsRenderer {
         ctx.stroke();
       } else if (entity.shape === 'circle') {
         // Circle shape for bomber
-        const pulseValue = entity.pulseTimer ? Math.sin(entity.pulseTimer * 6) : 0;
-        const pulseScale = 1.0 + pulseValue * 0.15;
+        const pulseValue = entity.pulseTimer ? Math.sin(entity.pulseTimer * BOMBER_PULSE_FREQUENCY) : 0;
+        const pulseScale = 1.0 + pulseValue * BOMBER_PULSE_SCALE;
         const radius = size * pulseScale;
         
         ctx.beginPath();
@@ -652,7 +654,7 @@ export class GeometryWarsRenderer {
         
         // Add pulse ring
         if (entity.pulseTimer) {
-          const ringScale = 1.0 + pulseValue * 0.3;
+          const ringScale = 1.0 + pulseValue * BOMBER_RING_SCALE;
           ctx.globalAlpha = 0.5;
           ctx.beginPath();
           ctx.arc(entity.pos.x, entity.pos.y, size * ringScale, 0, Math.PI * 2);
