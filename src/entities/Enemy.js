@@ -57,6 +57,11 @@ export class Enemy {
         this.color = '#9c27b0'; // Purple for splitters
         this.shape = 'diamond';
         this.splitOnDeath = true;
+      } else if (enemyType.type === 'splitter_child') {
+        this.size = baseSize * 0.66; // 60% of parent splitter size
+        this.color = '#9c27b0'; // Purple for splitter children
+        this.shape = 'diamond';
+        this.splitOnDeath = false; // Children don't split
       } else if (enemyType.type === 'bomber') {
         this.size = baseSize * 0.9;
         this.color = '#ff9800'; // Orange for bombers
@@ -176,7 +181,8 @@ export class Enemy {
       ctx.fill();
     } else if (this.shape === 'circle') {
       // Draw circle with pulse effect (bomber)
-      const pulseScale = this.pulseTimer ? 1.0 + Math.sin(this.pulseTimer * 6) * 0.15 : 1.0;
+      const pulseValue = this.pulseTimer ? Math.sin(this.pulseTimer * 6) : 0;
+      const pulseScale = 1.0 + pulseValue * 0.15;
       const radius = this.size * pulseScale;
       ctx.beginPath();
       ctx.arc(this.pos.x, this.pos.y, radius, 0, Math.PI * 2);
@@ -184,7 +190,7 @@ export class Enemy {
       
       // Draw pulse ring
       if (this.pulseTimer) {
-        const ringScale = 1.0 + Math.sin(this.pulseTimer * 6) * 0.3;
+        const ringScale = 1.0 + pulseValue * 0.3;
         ctx.strokeStyle = this.color;
         ctx.lineWidth = 2;
         ctx.globalAlpha = 0.5;

@@ -200,10 +200,11 @@ export class Game {
       // Check collision with player
       if (this.collisionSystem.checkPlayerEnemyCollision(this.player, enemy)) {
         this.health -= enemy.damage;
+        this.enemies.splice(i, 1);
         
-        // Handle bomber explosion on contact
+        // Handle bomber explosion on contact (no need to call handleEnemyDeath for explosion effect)
         if (enemy.explosionRadius && enemy.explosionDamage) {
-          // Bomber explodes on contact, dealing additional explosion damage
+          // Bomber explodes on contact, dealing explosion damage
           this.health -= enemy.explosionDamage;
           
           // Visual explosion effect
@@ -213,16 +214,14 @@ export class Game {
             gwRenderer.addShockwave(enemy.pos.x, enemy.pos.y, enemy.explosionRadius, '#ff9800', 0.6);
             gwRenderer.addCameraShake(0.7);
           }
-        }
-        
-        this.enemies.splice(i, 1);
-        
-        // Geometry Wars effects on collision
-        if (isGeometryWars) {
-          const gwRenderer = visualStyleSystem.getGeometryWarsRenderer();
-          gwRenderer.spawnImpactParticles(enemy.pos.x, enemy.pos.y, gwRenderer.colors.enemy, 8);
-          gwRenderer.addCameraShake(0.5);
-          gwRenderer.deformGrid(enemy.pos.x, enemy.pos.y, 0.8);
+        } else {
+          // Regular Geometry Wars effects for non-bomber collision
+          if (isGeometryWars) {
+            const gwRenderer = visualStyleSystem.getGeometryWarsRenderer();
+            gwRenderer.spawnImpactParticles(enemy.pos.x, enemy.pos.y, gwRenderer.colors.enemy, 8);
+            gwRenderer.addCameraShake(0.5);
+            gwRenderer.deformGrid(enemy.pos.x, enemy.pos.y, 0.8);
+          }
         }
         
         if (this.health <= 0) {
@@ -477,11 +476,6 @@ export class Game {
           speedMultiplier: 1.2,
           damageMultiplier: 0.5
         });
-        
-        // Apply visual properties for child
-        childEnemy.size = enemy.size * 0.6;
-        childEnemy.color = enemy.color;
-        childEnemy.shape = 'diamond';
         
         // Give children random outward velocity
         const speed = 100 + Math.random() * 50;
