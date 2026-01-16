@@ -69,6 +69,49 @@ export class RenderSystem {
   }
   
   /**
+   * Draw drag line from player to current touch position
+   * @param {Object} player - Player entity with pos property
+   * @param {Object} dragState - Drag state from InputSystem
+   * @param {number} minDistance - Minimum drag distance to display line
+   */
+  drawDragLine(player, dragState, minDistance = 20) {
+    if (!dragState.active || !dragState.currentPos) {
+      return;
+    }
+    
+    const ctx = this.visualStyleSystem.getSceneContext();
+    
+    // Calculate drag vector from player to touch position
+    const dx = dragState.currentPos.x - player.pos.x;
+    const dy = dragState.currentPos.y - player.pos.y;
+    const dragLength = Math.sqrt(dx * dx + dy * dy);
+    
+    // Only draw if drag exceeds minimum distance
+    if (dragLength < minDistance) {
+      return;
+    }
+    
+    // Draw line from player center to touch position
+    ctx.save();
+    ctx.strokeStyle = '#00ffff'; // Cyan color
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+    
+    ctx.beginPath();
+    ctx.moveTo(player.pos.x, player.pos.y);
+    ctx.lineTo(dragState.currentPos.x, dragState.currentPos.y);
+    ctx.stroke();
+    
+    // Draw endpoint circle as indicator
+    ctx.fillStyle = '#00ffff';
+    ctx.beginPath();
+    ctx.arc(dragState.currentPos.x, dragState.currentPos.y, 5, 0, Math.PI * 2);
+    ctx.fill();
+    
+    ctx.restore();
+  }
+  
+  /**
    * Apply post-processing effects based on current visual style
    * Should be called after all entities are drawn
    */
