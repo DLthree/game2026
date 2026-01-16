@@ -186,8 +186,15 @@ export class Game {
     const dragVel = this.inputSystem.getDragVelocity(this.player.pos, speed);
     const targetPos = this.inputSystem.getTargetPosition();
 
-    if (dragVel) {
-      // Drag input takes priority
+    // Check if keyboard is being used
+    const keyboardActive = keyboardVel.x !== 0 || keyboardVel.y !== 0;
+    
+    if (keyboardActive) {
+      // Keyboard input - clear any persisted drag velocity
+      this.inputSystem.clearDragVelocity();
+      this.player.vel = keyboardVel;
+    } else if (dragVel) {
+      // Drag input (active or persisted)
       this.player.vel.x = dragVel.x;
       this.player.vel.y = dragVel.y;
     } else if (targetPos) {
@@ -204,8 +211,9 @@ export class Game {
         this.player.vel.y = 0;
       }
     } else {
-      // Keyboard movement
-      this.player.vel = keyboardVel;
+      // No input - stop
+      this.player.vel.x = 0;
+      this.player.vel.y = 0;
     }
 
     this.player.update(dt, this.canvas.width, this.canvas.height);
