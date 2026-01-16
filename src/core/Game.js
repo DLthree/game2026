@@ -15,9 +15,14 @@ export class Game {
     this.WAVE_COMPLETE_HEALTH_REWARD = 30;
     this.BULLET_RANGE = 300;
     this.AUTO_SHOOT_RANGE = 250;
+    this.AUTO_SHOOT_INTERVAL = 500; // milliseconds
     this.BANNER_BOUNCE_MULTIPLIER = 3.0;
     this.BANNER_BASE_PUSH_FORCE = 100;
-    this.CURRENCY_PICKUP_RADIUS = 100; // Distance at which currency starts moving towards player
+    this.CURRENCY_PICKUP_RADIUS = 100;
+    
+    // Boss rewards
+    this.BOSS_GOLD_REWARD = 500;
+    this.BOSS_GEM_REWARD = 20;
     
     this.score = 0;
     this.health = 100;
@@ -110,10 +115,7 @@ export class Game {
     this.lastShot = 0;
     this.gameOverElement.style.display = 'none';
     
-    // Hide boss health bar
-    if (this.bossHealthContainer) {
-      this.bossHealthContainer.style.display = 'none';
-    }
+    this.hideBossHealthBar();
     
     // Restart wave system
     this.waveSystem.restart();
@@ -268,25 +270,15 @@ export class Game {
         if (this.health <= 0) {
           this.isGameOver = true;
           this.gameOverElement.style.display = 'block';
-          
-          // Hide boss health bar
-          if (this.bossHealthContainer) {
-            this.bossHealthContainer.style.display = 'none';
-          }
+          this.hideBossHealthBar();
         }
       }
       
-      // Update boss health bar
-      if (this.bossHealthContainer && this.bossHealthBar && this.bossHealthText) {
-        this.bossHealthContainer.style.display = 'block';
-        const healthPercent = this.boss.getHealthPercentage() * 100;
-        this.bossHealthBar.style.width = healthPercent + '%';
-        this.bossHealthText.textContent = `BOSS: ${Math.ceil(this.boss.health)}/${this.boss.maxHealth}`;
-      }
+      this.updateBossHealthBar();
     }
 
     // Auto-shoot projectiles (include boss as target)
-    if (now - this.lastShot > 500 && (this.enemies.length > 0 || this.boss)) {
+    if (now - this.lastShot > this.AUTO_SHOOT_INTERVAL && (this.enemies.length > 0 || this.boss)) {
       this.lastShot = now;
       this.shootAtNearestEnemy();
     }
@@ -347,33 +339,8 @@ export class Game {
         this.projectiles.splice(i, 1);
         
         if (isDead) {
-          // Boss defeated! Award big rewards
-          this.currencies.push(new Currency(this.boss.pos.x, this.boss.pos.y, 500, 'gold'));
-          
-          // Add gems if skill tree manager is available
-          if (window.skillTreeManager) {
-            window.skillTreeManager.addCurrency('gems', 20);
-          }
-          
-          // Geometry Wars effects on boss kill
-          if (isGeometryWars) {
-            const gwRenderer = visualStyleSystem.getGeometryWarsRenderer();
-            gwRenderer.spawnExplosion(this.boss.pos.x, this.boss.pos.y, gwRenderer.colors.explosion, 30);
-            gwRenderer.addMultiRingShockwave(this.boss.pos.x, this.boss.pos.y, 5);
-            gwRenderer.addCameraShake(2.0);
-            gwRenderer.deformGrid(this.boss.pos.x, this.boss.pos.y, 3.0);
-          }
-          
-          // Remove boss
-          this.boss = null;
-          
-          // Hide boss health bar
-          if (this.bossHealthContainer) {
-            this.bossHealthContainer.style.display = 'none';
-          }
-          
-          // Trigger victory
-          this.triggerVictory();
+          const gwRenderer = isGeometryWars ? visualStyleSystem.getGeometryWarsRenderer() : null;
+          this.handleBossDefeat(isGeometryWars, gwRenderer);
         }
         break;
       }
@@ -565,11 +532,7 @@ export class Game {
     this.lastEnemySpawn = 0;
     this.lastShot = 0;
     
-    // Hide boss health bar
-    if (this.bossHealthContainer) {
-      this.bossHealthContainer.style.display = 'none';
-    }
-    
+    this.hideBossHealthBar();
     this.hideWaveComplete();
     this.waveSystem.restart();
     this.showWaveBanner();
@@ -577,18 +540,64 @@ export class Game {
   }
   
   spawnBoss() {
-    // Spawn boss in the center of the screen
     const x = this.canvas.width / 2;
     const y = this.canvas.height / 2;
     this.boss = new Boss(x, y);
+  }
+  
+  updateBossHealthBar() {
+    if (!this.boss || !this.bossHealthContainer || !this.bossHealthBar || !this.bossHealthText) {
+      return;
+    }
+    
+    this.bossHealthContainer.style.display = 'block';
+    const healthPercent = this.boss.getHealthPercentage() * 100;
+    this.bossHealthBar.style.width = `${healthPercent}%`;
+    this.bossHealthText.textContent = `BOSS: ${Math.ceil(this.boss.health)}/${this.boss.maxHealth}`;
+  }
+  
+  hideBossHealthBar() {
+    if (this.bossHealthContainer) {
+      this.bossHealthContainer.style.display = 'none';
+    }
+  }
+  
+  handleBossDefeat(isGeometryWars, gwRenderer) {
+    // Award big rewards
+    this.currencies.push(new Currency(
+      this.boss.pos.x, 
+      this.boss.pos.y, 
+      this.BOSS_GOLD_REWARD, 
+      'gold'
+    ));
+    
+    if (window.skillTreeManager) {
+      window.skillTreeManager.addCurrency('gems', this.BOSS_GEM_REWARD);
+    }
+    
+    // Visual effects
+    if (isGeometryWars && gwRenderer) {
+      gwRenderer.spawnExplosion(this.boss.pos.x, this.boss.pos.y, gwRenderer.colors.explosion, 30);
+      gwRenderer.addMultiRingShockwave(this.boss.pos.x, this.boss.pos.y, 5);
+      gwRenderer.addCameraShake(2.0);
+      gwRenderer.deformGrid(this.boss.pos.x, this.boss.pos.y, 3.0);
+    }
+    
+    this.boss = null;
+    this.hideBossHealthBar();
+    this.triggerVictory();
   }
   
   triggerVictory() {
     this.isVictory = true;
     this.isPaused = true;
     
-    // Show victory message in game over element
-    this.gameOverElement.innerHTML = `
+    this.gameOverElement.innerHTML = this.getVictoryHTML();
+    this.gameOverElement.style.display = 'block';
+  }
+  
+  getVictoryHTML() {
+    return `
       <div style="color: #FFD700;">VICTORY!</div>
       <div style="font-size: 20px; margin-top: 20px; color: #4CAF50;">Boss Defeated!</div>
       <div style="font-size: 16px; margin-top: 10px; color: #fff;">Final Score: ${this.score}</div>
@@ -598,7 +607,6 @@ export class Game {
         <button id="victoryRestartButton" style="padding: 10px 20px; margin: 10px; background: #2196F3; color: #fff; border: 2px solid #1565C0; border-radius: 5px; font-family: monospace; font-size: 16px; font-weight: bold; cursor: pointer;">Play Again</button>
       </div>
     `;
-    this.gameOverElement.style.display = 'block';
   }
   
   skipTime(seconds) {
