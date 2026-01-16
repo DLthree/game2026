@@ -254,21 +254,29 @@ export class Game {
           if (isDead) {
             this.enemies.splice(j, 1);
             
+            // Get currency rewards with fallback values
+            const rewards = enemy.currencyRewards || {
+              gold: 10,
+              experience: 5,
+              gemDropRate: 0.1,
+              gemAmount: 1
+            };
+            
             // Drop gold currency
-            const goldAmount = enemy.currencyRewards.gold;
+            const goldAmount = rewards.gold || 10;
             this.currencies.push(new Currency(enemy.pos.x, enemy.pos.y, goldAmount, 'gold'));
             
             // Auto-award experience (no pickup required)
             // Score tracks total points from all sources including experience
-            const experienceAmount = enemy.currencyRewards.experience;
+            const experienceAmount = rewards.experience || 5;
             this.score += experienceAmount;
             if (window.skillTreeManager) {
               window.skillTreeManager.addCurrency('experience', experienceAmount);
             }
             
             // Drop gems based on probability
-            const gemDropRate = enemy.currencyRewards.gemDropRate;
-            const gemAmount = enemy.currencyRewards.gemAmount;
+            const gemDropRate = rewards.gemDropRate || 0.1;
+            const gemAmount = rewards.gemAmount || 1;
             if (Math.random() < gemDropRate) {
               this.currencies.push(new Currency(enemy.pos.x, enemy.pos.y, gemAmount, 'gems'));
             }
@@ -330,9 +338,15 @@ export class Game {
     
     // Update currency displays from SkillTreeManager
     if (window.skillTreeManager) {
-      this.goldElement.textContent = window.skillTreeManager.getCurrency('gold').toString();
-      this.gemsElement.textContent = window.skillTreeManager.getCurrency('gems').toString();
-      this.experienceElement.textContent = window.skillTreeManager.getCurrency('experience').toString();
+      if (this.goldElement) {
+        this.goldElement.textContent = window.skillTreeManager.getCurrency('gold').toString();
+      }
+      if (this.gemsElement) {
+        this.gemsElement.textContent = window.skillTreeManager.getCurrency('gems').toString();
+      }
+      if (this.experienceElement) {
+        this.experienceElement.textContent = window.skillTreeManager.getCurrency('experience').toString();
+      }
     }
     
     // Show full duration during banner, countdown during active wave
