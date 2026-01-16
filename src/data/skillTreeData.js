@@ -249,13 +249,13 @@ export const skillTreeData = {
         { gold: 220, gems: 9, experience: 70 }
       ],
       prerequisites: ['damage_reduction'],
-      position: { x: 550, y: 300 },
+      position: { x: 575, y: 300 },
       effects: { thornsReflection: 0.25 }
     },
 
     // Tier 4 - Ultimate Defense Skill
-    immortality: {
-      id: 'immortality',
+    second_chance: {
+      id: 'second_chance',
       name: 'Second Chance',
       description: 'Once per game, survive a fatal hit with 1 HP',
       maxLevel: 1,
@@ -263,7 +263,7 @@ export const skillTreeData = {
         { gold: 700, gems: 30, experience: 250 }
       ],
       prerequisites: ['shield', 'thorns'],
-      position: { x: 525, y: 400 },
+      position: { x: 537, y: 400 },
       effects: { secondChance: true }
     },
 
