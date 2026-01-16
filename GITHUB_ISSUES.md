@@ -2,6 +2,14 @@
 
 This document contains 8 GitHub Issues ready to be created. Each issue is separated by a horizontal rule and can be copy-pasted directly into GitHub.
 
+## Quick Creation
+
+**Automated:** Run `./create-github-issues.sh` to create all 8 issues at once using GitHub CLI.
+
+**Manual:** Copy-paste each issue into GitHub's web interface at https://github.com/DLthree/game2026/issues
+
+See `.github/ISSUE_TEMPLATES_README.md` for detailed instructions.
+
 ---
 
 ## Issue #1: Implement Gems and Experience Currency System

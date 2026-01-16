@@ -17,7 +17,29 @@ The main file `GITHUB_ISSUES.md` in the repository root contains 8 comprehensive
 
 ## How to Create Issues
 
-### Option 1: Manual Creation (Recommended)
+### Option 1: Automated Script (Recommended)
+
+Use the provided shell script to create all 8 issues at once:
+
+```bash
+# Make script executable (if needed)
+chmod +x create-github-issues.sh
+
+# Run the script
+./create-github-issues.sh
+```
+
+**Prerequisites:**
+- GitHub CLI (`gh`) installed and authenticated
+- Run from repository root directory
+
+The script will:
+- Verify prerequisites
+- Extract each issue from `GITHUB_ISSUES.md`
+- Create all 8 issues with appropriate labels
+- Show progress and confirmation
+
+### Option 2: Manual Creation
 
 1. Open the main `GITHUB_ISSUES.md` file in the repository root
 2. Navigate to https://github.com/DLthree/game2026/issues
@@ -33,9 +55,9 @@ The main file `GITHUB_ISSUES.md` in the repository root contains 8 comprehensive
    - `combat` - Issues #2, #3
 7. Submit the issue
 
-### Option 2: Using GitHub CLI (gh)
+### Option 3: Using GitHub CLI (gh) Manually
 
-If you have GitHub CLI installed:
+If you have GitHub CLI installed and want to create issues one at a time:
 
 ```bash
 # Example for Issue #1
