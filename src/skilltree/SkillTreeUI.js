@@ -496,7 +496,7 @@ export class SkillTreeUI {
         costParts.push(`${amount} ${currencyData.name}${hasEnough ? '' : ' ⚠'}`);
       }
       
-      const costText = 'Cost: ' + costParts.join(', ');
+      const costText = `Cost: ${costParts.join(', ')}`;
       this.ctx.fillText(costText, textX, textY);
       textY += lineHeight + this.tooltipSpacingLarge;
     } else {
