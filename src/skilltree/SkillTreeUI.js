@@ -46,16 +46,16 @@ export class SkillTreeUI {
     this.currencyPanelHeight = 40;
     
     // Tooltip configuration
-    this.tooltipWidth = 600; // Increased for larger fonts
-    this.tooltipHeight = 320; // Increased for larger fonts
-    this.tooltipFontSizeTitle = 28; // Increased from 22 for better readability
-    this.tooltipFontSizeBody = 20; // Increased from 15 for better readability
-    this.tooltipFontSizeDetails = 18; // Increased from 13 for better readability
-    this.tooltipLineHeight = 32; // Increased from 24 for larger fonts
-    this.tooltipPadding = 24; // Increased from 20 for larger fonts
+    this.tooltipWidth = 700; // Increased for much larger fonts
+    this.tooltipHeight = 400; // Increased for much larger fonts
+    this.tooltipFontSizeTitle = 42; // MUCH bigger - was 28, originally 16
+    this.tooltipFontSizeBody = 32; // MUCH bigger - was 20, originally 12
+    this.tooltipFontSizeDetails = 28; // MUCH bigger - was 18, originally 13
+    this.tooltipLineHeight = 48; // Increased from 32 for much larger fonts
+    this.tooltipPadding = 30; // Increased from 24 for larger fonts
     this.tooltipMargin = 10; // Margin from canvas edge
-    this.tooltipSpacingLarge = 8; // Increased from 5 for larger fonts
-    this.tooltipSpacingSmall = 5; // Increased from 3 for larger fonts
+    this.tooltipSpacingLarge = 12; // Increased from 8 for larger fonts
+    this.tooltipSpacingSmall = 8; // Increased from 5 for larger fonts
     this.tooltipSpacingPrereq = -2; // Tighter spacing for prerequisite list
     
     this.setupCanvas();
