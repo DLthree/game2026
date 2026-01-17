@@ -42,13 +42,4 @@
  * @property {Vector2 | null} targetPos
  */
 
-/**
- * @typedef {Object} GridEffect
- * @property {number} x - X coordinate of the effect center
- * @property {number} y - Y coordinate of the effect center
- * @property {number} age - Current age of the effect in seconds
- * @property {number} duration - Total duration before effect expires
- * @property {number} radius - Radius of the grid effect in pixels
- */
-
 export {};

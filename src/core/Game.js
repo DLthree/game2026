@@ -1,10 +1,6 @@
 import { Player, Enemy, Projectile, WaveBanner, Currency } from '../entities/index.js';
 import { InputSystem, CollisionSystem, RenderSystem, VisualStyle, WaveSystem } from '../systems/index.js';
 
-/**
- * @typedef {import('../types/index.js').GridEffect} GridEffect
- */
-
 export class Game {
   constructor(canvas) {
     this.canvas = canvas;
@@ -12,7 +8,6 @@ export class Game {
     this.projectiles = [];
     this.currencies = [];
     this.waveBanner = null;
-    this.gridEffects = [];
     
     // Game constants
     this.WAVE_COMPLETE_HEALTH_REWARD = 30;
@@ -21,9 +16,6 @@ export class Game {
     this.BANNER_BOUNCE_MULTIPLIER = 3.0;
     this.BANNER_BASE_PUSH_FORCE = 100;
     this.CURRENCY_PICKUP_RADIUS = 100; // Distance at which currency starts moving towards player
-    this.MAX_GRID_EFFECTS = 10; // Limit for performance
-    this.GRID_EFFECT_DURATION = 0.8; // Grid fade duration in seconds
-    this.GRID_EFFECT_RADIUS = 120; // Grid effect radius in pixels
     
     this.score = 0;
     this.health = 100;
@@ -37,7 +29,7 @@ export class Game {
     this.lastTime = 0;
 
     // Initialize systems
-    this.inputSystem = new InputSystem(canvas, () => this.handleRestart(), (x, y) => this.createGridEffect(x, y));
+    this.inputSystem = new InputSystem(canvas, () => this.handleRestart(), (x, y) => this.handleTouchEffect(x, y));
     this.collisionSystem = new CollisionSystem();
     this.renderSystem = new RenderSystem(canvas);
     this.waveSystem = new WaveSystem();
@@ -89,7 +81,6 @@ export class Game {
     this.projectiles = [];
     this.currencies = [];
     this.waveBanner = null;
-    this.gridEffects = [];
     this.score = 0;
     this.health = this.maxHealth;
     this.isGameOver = false;
@@ -104,27 +95,23 @@ export class Game {
   }
   
   /**
-   * Create a grid lighting effect at the specified position
-   * @param {number} x - X coordinate of the effect center
-   * @param {number} y - Y coordinate of the effect center
+   * Handle touch/click effect by deforming the background grid
+   * @param {number} x - X coordinate of the touch/click
+   * @param {number} y - Y coordinate of the touch/click
    */
-  createGridEffect(x, y) {
+  handleTouchEffect(x, y) {
     // Don't create effects during game over
     if (this.isGameOver) return;
     
-    // Limit number of simultaneous effects for performance
-    if (this.gridEffects.length >= this.MAX_GRID_EFFECTS) {
-      this.gridEffects.shift(); // Remove oldest effect
-    }
+    // Check if Geometry Wars mode is active
+    const visualStyleSystem = this.renderSystem.getVisualStyleSystem();
+    const isGeometryWars = visualStyleSystem.getCurrentStyle() === VisualStyle.GEOMETRY_WARS;
     
-    // Create new grid effect
-    this.gridEffects.push({
-      x,
-      y,
-      age: 0,
-      duration: this.GRID_EFFECT_DURATION,
-      radius: this.GRID_EFFECT_RADIUS
-    });
+    if (isGeometryWars) {
+      const gwRenderer = visualStyleSystem.getGeometryWarsRenderer();
+      // Deform the background grid at touch point (similar to explosion effect)
+      gwRenderer.deformGrid(x, y, 0.6);
+    }
   }
   
   showWaveBanner() {
@@ -150,14 +137,6 @@ export class Game {
     
     // Update wave system
     this.waveSystem.update(dt);
-    
-    // Update grid effects
-    for (let i = this.gridEffects.length - 1; i >= 0; i--) {
-      this.gridEffects[i].age += dt;
-    }
-    
-    // Remove expired effects
-    this.gridEffects = this.gridEffects.filter(effect => effect.age < effect.duration);
     
     // Update wave banner if active
     if (this.waveBanner) {
@@ -422,10 +401,6 @@ export class Game {
 
   draw() {
     this.renderSystem.clear();
-    
-    // Draw grid effects behind everything else
-    this.renderSystem.drawGridEffects(this.gridEffects);
-    
     this.renderSystem.drawPlayer(this.player);
     this.renderSystem.drawEnemies(this.enemies);
     this.renderSystem.drawProjectiles(this.projectiles);

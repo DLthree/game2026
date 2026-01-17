@@ -1,6 +1,5 @@
 /**
  * @typedef {import('../types/index.js').Vector2} Vector2
- * @typedef {import('../types/index.js').GridEffect} GridEffect
  */
 
 export class InputSystem {
