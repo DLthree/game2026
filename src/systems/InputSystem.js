@@ -3,9 +3,10 @@
  */
 
 export class InputSystem {
-  constructor(canvas, onRestart) {
+  constructor(canvas, onRestart, onTouchEffect) {
     this.canvas = canvas;
     this.onRestart = onRestart;
+    this.onTouchEffect = onTouchEffect;
     this.keys = { w: false, a: false, s: false, d: false };
     this.mouse = { x: 0, y: 0, down: false };
     this.targetPos = null;
@@ -31,6 +32,11 @@ export class InputSystem {
       }
       this.mouse.down = true;
       this.updateMousePosition(e);
+      
+      // Trigger grid effect at mouse position
+      if (this.onTouchEffect) {
+        this.onTouchEffect(this.mouse.x, this.mouse.y);
+      }
     });
 
     this.canvas.addEventListener('mousemove', (e) => {
@@ -49,6 +55,11 @@ export class InputSystem {
       }
       const touch = e.touches[0];
       this.updateTouchPosition(touch);
+      
+      // Trigger grid effect at touch position
+      if (this.onTouchEffect && this.targetPos) {
+        this.onTouchEffect(this.targetPos.x, this.targetPos.y);
+      }
     }, { passive: false });
 
     this.canvas.addEventListener('touchmove', (e) => {

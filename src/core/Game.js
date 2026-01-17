@@ -29,7 +29,7 @@ export class Game {
     this.lastTime = 0;
 
     // Initialize systems
-    this.inputSystem = new InputSystem(canvas, () => this.handleRestart());
+    this.inputSystem = new InputSystem(canvas, () => this.handleRestart(), (x, y) => this.handleTouchEffect(x, y));
     this.collisionSystem = new CollisionSystem();
     this.renderSystem = new RenderSystem(canvas);
     this.waveSystem = new WaveSystem();
@@ -92,6 +92,26 @@ export class Game {
     // Restart wave system
     this.waveSystem.restart();
     this.showWaveBanner();
+  }
+  
+  /**
+   * Handle touch/click effect by deforming the background grid
+   * @param {number} x - X coordinate of the touch/click
+   * @param {number} y - Y coordinate of the touch/click
+   */
+  handleTouchEffect(x, y) {
+    // Don't create effects during game over
+    if (this.isGameOver) return;
+    
+    // Check if Geometry Wars mode is active
+    const visualStyleSystem = this.renderSystem.getVisualStyleSystem();
+    const isGeometryWars = visualStyleSystem.getCurrentStyle() === VisualStyle.GEOMETRY_WARS;
+    
+    if (isGeometryWars) {
+      const gwRenderer = visualStyleSystem.getGeometryWarsRenderer();
+      // Deform the background grid at touch point (similar to explosion effect)
+      gwRenderer.deformGrid(x, y, 0.6);
+    }
   }
   
   showWaveBanner() {
