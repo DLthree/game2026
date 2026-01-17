@@ -43,15 +43,6 @@ skillTreeManager.addCurrency('gems', 10);
 skillTreeManager.addCurrency('experience', 50);
 ```
 
-## Demo
-
-Open `skilltree-demo.html` in a browser to see a standalone demonstration of the skill tree system.
-
-```bash
-python3 -m http.server 8000
-# Then open http://localhost:8000/skilltree-demo.html
-```
-
 ## Architecture
 
 ### SkillTreeManager
