@@ -35,7 +35,7 @@ export class Enemy {
         this.color = '#cc0000'; // Dark red for tanks
       } else if (enemyType.type === 'asteroid') {
         this.size = baseSize * 1.2;
-        this.color = '#888888'; // Gray for asteroids
+        this.color = '#00ccff'; // Cyan/light blue for asteroids (aimless)
         // Asteroids navigate towards their target position if provided
         if (this.targetPos) {
           const dx = this.targetPos.x - x;
@@ -92,12 +92,25 @@ export class Enemy {
 
   draw(ctx) {
     ctx.fillStyle = this.color;
-    ctx.fillRect(
-      this.pos.x - this.size,
-      this.pos.y - this.size,
-      this.size * 2,
-      this.size * 2
-    );
+    
+    if (this.type === 'asteroid') {
+      // Draw diamond shape for asteroids
+      ctx.beginPath();
+      ctx.moveTo(this.pos.x, this.pos.y - this.size);
+      ctx.lineTo(this.pos.x + this.size, this.pos.y);
+      ctx.lineTo(this.pos.x, this.pos.y + this.size);
+      ctx.lineTo(this.pos.x - this.size, this.pos.y);
+      ctx.closePath();
+      ctx.fill();
+    } else {
+      // Draw square for other enemy types
+      ctx.fillRect(
+        this.pos.x - this.size,
+        this.pos.y - this.size,
+        this.size * 2,
+        this.size * 2
+      );
+    }
   }
 
   takeDamage() {
