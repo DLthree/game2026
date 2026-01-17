@@ -42,20 +42,20 @@ export class SkillTreeUI {
     this.zoomInFactor = 1.1;
     this.zoomOutFactor = 0.9;
     this.autoCenterPadding = 100;
-    this.maxAutoCenterScale = 1.0;
+    this.maxAutoCenterScale = 1.5; // Increased from 1.0 to start more zoomed in
     this.currencyPanelHeight = 40;
     
     // Tooltip configuration
-    this.tooltipWidth = 525; // 50% increase from 350
-    this.tooltipHeight = 270; // 50% increase from 180
-    this.tooltipFontSizeTitle = 22; // Increased from 16
-    this.tooltipFontSizeBody = 15; // Increased from 12
-    this.tooltipFontSizeDetails = 13; // Increased from 12
-    this.tooltipLineHeight = 24; // Increased from 18
-    this.tooltipPadding = 20; // Increased from 15
+    this.tooltipWidth = 600; // Increased for larger fonts
+    this.tooltipHeight = 320; // Increased for larger fonts
+    this.tooltipFontSizeTitle = 28; // Increased from 22 for better readability
+    this.tooltipFontSizeBody = 20; // Increased from 15 for better readability
+    this.tooltipFontSizeDetails = 18; // Increased from 13 for better readability
+    this.tooltipLineHeight = 32; // Increased from 24 for larger fonts
+    this.tooltipPadding = 24; // Increased from 20 for larger fonts
     this.tooltipMargin = 10; // Margin from canvas edge
-    this.tooltipSpacingLarge = 5; // Space after major sections
-    this.tooltipSpacingSmall = 3; // Space after minor sections
+    this.tooltipSpacingLarge = 8; // Increased from 5 for larger fonts
+    this.tooltipSpacingSmall = 5; // Increased from 3 for larger fonts
     this.tooltipSpacingPrereq = -2; // Tighter spacing for prerequisite list
     
     this.setupCanvas();
@@ -64,8 +64,8 @@ export class SkillTreeUI {
 
   setupCanvas() {
     this.canvas = document.createElement('canvas');
-    this.canvas.width = 800;
-    this.canvas.height = 600;
+    this.canvas.width = 1200; // Increased from 800 for bigger canvas
+    this.canvas.height = 900; // Increased from 600 for bigger canvas
     this.canvas.style.width = '100%';
     this.canvas.style.height = 'auto';
     this.canvas.style.display = 'block';
