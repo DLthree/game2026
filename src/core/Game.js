@@ -593,7 +593,9 @@ export class Game {
   spawnBoss() {
     const x = this.canvas.width / 2;
     const y = this.canvas.height / 2;
-    this.boss = new Boss(x, y);
+    const wave = this.waveSystem.getCurrentWave();
+    const bossScale = wave && wave.bossScale ? wave.bossScale : 1.0;
+    this.boss = new Boss(x, y, bossScale);
   }
   
   updateBossHealthBar() {
@@ -614,29 +616,40 @@ export class Game {
   }
   
   handleBossDefeat(isGeometryWars, gwRenderer) {
-    // Award big rewards
+    const bossScale = this.boss.difficultyScale;
+    
+    // Scale rewards based on boss difficulty
+    const goldReward = Math.floor(this.BOSS_GOLD_REWARD * bossScale);
+    const gemReward = Math.floor(this.BOSS_GEM_REWARD * bossScale);
+    
+    // Award scaled rewards
     this.currencies.push(new Currency(
       this.boss.pos.x, 
       this.boss.pos.y, 
-      this.BOSS_GOLD_REWARD, 
+      goldReward, 
       'gold'
     ));
     
     if (window.skillTreeManager) {
-      window.skillTreeManager.addCurrency('gems', this.BOSS_GEM_REWARD);
+      window.skillTreeManager.addCurrency('gems', gemReward);
     }
     
-    // Visual effects
+    // Visual effects (scaled intensity)
     if (isGeometryWars && gwRenderer) {
-      gwRenderer.spawnExplosion(this.boss.pos.x, this.boss.pos.y, gwRenderer.colors.explosion, 30);
-      gwRenderer.addMultiRingShockwave(this.boss.pos.x, this.boss.pos.y, 5);
-      gwRenderer.addCameraShake(2.0);
-      gwRenderer.deformGrid(this.boss.pos.x, this.boss.pos.y, 3.0);
+      const effectScale = Math.min(bossScale * 1.5, 2.0);
+      gwRenderer.spawnExplosion(this.boss.pos.x, this.boss.pos.y, gwRenderer.colors.explosion, Math.floor(15 * effectScale));
+      gwRenderer.addMultiRingShockwave(this.boss.pos.x, this.boss.pos.y, Math.floor(3 * effectScale));
+      gwRenderer.addCameraShake(1.0 * effectScale);
+      gwRenderer.deformGrid(this.boss.pos.x, this.boss.pos.y, 1.5 * effectScale);
     }
     
     this.boss = null;
     this.hideBossHealthBar();
-    this.triggerVictory();
+    
+    // Only trigger victory for final boss (scale = 1.0)
+    if (bossScale >= 0.95) {
+      this.triggerVictory();
+    }
   }
   
   triggerVictory() {
