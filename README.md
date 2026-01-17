@@ -40,7 +40,6 @@ game2026/
 │   └── types/
 │       └── index.js         # JSDoc type definitions
 ├── index.html               # HTML entry point
-├── skilltree-demo.html      # Standalone skill tree demo
 ├── package.json             # Optional (only for serve script)
 ├── README.md                # This file
 └── SKILLTREE.md             # Skill tree documentation
@@ -96,16 +95,7 @@ Simply open `index.html` in any modern browser. Note: Some browsers may have COR
 8. Tap/click to restart after game over
 9. Click "Skill Tree" button to open the skill tree interface
 
-## Skill Tree Demo
-
-To see the standalone skill tree system in action:
-
-```bash
-python3 -m http.server 8000
-# Open http://localhost:8000/skilltree-demo.html
-```
-
-For full documentation, see [SKILLTREE.md](SKILLTREE.md)
+For full skill tree documentation, see [SKILLTREE.md](SKILLTREE.md)
 
 ## Technology Stack
 
