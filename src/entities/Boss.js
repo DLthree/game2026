@@ -28,17 +28,18 @@ export class Boss {
   static DASH_MIN_RANGE = 100;
   static DASH_MAX_RANGE = 400;
   
-  constructor(x, y) {
+  constructor(x, y, difficultyScale = 1.0) {
     this.pos = { x, y };
     this.vel = { x: 0, y: 0 };
     
-    // Boss properties - 10x tank health
-    this.health = Boss.TANK_BASE_HEALTH * Boss.HEALTH_MULTIPLIER;
+    // Boss properties scaled by difficulty
+    this.difficultyScale = difficultyScale;
+    this.health = Boss.TANK_BASE_HEALTH * Boss.HEALTH_MULTIPLIER * difficultyScale;
     this.maxHealth = this.health;
-    this.speed = Boss.BASE_SPEED;
-    this.damage = Boss.DAMAGE;
-    this.size = Boss.SIZE;
-    this.color = Boss.COLOR;
+    this.speed = Boss.BASE_SPEED * Math.sqrt(difficultyScale); // Speed scales slower
+    this.damage = Boss.DAMAGE * difficultyScale;
+    this.size = Boss.SIZE * Math.min(1.0 + (difficultyScale - 1) * 0.3, 1.5); // Size scales more gradually
+    this.color = this.getBossColor(difficultyScale);
     this.type = 'boss';
     this.isBoss = true;
     
@@ -47,6 +48,17 @@ export class Boss {
     this.isDashing = false;
     this.dashTimer = 0;
     this.dashDirection = { x: 0, y: 0 };
+  }
+  
+  getBossColor(scale) {
+    // Different colors for different difficulty levels
+    if (scale < 0.5) {
+      return '#4169E1'; // Royal blue for easier boss
+    } else if (scale < 0.8) {
+      return '#8B008B'; // Dark magenta for medium boss
+    } else {
+      return '#9400D3'; // Dark violet for final boss
+    }
   }
 
   update(dt, targetPos) {
