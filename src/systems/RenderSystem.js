@@ -1,5 +1,6 @@
 import { Player, Enemy, Projectile } from '../entities/index.js';
 import { VisualStyleSystem, VisualStyle } from './VisualStyleSystem.js';
+import { InputSystem } from './InputSystem.js';
 
 export class RenderSystem {
   constructor(canvas) {
@@ -66,6 +67,53 @@ export class RenderSystem {
         projectile.draw(ctx);
       }
     }
+  }
+  
+  /**
+   * Draw drag line from player to current touch position
+   * @param {Object} player - Player entity with pos property
+   * @param {Object} dragState - Drag state from InputSystem
+   * @param {CanvasRenderingContext2D} ctx - Canvas context to draw on
+   */
+  drawDragLine(player, dragState, ctx) {
+    if (!dragState.active || !dragState.currentPos) {
+      return;
+    }
+    
+    // Calculate drag vector from player to touch position
+    const dx = dragState.currentPos.x - player.pos.x;
+    const dy = dragState.currentPos.y - player.pos.y;
+    const dragLength = Math.sqrt(dx * dx + dy * dy);
+    
+    // Only draw if drag exceeds minimum distance
+    if (dragLength < InputSystem.MIN_DRAG_DISTANCE) {
+      return;
+    }
+    
+    // Draw line from player center to touch position
+    ctx.save();
+    ctx.strokeStyle = InputSystem.DRAG_LINE_COLOR;
+    ctx.lineWidth = InputSystem.DRAG_LINE_WIDTH;
+    ctx.lineCap = 'round';
+    
+    ctx.beginPath();
+    ctx.moveTo(player.pos.x, player.pos.y);
+    ctx.lineTo(dragState.currentPos.x, dragState.currentPos.y);
+    ctx.stroke();
+    
+    // Draw endpoint circle as indicator
+    ctx.fillStyle = InputSystem.DRAG_LINE_COLOR;
+    ctx.beginPath();
+    ctx.arc(
+      dragState.currentPos.x, 
+      dragState.currentPos.y, 
+      InputSystem.DRAG_LINE_ENDPOINT_RADIUS, 
+      0, 
+      Math.PI * 2
+    );
+    ctx.fill();
+    
+    ctx.restore();
   }
   
   /**
