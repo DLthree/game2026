@@ -34,8 +34,15 @@ export const waveData = {
       spawnInterval: 1300,
       enemyTypes: [
         {
+          type: 'asteroid',
+          weight: 0.8,
+          healthMultiplier: 1.0,
+          speedMultiplier: 0.9,
+          damageMultiplier: 1.0
+        },
+        {
           type: 'basic',
-          weight: 1.0,
+          weight: 0.2,
           healthMultiplier: 1.5,
           speedMultiplier: 1.1,
           damageMultiplier: 1.0
@@ -51,15 +58,22 @@ export const waveData = {
       spawnInterval: 1200,
       enemyTypes: [
         {
+          type: 'asteroid',
+          weight: 0.6,
+          healthMultiplier: 1.0,
+          speedMultiplier: 1.0,
+          damageMultiplier: 1.0
+        },
+        {
           type: 'basic',
-          weight: 0.7,
+          weight: 0.3,
           healthMultiplier: 2.0,
           speedMultiplier: 1.2,
           damageMultiplier: 1.0
         },
         {
           type: 'fast',
-          weight: 0.3,
+          weight: 0.1,
           healthMultiplier: 1.0,
           speedMultiplier: 1.8,
           damageMultiplier: 1.0
@@ -75,15 +89,22 @@ export const waveData = {
       spawnInterval: 1000,
       enemyTypes: [
         {
+          type: 'asteroid',
+          weight: 0.3,
+          healthMultiplier: 1.5,
+          speedMultiplier: 1.1,
+          damageMultiplier: 1.0
+        },
+        {
           type: 'basic',
-          weight: 0.5,
+          weight: 0.35,
           healthMultiplier: 2.5,
           speedMultiplier: 1.3,
           damageMultiplier: 1.5
         },
         {
           type: 'fast',
-          weight: 0.3,
+          weight: 0.15,
           healthMultiplier: 1.5,
           speedMultiplier: 2.0,
           damageMultiplier: 1.0
@@ -106,8 +127,15 @@ export const waveData = {
       spawnInterval: 900,
       enemyTypes: [
         {
+          type: 'asteroid',
+          weight: 0.2,
+          healthMultiplier: 2.0,
+          speedMultiplier: 1.2,
+          damageMultiplier: 1.0
+        },
+        {
           type: 'basic',
-          weight: 0.4,
+          weight: 0.3,
           healthMultiplier: 3.0,
           speedMultiplier: 1.4,
           damageMultiplier: 1.5
@@ -128,14 +156,14 @@ export const waveData = {
         },
         {
           type: 'splitter',
-          weight: 0.15,
+          weight: 0.1,
           healthMultiplier: 2.5,
           speedMultiplier: 1.0,
           damageMultiplier: 1.0
         },
         {
           type: 'bomber',
-          weight: 0.1,
+          weight: 0.05,
           healthMultiplier: 1.0,
           speedMultiplier: 0.6,
           damageMultiplier: 1.0
@@ -151,8 +179,15 @@ export const waveData = {
       spawnInterval: 800,
       enemyTypes: [
         {
+          type: 'asteroid',
+          weight: 0.15,
+          healthMultiplier: 2.5,
+          speedMultiplier: 1.3,
+          damageMultiplier: 1.5
+        },
+        {
           type: 'basic',
-          weight: 0.3,
+          weight: 0.25,
           healthMultiplier: 3.5,
           speedMultiplier: 1.5,
           damageMultiplier: 2.0
@@ -173,14 +208,14 @@ export const waveData = {
         },
         {
           type: 'splitter',
-          weight: 0.15,
+          weight: 0.1,
           healthMultiplier: 3.0,
           speedMultiplier: 1.1,
           damageMultiplier: 1.5
         },
         {
           type: 'bomber',
-          weight: 0.1,
+          weight: 0.05,
           healthMultiplier: 1.5,
           speedMultiplier: 0.7,
           damageMultiplier: 1.0
@@ -203,8 +238,15 @@ export const waveData = {
       spawnInterval: 700,
       enemyTypes: [
         {
+          type: 'asteroid',
+          weight: 0.1,
+          healthMultiplier: 3.0,
+          speedMultiplier: 1.4,
+          damageMultiplier: 2.0
+        },
+        {
           type: 'basic',
-          weight: 0.25,
+          weight: 0.2,
           healthMultiplier: 4.0,
           speedMultiplier: 1.6,
           damageMultiplier: 2.0
@@ -232,7 +274,7 @@ export const waveData = {
         },
         {
           type: 'bomber',
-          weight: 0.1,
+          weight: 0.05,
           healthMultiplier: 2.0,
           speedMultiplier: 0.8,
           damageMultiplier: 1.5
@@ -255,8 +297,15 @@ export const waveData = {
       spawnInterval: 600,
       enemyTypes: [
         {
+          type: 'asteroid',
+          weight: 0.05,
+          healthMultiplier: 3.5,
+          speedMultiplier: 1.5,
+          damageMultiplier: 2.5
+        },
+        {
           type: 'basic',
-          weight: 0.2,
+          weight: 0.15,
           healthMultiplier: 5.0,
           speedMultiplier: 1.7,
           damageMultiplier: 2.5
@@ -307,6 +356,13 @@ export const waveData = {
       spawnInterval: 500,
       enemyTypes: [
         {
+          type: 'asteroid',
+          weight: 0.05,
+          healthMultiplier: 4.0,
+          speedMultiplier: 1.6,
+          damageMultiplier: 3.0
+        },
+        {
           type: 'basic',
           weight: 0.15,
           healthMultiplier: 6.0,
@@ -336,7 +392,7 @@ export const waveData = {
         },
         {
           type: 'bomber',
-          weight: 0.1,
+          weight: 0.05,
           healthMultiplier: 3.0,
           speedMultiplier: 1.0,
           damageMultiplier: 2.5
@@ -358,6 +414,13 @@ export const waveData = {
       duration: 60,
       spawnInterval: 400,
       enemyTypes: [
+        {
+          type: 'asteroid',
+          weight: 0.05,
+          healthMultiplier: 5.0,
+          speedMultiplier: 1.8,
+          damageMultiplier: 3.5
+        },
         {
           type: 'basic',
           weight: 0.1,
@@ -388,7 +451,7 @@ export const waveData = {
         },
         {
           type: 'bomber',
-          weight: 0.1,
+          weight: 0.05,
           healthMultiplier: 4.0,
           speedMultiplier: 1.1,
           damageMultiplier: 3.0

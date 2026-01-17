@@ -575,7 +575,14 @@ export class GeometryWarsRenderer {
     }
     
     ctx.save();
-    ctx.strokeStyle = color;
+    
+    // Check if this is an asteroid enemy and use different color
+    if (entity.type === 'asteroid') {
+      ctx.strokeStyle = '#00ccff'; // Cyan/light blue for asteroids
+    } else {
+      ctx.strokeStyle = color;
+    }
+    
     ctx.lineWidth = this.config.wireframeLineWidth;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
@@ -613,11 +620,11 @@ export class GeometryWarsRenderer {
       ctx.arc(entity.pos.x, entity.pos.y, entity.radius * 0.5, 0, Math.PI * 2);
       ctx.stroke();
     } else if (entity.size !== undefined) {
-      // Enemy - check for shape property
+      // Enemy rendering - check for shape or type
       const size = entity.size;
       
-      if (entity.shape === 'diamond') {
-        // Diamond shape for splitter
+      if (entity.shape === 'diamond' || entity.type === 'asteroid') {
+        // Diamond shape for splitters and asteroids
         ctx.beginPath();
         ctx.moveTo(entity.pos.x, entity.pos.y - size);
         ctx.lineTo(entity.pos.x + size, entity.pos.y);

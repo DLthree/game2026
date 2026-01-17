@@ -55,8 +55,8 @@ export const ENEMY_TYPES = {
   },
   asteroid: {
     sizeMultiplier: 1.2,
-    color: '#888888',
-    shape: 'square',
+    color: '#00ccff', // Cyan/light blue for asteroids (aimless)
+    shape: 'diamond',
     hasConstantVelocity: true
   },
   splitter: {
