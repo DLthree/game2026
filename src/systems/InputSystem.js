@@ -14,8 +14,8 @@ export class InputSystem {
   static DRAG_LINE_WIDTH = 3;
   static DRAG_LINE_ENDPOINT_RADIUS = 5;
   
-  // Friction constant - higher value = faster deceleration
-  static FRICTION = 0.92; // Per frame friction multiplier (0.92 means 8% velocity loss per frame)
+  // Friction constant - higher value (closer to 1.0) = slower deceleration (less friction)
+  static FRICTION = 0.92; // Per frame friction multiplier (0.92 retains 92% velocity each frame)
   
   constructor(canvas, onRestart, onTouchEffect) {
     this.canvas = canvas;

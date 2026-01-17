@@ -189,12 +189,6 @@ export class Game {
     // Check if keyboard is being used
     const keyboardActive = keyboardVel.x !== 0 || keyboardVel.y !== 0;
     
-    // Apply friction to persisted drag velocity when drag is not active
-    const dragState = this.inputSystem.getDragState();
-    if (!dragState.active && dragVel && !keyboardActive) {
-      this.inputSystem.applyFriction();
-    }
-    
     if (keyboardActive) {
       // Keyboard input - clear any persisted drag velocity
       this.inputSystem.clearDragVelocity();
@@ -203,6 +197,12 @@ export class Game {
       // Drag input (active or persisted)
       this.player.vel.x = dragVel.x;
       this.player.vel.y = dragVel.y;
+      
+      // Apply friction when drag is not active (persisted velocity)
+      const dragState = this.inputSystem.getDragState();
+      if (!dragState.active) {
+        this.inputSystem.applyFriction();
+      }
     } else if (targetPos) {
       // Touch/mouse movement (old tap-to-move behavior, kept for backward compatibility)
       const dx = targetPos.x - this.player.pos.x;
