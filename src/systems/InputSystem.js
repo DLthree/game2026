@@ -14,6 +14,9 @@ export class InputSystem {
   static DRAG_LINE_WIDTH = 3;
   static DRAG_LINE_ENDPOINT_RADIUS = 5;
   
+  // Friction constant - higher value = faster deceleration
+  static FRICTION = 0.92; // Per frame friction multiplier (0.92 means 8% velocity loss per frame)
+  
   constructor(canvas, onRestart) {
     this.canvas = canvas;
     this.onRestart = onRestart;
@@ -205,6 +208,24 @@ export class InputSystem {
     const velY = (dy / dragLength) * speed;
     
     return { x: velX, y: velY };
+  }
+  
+  /**
+   * Apply friction to persisted drag velocity
+   * Should be called each frame when drag is not active
+   */
+  applyFriction() {
+    if (this.dragVelocity) {
+      // Apply friction multiplier
+      this.dragVelocity.x *= InputSystem.FRICTION;
+      this.dragVelocity.y *= InputSystem.FRICTION;
+      
+      // Clear velocity if it becomes very small (threshold: 1 pixel/second)
+      const speed = Math.sqrt(this.dragVelocity.x ** 2 + this.dragVelocity.y ** 2);
+      if (speed < 1) {
+        this.dragVelocity = null;
+      }
+    }
   }
   
   /**
