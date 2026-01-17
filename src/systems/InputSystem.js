@@ -220,7 +220,7 @@ export class InputSystem {
       this.dragVelocity.x *= InputSystem.FRICTION;
       this.dragVelocity.y *= InputSystem.FRICTION;
       
-      // Clear velocity if it becomes very small (threshold: 1 pixel/second)
+      // Clear velocity if it becomes very small (threshold: 1 pixel/frame ~= 60 pixels/second at 60fps)
       const speed = Math.sqrt(this.dragVelocity.x ** 2 + this.dragVelocity.y ** 2);
       if (speed < 1) {
         this.dragVelocity = null;
