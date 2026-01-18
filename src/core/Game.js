@@ -1,5 +1,14 @@
 import { Player, Enemy, Projectile, WaveBanner, Currency } from '../entities/index.js';
 import { InputSystem, CollisionSystem, RenderSystem, VisualStyle, WaveSystem } from '../systems/index.js';
+import { 
+  SPLITTER_MIN_CHILDREN, 
+  SPLITTER_MAX_CHILDREN,
+  SPLITTER_CHILD_HEALTH_MULTIPLIER,
+  SPLITTER_CHILD_SPEED_MULTIPLIER,
+  SPLITTER_CHILD_DAMAGE_MULTIPLIER,
+  SPLITTER_CHILD_MIN_SPEED,
+  SPLITTER_CHILD_MAX_SPEED
+} from '../entities/EnemyConfig.js';
 
 export class Game {
   constructor(canvas) {
@@ -202,12 +211,26 @@ export class Game {
         this.health -= enemy.damage;
         this.enemies.splice(i, 1);
         
-        // Geometry Wars effects on collision
-        if (isGeometryWars) {
-          const gwRenderer = visualStyleSystem.getGeometryWarsRenderer();
-          gwRenderer.spawnImpactParticles(enemy.pos.x, enemy.pos.y, gwRenderer.colors.enemy, 8);
-          gwRenderer.addCameraShake(0.5);
-          gwRenderer.deformGrid(enemy.pos.x, enemy.pos.y, 0.8);
+        // Handle bomber explosion on contact (no need to call handleEnemyDeath for explosion effect)
+        if (enemy.explosionRadius && enemy.explosionDamage) {
+          // Bomber explodes on contact, dealing explosion damage
+          this.health -= enemy.explosionDamage;
+          
+          // Visual explosion effect
+          if (isGeometryWars) {
+            const gwRenderer = visualStyleSystem.getGeometryWarsRenderer();
+            gwRenderer.spawnExplosion(enemy.pos.x, enemy.pos.y, '#ff9800', 25);
+            gwRenderer.addShockwave(enemy.pos.x, enemy.pos.y, enemy.explosionRadius, '#ff9800', 0.6);
+            gwRenderer.addCameraShake(0.7);
+          }
+        } else {
+          // Regular Geometry Wars effects for non-bomber collision
+          if (isGeometryWars) {
+            const gwRenderer = visualStyleSystem.getGeometryWarsRenderer();
+            gwRenderer.spawnImpactParticles(enemy.pos.x, enemy.pos.y, gwRenderer.colors.enemy, 8);
+            gwRenderer.addCameraShake(0.5);
+            gwRenderer.deformGrid(enemy.pos.x, enemy.pos.y, 0.8);
+          }
         }
         
         if (this.health <= 0) {
@@ -249,25 +272,7 @@ export class Game {
           this.projectiles.splice(i, 1);
           
           if (isDead) {
-            this.enemies.splice(j, 1);
-            
-            // Drop currency instead of immediately adding score
-            this.currencies.push(new Currency(enemy.pos.x, enemy.pos.y, 10, 'gold'));
-            
-            // Geometry Wars effects on kill
-            if (isGeometryWars) {
-              const gwRenderer = visualStyleSystem.getGeometryWarsRenderer();
-              gwRenderer.spawnExplosion(enemy.pos.x, enemy.pos.y, gwRenderer.colors.explosion, 15);
-              gwRenderer.addShockwave(enemy.pos.x, enemy.pos.y, 80, gwRenderer.colors.shockwave, 0.4);
-              gwRenderer.addCameraShake(0.3);
-              gwRenderer.deformGrid(enemy.pos.x, enemy.pos.y, 1.0);
-              
-              // Big effects on score milestones
-              if (this.score % 100 === 0) {
-                gwRenderer.addMultiRingShockwave(enemy.pos.x, enemy.pos.y, 3);
-                gwRenderer.addCameraShake(1.0);
-              }
-            }
+            this.handleEnemyDeath(enemy, j, isGeometryWars, visualStyleSystem);
           }
           break;
         }
@@ -458,6 +463,75 @@ export class Game {
       const wave = this.waveSystem.getCurrentWave();
       if (wave) {
         this.waveSystem.waveTimer = wave.duration;
+      }
+    }
+  }
+  
+  handleEnemyDeath(enemy, enemyIndex, isGeometryWars, visualStyleSystem) {
+    // Remove enemy from array
+    this.enemies.splice(enemyIndex, 1);
+    
+    // Drop currency
+    this.currencies.push(new Currency(enemy.pos.x, enemy.pos.y, 10, 'gold'));
+    
+    // Handle splitter enemy - split into smaller enemies
+    if (enemy.splitOnDeath) {
+      const childCount = SPLITTER_MIN_CHILDREN + Math.floor(Math.random() * (SPLITTER_MAX_CHILDREN - SPLITTER_MIN_CHILDREN + 1));
+      
+      for (let i = 0; i < childCount; i++) {
+        const angle = (Math.PI * 2 / childCount) * i + Math.random() * 0.5;
+        const childEnemy = new Enemy(enemy.pos.x, enemy.pos.y, {
+          type: 'splitter_child',
+          healthMultiplier: SPLITTER_CHILD_HEALTH_MULTIPLIER,
+          speedMultiplier: SPLITTER_CHILD_SPEED_MULTIPLIER,
+          damageMultiplier: SPLITTER_CHILD_DAMAGE_MULTIPLIER
+        });
+        
+        // Give children random outward velocity
+        const speed = SPLITTER_CHILD_MIN_SPEED + Math.random() * (SPLITTER_CHILD_MAX_SPEED - SPLITTER_CHILD_MIN_SPEED);
+        childEnemy.vel.x = Math.cos(angle) * speed;
+        childEnemy.vel.y = Math.sin(angle) * speed;
+        
+        this.enemies.push(childEnemy);
+      }
+    }
+    
+    // Handle bomber enemy - explosion damage
+    if (enemy.explosionRadius && enemy.explosionDamage) {
+      const dx = this.player.pos.x - enemy.pos.x;
+      const dy = this.player.pos.y - enemy.pos.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      
+      if (dist < enemy.explosionRadius) {
+        this.health -= enemy.explosionDamage;
+        
+        if (this.health <= 0) {
+          this.isGameOver = true;
+          this.gameOverElement.style.display = 'block';
+        }
+      }
+      
+      // Visual explosion effect (larger than normal)
+      if (isGeometryWars) {
+        const gwRenderer = visualStyleSystem.getGeometryWarsRenderer();
+        gwRenderer.spawnExplosion(enemy.pos.x, enemy.pos.y, '#ff9800', 25);
+        gwRenderer.addShockwave(enemy.pos.x, enemy.pos.y, enemy.explosionRadius, '#ff9800', 0.6);
+        gwRenderer.addCameraShake(0.5);
+      }
+    }
+    
+    // Geometry Wars effects on kill
+    if (isGeometryWars) {
+      const gwRenderer = visualStyleSystem.getGeometryWarsRenderer();
+      gwRenderer.spawnExplosion(enemy.pos.x, enemy.pos.y, gwRenderer.colors.explosion, 15);
+      gwRenderer.addShockwave(enemy.pos.x, enemy.pos.y, 80, gwRenderer.colors.shockwave, 0.4);
+      gwRenderer.addCameraShake(0.3);
+      gwRenderer.deformGrid(enemy.pos.x, enemy.pos.y, 1.0);
+      
+      // Big effects on score milestones
+      if (this.score % 100 === 0) {
+        gwRenderer.addMultiRingShockwave(enemy.pos.x, enemy.pos.y, 3);
+        gwRenderer.addCameraShake(1.0);
       }
     }
   }
