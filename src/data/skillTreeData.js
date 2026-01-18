@@ -13,13 +13,13 @@ export const skillTreeData = {
       id: 'gold',
       name: 'Gold',
       color: '#FFD700',
-      startingAmount: 100
+      startingAmount: 0
     },
     gems: {
       id: 'gems',
       name: 'Gems',
       color: '#FF69B4',
-      startingAmount: 10
+      startingAmount: 0
     },
     experience: {
       id: 'experience',
