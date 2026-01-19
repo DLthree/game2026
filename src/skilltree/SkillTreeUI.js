@@ -2,6 +2,8 @@
  * Renders and manages the skill tree UI
  * This is a reusable UI component that can be styled and customized
  */
+import { SkillTreeUIConfig } from '../data/skillTreeUIConfig.js';
+
 export class SkillTreeUI {
   constructor(manager, containerId) {
     this.manager = manager;
@@ -24,8 +26,10 @@ export class SkillTreeUI {
     this.offsetX = 0;
     this.offsetY = 0;
     this.scale = 1;
-    this.minScale = 0.5;
-    this.maxScale = 2.0;
+    
+    // Import config values
+    this.minScale = SkillTreeUIConfig.minScale;
+    this.maxScale = SkillTreeUIConfig.maxScale;
     
     // Dragging state
     this.isDragging = false;
@@ -37,26 +41,26 @@ export class SkillTreeUI {
     this.lastTouchedSkill = null;
     this.lastPinchDist = null;
     
-    // Constants
-    this.doubleTapTimeout = 500; // milliseconds
-    this.zoomInFactor = 1.1;
-    this.zoomOutFactor = 0.9;
-    this.autoCenterPadding = 100;
-    this.maxAutoCenterScale = 1.5; // Increased from 1.0 to start more zoomed in
-    this.currencyPanelHeight = 40;
+    // Import config constants
+    this.doubleTapTimeout = SkillTreeUIConfig.doubleTapTimeout;
+    this.zoomInFactor = SkillTreeUIConfig.zoomInFactor;
+    this.zoomOutFactor = SkillTreeUIConfig.zoomOutFactor;
+    this.autoCenterPadding = SkillTreeUIConfig.autoCenterPadding;
+    this.maxAutoCenterScale = SkillTreeUIConfig.maxAutoCenterScale;
+    this.currencyPanelHeight = SkillTreeUIConfig.currencyPanelHeight;
     
     // Tooltip configuration
-    this.tooltipWidth = 700; // Increased for much larger fonts
-    this.tooltipHeight = 400; // Increased for much larger fonts
-    this.tooltipFontSizeTitle = 42; // MUCH bigger - was 28, originally 16
-    this.tooltipFontSizeBody = 32; // MUCH bigger - was 20, originally 12
-    this.tooltipFontSizeDetails = 28; // MUCH bigger - was 18, originally 13
-    this.tooltipLineHeight = 48; // Increased from 32 for much larger fonts
-    this.tooltipPadding = 30; // Increased from 24 for larger fonts
-    this.tooltipMargin = 10; // Margin from canvas edge
-    this.tooltipSpacingLarge = 12; // Increased from 8 for larger fonts
-    this.tooltipSpacingSmall = 8; // Increased from 5 for larger fonts
-    this.tooltipSpacingPrereq = -2; // Tighter spacing for prerequisite list
+    this.tooltipWidth = SkillTreeUIConfig.tooltipWidth;
+    this.tooltipHeight = SkillTreeUIConfig.tooltipHeight;
+    this.tooltipFontSizeTitle = SkillTreeUIConfig.tooltipFontSizeTitle;
+    this.tooltipFontSizeBody = SkillTreeUIConfig.tooltipFontSizeBody;
+    this.tooltipFontSizeDetails = SkillTreeUIConfig.tooltipFontSizeDetails;
+    this.tooltipLineHeight = SkillTreeUIConfig.tooltipLineHeight;
+    this.tooltipPadding = SkillTreeUIConfig.tooltipPadding;
+    this.tooltipMargin = SkillTreeUIConfig.tooltipMargin;
+    this.tooltipSpacingLarge = SkillTreeUIConfig.tooltipSpacingLarge;
+    this.tooltipSpacingSmall = SkillTreeUIConfig.tooltipSpacingSmall;
+    this.tooltipSpacingPrereq = SkillTreeUIConfig.tooltipSpacingPrereq;
     
     this.setupCanvas();
     this.setupEventListeners();
@@ -64,8 +68,8 @@ export class SkillTreeUI {
 
   setupCanvas() {
     this.canvas = document.createElement('canvas');
-    this.canvas.width = 1200; // Increased from 800 for bigger canvas
-    this.canvas.height = 900; // Increased from 600 for bigger canvas
+    this.canvas.width = SkillTreeUIConfig.canvasWidth;
+    this.canvas.height = SkillTreeUIConfig.canvasHeight;
     this.canvas.style.width = '100%';
     this.canvas.style.height = 'auto';
     this.canvas.style.display = 'block';
