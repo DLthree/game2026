@@ -24,8 +24,9 @@ export const TELEPORTER_MAX_DISTANCE = 150;
 export const TELEPORTER_COOLDOWN = 3.5;
 export const TELEPORTER_MIN_PLAYER_DISTANCE = 30;
 export const TELEPORTER_FADE_DURATION = 0.3;
-export const TELEPORTER_INITIAL_DELAY_MIN = 3; // Minimum initial delay before first teleport
-export const TELEPORTER_INITIAL_DELAY_MAX = 5; // Maximum initial delay (min + 2)
+export const TELEPORTER_INITIAL_DELAY_MIN = 3;
+export const TELEPORTER_INITIAL_DELAY_RANGE = 2; // Random range added to min delay
+export const TELEPORTER_FADE_IN_DELAY_FACTOR = 0.2; // Percentage of cooldown before fade-in
 
 // Splitter constants
 export const SPLITTER_MIN_CHILDREN = 2;

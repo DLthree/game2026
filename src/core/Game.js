@@ -276,7 +276,7 @@ export class Game {
       return; // Pause game until player advances
     }
 
-    // Update Geometry Wars renderer if active
+    // Get Geometry Wars renderer once for efficiency (used throughout update)
     const gwRenderer = this.getGWRenderer();
     if (gwRenderer) {
       gwRenderer.update(dt, this);

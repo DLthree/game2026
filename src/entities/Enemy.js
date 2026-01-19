@@ -7,6 +7,8 @@ import {
   TELEPORTER_COOLDOWN,
   TELEPORTER_FADE_DURATION,
   TELEPORTER_INITIAL_DELAY_MIN,
+  TELEPORTER_INITIAL_DELAY_RANGE,
+  TELEPORTER_FADE_IN_DELAY_FACTOR,
   BOMBER_PULSE_FREQUENCY,
   BOMBER_PULSE_SCALE,
   BOMBER_RING_SCALE,
@@ -51,7 +53,7 @@ export class Enemy {
     }
     
     if (typeConfig.canTeleport) {
-      this.teleportTimer = Math.random() * 2 + TELEPORTER_INITIAL_DELAY_MIN;
+      this.teleportTimer = Math.random() * TELEPORTER_INITIAL_DELAY_RANGE + TELEPORTER_INITIAL_DELAY_MIN;
       this.teleportCooldown = TELEPORTER_COOLDOWN;
       this.fadeAlpha = 1.0;
     }
@@ -115,9 +117,9 @@ export class Enemy {
     if (this.teleportTimer < TELEPORTER_FADE_DURATION) {
       // Fading out before teleport
       this.fadeAlpha = this.teleportTimer / TELEPORTER_FADE_DURATION;
-    } else if (this.teleportTimer > this.teleportCooldown + this.teleportCooldown * 0.2) {
+    } else if (this.teleportTimer > this.teleportCooldown + this.teleportCooldown * TELEPORTER_FADE_IN_DELAY_FACTOR) {
       // Fading in after teleport
-      const fadeInStart = this.teleportCooldown + this.teleportCooldown * 0.2;
+      const fadeInStart = this.teleportCooldown + this.teleportCooldown * TELEPORTER_FADE_IN_DELAY_FACTOR;
       const fadeInTime = this.teleportTimer - fadeInStart;
       this.fadeAlpha = 1.0 - Math.min(fadeInTime / TELEPORTER_FADE_DURATION, 1.0);
     } else {
