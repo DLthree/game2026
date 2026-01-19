@@ -5,9 +5,13 @@ import {
   BASE_DAMAGE,
   ENEMY_TYPES,
   TELEPORTER_COOLDOWN,
+  TELEPORTER_FADE_DURATION,
+  TELEPORTER_INITIAL_DELAY_MIN,
   BOMBER_PULSE_FREQUENCY,
   BOMBER_PULSE_SCALE,
-  BOMBER_RING_SCALE
+  BOMBER_RING_SCALE,
+  BOMBER_RING_ALPHA,
+  BOMBER_RING_LINE_WIDTH
 } from './EnemyConfig.js';
 
 /**
@@ -47,7 +51,7 @@ export class Enemy {
     }
     
     if (typeConfig.canTeleport) {
-      this.teleportTimer = Math.random() * 2 + 3;
+      this.teleportTimer = Math.random() * 2 + TELEPORTER_INITIAL_DELAY_MIN;
       this.teleportCooldown = TELEPORTER_COOLDOWN;
       this.fadeAlpha = 1.0;
     }
@@ -108,12 +112,16 @@ export class Enemy {
     }
     
     // Update fade effect
-    if (this.teleportTimer < 0.3) {
-      this.fadeAlpha = this.teleportTimer / 0.3;
-    } else if (this.teleportTimer > this.teleportCooldown + 0.7) {
-      const fadeInTime = this.teleportTimer - this.teleportCooldown - 0.7;
-      this.fadeAlpha = 1.0 - Math.min(fadeInTime / 0.3, 1.0);
+    if (this.teleportTimer < TELEPORTER_FADE_DURATION) {
+      // Fading out before teleport
+      this.fadeAlpha = this.teleportTimer / TELEPORTER_FADE_DURATION;
+    } else if (this.teleportTimer > this.teleportCooldown + this.teleportCooldown * 0.2) {
+      // Fading in after teleport
+      const fadeInStart = this.teleportCooldown + this.teleportCooldown * 0.2;
+      const fadeInTime = this.teleportTimer - fadeInStart;
+      this.fadeAlpha = 1.0 - Math.min(fadeInTime / TELEPORTER_FADE_DURATION, 1.0);
     } else {
+      // Fully visible
       this.fadeAlpha = 1.0;
     }
   }
@@ -200,8 +208,8 @@ export class Enemy {
     if (this.pulseTimer) {
       const ringScale = 1.0 + pulseValue * BOMBER_RING_SCALE;
       ctx.strokeStyle = this.color;
-      ctx.lineWidth = 2;
-      ctx.globalAlpha = 0.5;
+      ctx.lineWidth = BOMBER_RING_LINE_WIDTH;
+      ctx.globalAlpha = BOMBER_RING_ALPHA;
       ctx.beginPath();
       ctx.arc(this.pos.x, this.pos.y, this.size * ringScale, 0, Math.PI * 2);
       ctx.stroke();
