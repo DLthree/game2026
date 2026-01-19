@@ -1,4 +1,4 @@
-import { Player, Enemy, Projectile, WaveBanner, Currency } from '../entities/index.js';
+import { Player, Enemy, Projectile, WaveBanner, Currency, Boss } from '../entities/index.js';
 import { InputSystem, CollisionSystem, RenderSystem, VisualStyle, WaveSystem } from '../systems/index.js';
 import { 
   SPLITTER_MIN_CHILDREN, 
@@ -17,14 +17,21 @@ export class Game {
     this.projectiles = [];
     this.currencies = [];
     this.waveBanner = null;
+    this.boss = null;
+    this.bossSpawned = false;
     
     // Game constants
     this.WAVE_COMPLETE_HEALTH_REWARD = 30;
     this.BULLET_RANGE = 300;
     this.AUTO_SHOOT_RANGE = 250;
+    this.AUTO_SHOOT_INTERVAL = 500; // milliseconds
     this.BANNER_BOUNCE_MULTIPLIER = 3.0;
     this.BANNER_BASE_PUSH_FORCE = 100;
-    this.CURRENCY_PICKUP_RADIUS = 100; // Distance at which currency starts moving towards player
+    this.CURRENCY_PICKUP_RADIUS = 100;
+    
+    // Boss rewards
+    this.BOSS_GOLD_REWARD = 500;
+    this.BOSS_GEM_REWARD = 20;
     
     this.score = 0;
     this.health = 100;
@@ -32,6 +39,7 @@ export class Game {
     this.isGameOver = false;
     this.isPaused = false;
     this.waveCompleteShown = false;
+    this.isVictory = false;
     
     this.lastEnemySpawn = 0;
     this.lastShot = 0;
@@ -52,6 +60,21 @@ export class Game {
     this.gameOverElement = document.getElementById('gameOver');
     this.waveElement = document.getElementById('wave');
     this.waveTimeElement = document.getElementById('waveTime');
+    this.bossHealthContainer = document.getElementById('bossHealthContainer');
+    this.bossHealthBar = document.getElementById('bossHealthBar');
+    this.bossHealthText = document.getElementById('bossHealthText');
+    
+    // Setup event delegation for victory buttons
+    this.gameOverElement.addEventListener('click', (e) => {
+      if (e.target.id === 'victorySkillTreeButton') {
+        const skillTreeContainer = document.getElementById('skillTreeContainer');
+        if (skillTreeContainer) {
+          skillTreeContainer.classList.add('visible');
+        }
+      } else if (e.target.id === 'victoryRestartButton') {
+        this.handleRestart();
+      }
+    });
 
     // Setup canvas resize
     this.setupResize();
@@ -83,20 +106,25 @@ export class Game {
   }
 
   handleRestart() {
-    if (!this.isGameOver) return;
+    if (!this.isGameOver && !this.isVictory) return;
 
     this.player.reset(this.canvas.width / 2, this.canvas.height / 2);
     this.enemies = [];
     this.projectiles = [];
     this.currencies = [];
     this.waveBanner = null;
+    this.boss = null;
+    this.bossSpawned = false;
     this.score = 0;
     this.health = this.maxHealth;
     this.isGameOver = false;
+    this.isVictory = false;
     this.waveCompleteShown = false;
     this.lastEnemySpawn = 0;
     this.lastShot = 0;
     this.gameOverElement.style.display = 'none';
+    
+    this.hideBossHealthBar();
     
     // Restart wave system
     this.waveSystem.restart();
@@ -163,6 +191,12 @@ export class Game {
       // Remove banner when expired
       if (this.waveBanner.isExpired()) {
         this.waveBanner = null;
+        
+        // Spawn boss at the start of boss wave
+        if (this.waveSystem.isBossWave() && !this.bossSpawned) {
+          this.spawnBoss();
+          this.bossSpawned = true;
+        }
       }
     }
     
@@ -279,8 +313,34 @@ export class Game {
       }
     }
 
-    // Auto-shoot projectiles
-    if (now - this.lastShot > 500 && this.enemies.length > 0) {
+    // Update boss if active
+    if (this.boss) {
+      this.boss.update(dt, this.player.pos);
+      
+      // Check collision with player
+      if (this.collisionSystem.checkPlayerEnemyCollision(this.player, this.boss)) {
+        this.health -= this.boss.damage;
+        
+        // Geometry Wars effects on collision
+        if (isGeometryWars) {
+          const gwRenderer = visualStyleSystem.getGeometryWarsRenderer();
+          gwRenderer.spawnImpactParticles(this.boss.pos.x, this.boss.pos.y, gwRenderer.colors.enemy, 12);
+          gwRenderer.addCameraShake(1.0);
+          gwRenderer.deformGrid(this.boss.pos.x, this.boss.pos.y, 1.5);
+        }
+        
+        if (this.health <= 0) {
+          this.isGameOver = true;
+          this.gameOverElement.style.display = 'block';
+          this.hideBossHealthBar();
+        }
+      }
+      
+      this.updateBossHealthBar();
+    }
+
+    // Auto-shoot projectiles (include boss as target)
+    if (now - this.lastShot > this.AUTO_SHOOT_INTERVAL && (this.enemies.length > 0 || this.boss)) {
       this.lastShot = now;
       this.shootAtNearestEnemy();
     }
@@ -315,6 +375,18 @@ export class Game {
           }
           break;
         }
+      }
+      
+      // Check collision with boss
+      if (this.boss && this.collisionSystem.checkProjectileEnemyCollision(projectile, this.boss)) {
+        const isDead = this.boss.takeDamage();
+        this.projectiles.splice(i, 1);
+        
+        if (isDead) {
+          const gwRenderer = isGeometryWars ? visualStyleSystem.getGeometryWarsRenderer() : null;
+          this.handleBossDefeat(isGeometryWars, gwRenderer);
+        }
+        break;
       }
     }
 
@@ -406,6 +478,18 @@ export class Game {
         nearestEnemy = enemy;
       }
     }
+    
+    // Also check boss as potential target
+    if (this.boss) {
+      const dx = this.boss.pos.x - this.player.pos.x;
+      const dy = this.boss.pos.y - this.player.pos.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      
+      if (dist < nearestDist) {
+        nearestDist = dist;
+        nearestEnemy = this.boss;
+      }
+    }
 
     // Only shoot if nearest enemy is within range
     if (nearestEnemy && nearestDist <= this.AUTO_SHOOT_RANGE) {
@@ -429,8 +513,12 @@ export class Game {
     this.renderSystem.drawEnemies(this.enemies);
     this.renderSystem.drawProjectiles(this.projectiles);
     
-    // Draw currencies before post-processing
+    // Draw boss and currencies before post-processing
     const ctx = this.canvas.getContext('2d');
+    if (this.boss) {
+      this.boss.draw(ctx);
+    }
+    
     for (const currency of this.currencies) {
       currency.draw(ctx);
     }
@@ -456,6 +544,8 @@ export class Game {
     this.enemies = [];
     this.projectiles = [];
     this.currencies = [];
+    this.boss = null;
+    this.bossSpawned = false;
     
     // Restore some health as reward
     this.health = Math.min(this.maxHealth, this.health + this.WAVE_COMPLETE_HEALTH_REWARD);
@@ -483,17 +573,104 @@ export class Game {
     this.projectiles = [];
     this.currencies = [];
     this.waveBanner = null;
+    this.boss = null;
+    this.bossSpawned = false;
     this.score = 0;
     this.health = this.maxHealth;
     this.isGameOver = false;
+    this.isVictory = false;
     this.waveCompleteShown = false;
     this.lastEnemySpawn = 0;
     this.lastShot = 0;
     
+    this.hideBossHealthBar();
     this.hideWaveComplete();
     this.waveSystem.restart();
     this.showWaveBanner();
     this.isPaused = false;
+  }
+  
+  spawnBoss() {
+    const x = this.canvas.width / 2;
+    const y = this.canvas.height / 2;
+    const wave = this.waveSystem.getCurrentWave();
+    const bossScale = wave && wave.bossScale ? wave.bossScale : 1.0;
+    this.boss = new Boss(x, y, bossScale);
+  }
+  
+  updateBossHealthBar() {
+    if (!this.boss || !this.bossHealthContainer || !this.bossHealthBar || !this.bossHealthText) {
+      return;
+    }
+    
+    this.bossHealthContainer.style.display = 'block';
+    const healthPercent = this.boss.getHealthPercentage() * 100;
+    this.bossHealthBar.style.width = `${healthPercent}%`;
+    this.bossHealthText.textContent = `BOSS: ${Math.ceil(this.boss.health)}/${this.boss.maxHealth}`;
+  }
+  
+  hideBossHealthBar() {
+    if (this.bossHealthContainer) {
+      this.bossHealthContainer.style.display = 'none';
+    }
+  }
+  
+  handleBossDefeat(isGeometryWars, gwRenderer) {
+    const bossScale = this.boss.difficultyScale;
+    
+    // Scale rewards based on boss difficulty
+    const goldReward = Math.floor(this.BOSS_GOLD_REWARD * bossScale);
+    const gemReward = Math.floor(this.BOSS_GEM_REWARD * bossScale);
+    
+    // Award scaled rewards
+    this.currencies.push(new Currency(
+      this.boss.pos.x, 
+      this.boss.pos.y, 
+      goldReward, 
+      'gold'
+    ));
+    
+    if (window.skillTreeManager) {
+      window.skillTreeManager.addCurrency('gems', gemReward);
+    }
+    
+    // Visual effects (scaled intensity)
+    if (isGeometryWars && gwRenderer) {
+      const effectScale = Math.min(bossScale * 1.5, 2.0);
+      gwRenderer.spawnExplosion(this.boss.pos.x, this.boss.pos.y, gwRenderer.colors.explosion, Math.floor(15 * effectScale));
+      gwRenderer.addMultiRingShockwave(this.boss.pos.x, this.boss.pos.y, Math.floor(3 * effectScale));
+      gwRenderer.addCameraShake(1.0 * effectScale);
+      gwRenderer.deformGrid(this.boss.pos.x, this.boss.pos.y, 1.5 * effectScale);
+    }
+    
+    this.boss = null;
+    this.hideBossHealthBar();
+    
+    // Only trigger victory for final boss (scale = 1.0)
+    if (bossScale >= 0.95) {
+      this.triggerVictory();
+    }
+  }
+  
+  triggerVictory() {
+    this.isVictory = true;
+    this.isPaused = true;
+    
+    this.gameOverElement.innerHTML = this.getVictoryHTML();
+    this.gameOverElement.style.display = 'block';
+  }
+  
+  getVictoryHTML() {
+    return `
+      <div style="color: #FFD700;">VICTORY!</div>
+      <div style="font-size: 20px; margin-top: 20px; color: #4CAF50;">Boss Defeated!</div>
+      <div style="font-size: 16px; margin-top: 10px; color: #fff;">Final Score: ${this.score}</div>
+      <div style="font-size: 16px; margin-top: 5px; color: #FFD700;">+500 Gold, +100 XP, +20 Gems</div>
+      <div style="font-size: 16px; margin-top: 10px;">
+        <button id="victorySkillTreeButton" style="padding: 10px 20px; margin: 10px; background: #4CAF50; color: #fff; border: 2px solid #2E7D32; border-radius: 5px; font-family: monospace; font-size: 16px; font-weight: bold; cursor: pointer;">Skill Tree</button>
+        <button id="victoryRestartButton" style="padding: 10px 20px; margin: 10px; background: #2196F3; color: #fff; border: 2px solid #1565C0; border-radius: 5px; font-family: monospace; font-size: 16px; font-weight: bold; cursor: pointer;">Play Again</button>
+      </div>
+    `;
   }
   
   skipTime(seconds) {

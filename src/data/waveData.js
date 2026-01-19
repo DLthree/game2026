@@ -50,12 +50,14 @@ export const waveData = {
       ]
     },
     
-    // Wave 3 - Introducing variety
+    // Wave 3 - Mini Boss
     {
       id: 3,
-      name: "Wave 3",
-      duration: 60,
-      spawnInterval: 1200,
+      name: "Wave 3 - MINI BOSS",
+      duration: 90,
+      isBossWave: true,
+      bossScale: 0.3, // 30% strength of final boss
+      spawnInterval: 1500,
       enemyTypes: [
         {
           type: 'asteroid',
@@ -171,12 +173,14 @@ export const waveData = {
       ]
     },
     
-    // Wave 6 - Increasing difficulty
+    // Wave 6 - Mid Boss
     {
       id: 6,
-      name: "Wave 6",
-      duration: 60,
-      spawnInterval: 800,
+      name: "Wave 6 - MID BOSS",
+      duration: 100,
+      isBossWave: true,
+      bossScale: 0.6, // 60% strength of final boss
+      spawnInterval: 1200,
       enemyTypes: [
         {
           type: 'asteroid',
@@ -410,9 +414,10 @@ export const waveData = {
     // Wave 10 - Final Boss
     {
       id: 10,
-      name: "Wave 10 - FINAL",
-      duration: 60,
-      spawnInterval: 400,
+      name: "Wave 10 - FINAL BOSS",
+      duration: 120,
+      isBossWave: true,
+      spawnInterval: 2000,
       enemyTypes: [
         {
           type: 'asteroid',
@@ -423,45 +428,17 @@ export const waveData = {
         },
         {
           type: 'basic',
-          weight: 0.1,
-          healthMultiplier: 7.0,
-          speedMultiplier: 2.0,
-          damageMultiplier: 3.5
+          weight: 0.3,
+          healthMultiplier: 4.0,
+          speedMultiplier: 1.5,
+          damageMultiplier: 2.0
         },
         {
           type: 'fast',
-          weight: 0.3,
-          healthMultiplier: 5.0,
-          speedMultiplier: 4.0,
-          damageMultiplier: 3.0
-        },
-        {
-          type: 'tank',
-          weight: 0.4,
-          healthMultiplier: 12.0,
-          speedMultiplier: 1.3,
-          damageMultiplier: 5.0
-        },
-        {
-          type: 'splitter',
-          weight: 0.1,
-          healthMultiplier: 6.0,
-          speedMultiplier: 1.5,
-          damageMultiplier: 3.0
-        },
-        {
-          type: 'bomber',
-          weight: 0.05,
-          healthMultiplier: 4.0,
-          speedMultiplier: 1.1,
-          damageMultiplier: 3.0
-        },
-        {
-          type: 'teleporter',
-          weight: 0.05,
-          healthMultiplier: 4.0,
-          speedMultiplier: 1.4,
-          damageMultiplier: 3.5
+          weight: 0.7,
+          healthMultiplier: 3.0,
+          speedMultiplier: 2.5,
+          damageMultiplier: 1.5
         }
       ]
     }
