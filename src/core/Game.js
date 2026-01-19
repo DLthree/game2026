@@ -9,6 +9,24 @@ import {
   SPLITTER_CHILD_MIN_SPEED,
   SPLITTER_CHILD_MAX_SPEED
 } from '../entities/EnemyConfig.js';
+import {
+  CANVAS_WIDTH,
+  CANVAS_HEIGHT,
+  PLAYER_SPEED,
+  PLAYER_START_HEALTH,
+  PLAYER_MAX_HEALTH,
+  BULLET_RANGE,
+  BULLET_SPEED,
+  AUTO_SHOOT_RANGE,
+  AUTO_SHOOT_INTERVAL,
+  WAVE_COMPLETE_HEALTH_REWARD,
+  BOSS_GOLD_REWARD,
+  BOSS_GEM_REWARD,
+  CURRENCY_PICKUP_RADIUS,
+  ENEMY_GOLD_DROP,
+  BANNER_BOUNCE_MULTIPLIER,
+  BANNER_BASE_PUSH_FORCE
+} from '../data/gameConfig.js';
 
 export class Game {
   constructor(canvas) {
@@ -20,22 +38,9 @@ export class Game {
     this.boss = null;
     this.bossSpawned = false;
     
-    // Game constants
-    this.WAVE_COMPLETE_HEALTH_REWARD = 30;
-    this.BULLET_RANGE = 300;
-    this.AUTO_SHOOT_RANGE = 250;
-    this.AUTO_SHOOT_INTERVAL = 500; // milliseconds
-    this.BANNER_BOUNCE_MULTIPLIER = 3.0;
-    this.BANNER_BASE_PUSH_FORCE = 100;
-    this.CURRENCY_PICKUP_RADIUS = 100;
-    
-    // Boss rewards
-    this.BOSS_GOLD_REWARD = 500;
-    this.BOSS_GEM_REWARD = 20;
-    
     this.score = 0;
-    this.health = 100;
-    this.maxHealth = 100;
+    this.health = PLAYER_START_HEALTH;
+    this.maxHealth = PLAYER_MAX_HEALTH;
     this.isGameOver = false;
     this.isPaused = false;
     this.waveCompleteShown = false;
@@ -85,17 +90,15 @@ export class Game {
 
   setupResize() {
     const resize = () => {
-      const maxWidth = 800;
-      const maxHeight = 600;
       const scale = Math.min(
-        window.innerWidth / maxWidth,
-        window.innerHeight / maxHeight,
+        window.innerWidth / CANVAS_WIDTH,
+        window.innerHeight / CANVAS_HEIGHT,
         1
       );
-      this.canvas.width = maxWidth;
-      this.canvas.height = maxHeight;
-      this.canvas.style.width = `${maxWidth * scale}px`;
-      this.canvas.style.height = `${maxHeight * scale}px`;
+      this.canvas.width = CANVAS_WIDTH;
+      this.canvas.height = CANVAS_HEIGHT;
+      this.canvas.style.width = `${CANVAS_WIDTH * scale}px`;
+      this.canvas.style.height = `${CANVAS_HEIGHT * scale}px`;
       
       // Update render system canvas sizes
       this.renderSystem.updateCanvasSize();
@@ -215,9 +218,8 @@ export class Game {
     }
 
     // Update player movement
-    const speed = 200;
-    const keyboardVel = this.inputSystem.getMovementVelocity(speed);
-    const dragVel = this.inputSystem.getDragVelocity(this.player.pos, speed);
+    const keyboardVel = this.inputSystem.getMovementVelocity(PLAYER_SPEED);
+    const dragVel = this.inputSystem.getDragVelocity(this.player.pos, PLAYER_SPEED);
     const targetPos = this.inputSystem.getTargetPosition();
 
     // Check if keyboard is being used
@@ -244,8 +246,8 @@ export class Game {
       const dist = Math.sqrt(dx * dx + dy * dy);
       
       if (dist > 5) {
-        this.player.vel.x = (dx / dist) * speed;
-        this.player.vel.y = (dy / dist) * speed;
+        this.player.vel.x = (dx / dist) * PLAYER_SPEED;
+        this.player.vel.y = (dy / dist) * PLAYER_SPEED;
       } else {
         this.player.vel.x = 0;
         this.player.vel.y = 0;
@@ -340,7 +342,7 @@ export class Game {
     }
 
     // Auto-shoot projectiles (include boss as target)
-    if (now - this.lastShot > this.AUTO_SHOOT_INTERVAL && (this.enemies.length > 0 || this.boss)) {
+    if (now - this.lastShot > AUTO_SHOOT_INTERVAL && (this.enemies.length > 0 || this.boss)) {
       this.lastShot = now;
       this.shootAtNearestEnemy();
     }
@@ -393,7 +395,7 @@ export class Game {
     // Update currencies
     for (let i = this.currencies.length - 1; i >= 0; i--) {
       const currency = this.currencies[i];
-      currency.update(dt, this.player.pos, this.CURRENCY_PICKUP_RADIUS);
+      currency.update(dt, this.player.pos, CURRENCY_PICKUP_RADIUS);
       
       // Check for pickup by player
       const dx = currency.pos.x - this.player.pos.x;
@@ -492,17 +494,16 @@ export class Game {
     }
 
     // Only shoot if nearest enemy is within range
-    if (nearestEnemy && nearestDist <= this.AUTO_SHOOT_RANGE) {
+    if (nearestEnemy && nearestDist <= AUTO_SHOOT_RANGE) {
       const dx = nearestEnemy.pos.x - this.player.pos.x;
       const dy = nearestEnemy.pos.y - this.player.pos.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
-      const speed = 300;
 
-      const velX = (dx / dist) * speed;
-      const velY = (dy / dist) * speed;
+      const velX = (dx / dist) * BULLET_SPEED;
+      const velY = (dy / dist) * BULLET_SPEED;
 
       this.projectiles.push(
-        new Projectile(this.player.pos.x, this.player.pos.y, velX, velY, this.BULLET_RANGE)
+        new Projectile(this.player.pos.x, this.player.pos.y, velX, velY, BULLET_RANGE)
       );
     }
   }
@@ -548,7 +549,7 @@ export class Game {
     this.bossSpawned = false;
     
     // Restore some health as reward
-    this.health = Math.min(this.maxHealth, this.health + this.WAVE_COMPLETE_HEALTH_REWARD);
+    this.health = Math.min(this.maxHealth, this.health + WAVE_COMPLETE_HEALTH_REWARD);
     
     // Hide wave complete modal
     this.hideWaveComplete();
@@ -619,8 +620,8 @@ export class Game {
     const bossScale = this.boss.difficultyScale;
     
     // Scale rewards based on boss difficulty
-    const goldReward = Math.floor(this.BOSS_GOLD_REWARD * bossScale);
-    const gemReward = Math.floor(this.BOSS_GEM_REWARD * bossScale);
+    const goldReward = Math.floor(BOSS_GOLD_REWARD * bossScale);
+    const gemReward = Math.floor(BOSS_GEM_REWARD * bossScale);
     
     // Award scaled rewards
     this.currencies.push(new Currency(
@@ -695,7 +696,7 @@ export class Game {
     this.enemies.splice(enemyIndex, 1);
     
     // Drop currency
-    this.currencies.push(new Currency(enemy.pos.x, enemy.pos.y, 10, 'gold'));
+    this.currencies.push(new Currency(enemy.pos.x, enemy.pos.y, ENEMY_GOLD_DROP, 'gold'));
     
     // Handle splitter enemy - split into smaller enemies
     if (enemy.splitOnDeath) {
