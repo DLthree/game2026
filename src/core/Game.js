@@ -22,7 +22,10 @@ import {
   WAVE_COMPLETE_HEALTH_REWARD,
   ENEMY_GOLD_DROP,
   BANNER_BOUNCE_MULTIPLIER,
-  BANNER_BASE_PUSH_FORCE
+  BANNER_BASE_PUSH_FORCE,
+  TAP_MOVE_STOP_DISTANCE,
+  MOVEMENT_VELOCITY_THRESHOLD,
+  TRAIL_SPAWN_PROBABILITY
 } from '../data/gameConfig.js';
 import { EnemySpawner } from './EnemySpawner.js';
 import { BossManager } from './BossManager.js';
@@ -150,14 +153,69 @@ export class Game {
     // Don't create effects during game over
     if (this.isGameOver) return;
     
-    // Check if Geometry Wars mode is active
-    const visualStyleSystem = this.renderSystem.getVisualStyleSystem();
-    const isGeometryWars = visualStyleSystem.getCurrentStyle() === VisualStyle.GEOMETRY_WARS;
-    
-    if (isGeometryWars) {
-      const gwRenderer = visualStyleSystem.getGeometryWarsRenderer();
+    const gwRenderer = this.getGWRenderer();
+    if (gwRenderer) {
       // Deform the background grid at touch point (similar to explosion effect)
       gwRenderer.deformGrid(x, y, 0.6);
+    }
+  }
+  
+  /**
+   * Get the Geometry Wars renderer if the mode is active
+   * @returns {Object|null} GeometryWarsRenderer instance or null
+   */
+  getGWRenderer() {
+    const visualStyleSystem = this.renderSystem.getVisualStyleSystem();
+    if (visualStyleSystem.getCurrentStyle() === VisualStyle.GEOMETRY_WARS) {
+      return visualStyleSystem.getGeometryWarsRenderer();
+    }
+    return null;
+  }
+  
+  /**
+   * Check if player is dead and trigger game over
+   */
+  checkGameOver() {
+    if (this.health <= 0) {
+      this.isGameOver = true;
+      this.gameOverElement.style.display = 'block';
+      return true;
+    }
+    return false;
+  }
+  
+  /**
+   * Create collision impact effects for Geometry Wars mode
+   * @param {number} x - X position
+   * @param {number} y - Y position
+   * @param {number} particleCount - Number of particles
+   * @param {number} cameraShake - Camera shake intensity
+   * @param {number} gridDeform - Grid deformation amount
+   */
+  createCollisionEffects(x, y, particleCount = 8, cameraShake = 0.5, gridDeform = 0.8) {
+    const gwRenderer = this.getGWRenderer();
+    if (gwRenderer) {
+      gwRenderer.spawnImpactParticles(x, y, gwRenderer.colors.enemy, particleCount);
+      gwRenderer.addCameraShake(cameraShake);
+      gwRenderer.deformGrid(x, y, gridDeform);
+    }
+  }
+  
+  /**
+   * Create explosion effects for Geometry Wars mode
+   * @param {number} x - X position
+   * @param {number} y - Y position
+   * @param {string} color - Explosion color
+   * @param {number} radius - Shockwave radius
+   * @param {number} particleCount - Number of particles
+   * @param {number} cameraShake - Camera shake intensity
+   */
+  createExplosionEffects(x, y, color, radius, particleCount = 25, cameraShake = 0.7) {
+    const gwRenderer = this.getGWRenderer();
+    if (gwRenderer) {
+      gwRenderer.spawnExplosion(x, y, color, particleCount);
+      gwRenderer.addShockwave(x, y, radius, color, 0.6);
+      gwRenderer.addCameraShake(cameraShake);
     }
   }
   
@@ -219,10 +277,8 @@ export class Game {
     }
 
     // Update Geometry Wars renderer if active
-    const visualStyleSystem = this.renderSystem.getVisualStyleSystem();
-    const isGeometryWars = visualStyleSystem.getCurrentStyle() === VisualStyle.GEOMETRY_WARS;
-    if (isGeometryWars) {
-      const gwRenderer = visualStyleSystem.getGeometryWarsRenderer();
+    const gwRenderer = this.getGWRenderer();
+    if (gwRenderer) {
       gwRenderer.update(dt, this);
     }
 
@@ -254,7 +310,7 @@ export class Game {
       const dy = targetPos.y - this.player.pos.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
       
-      if (dist > 5) {
+      if (dist > TAP_MOVE_STOP_DISTANCE) {
         this.player.vel.x = (dx / dist) * PLAYER_SPEED;
         this.player.vel.y = (dy / dist) * PLAYER_SPEED;
       } else {
@@ -270,10 +326,10 @@ export class Game {
     this.player.update(dt, this.canvas.width, this.canvas.height);
     
     // Spawn trail particles in Geometry Wars mode
-    if (isGeometryWars) {
-      const gwRenderer = visualStyleSystem.getGeometryWarsRenderer();
-      const moving = Math.abs(this.player.vel.x) > 10 || Math.abs(this.player.vel.y) > 10;
-      if (moving && Math.random() < 0.3) {
+    if (gwRenderer) {
+      const moving = Math.abs(this.player.vel.x) > MOVEMENT_VELOCITY_THRESHOLD || 
+                     Math.abs(this.player.vel.y) > MOVEMENT_VELOCITY_THRESHOLD;
+      if (moving && Math.random() < TRAIL_SPAWN_PROBABILITY) {
         gwRenderer.spawnTrailParticle(this.player.pos.x, this.player.pos.y, gwRenderer.colors.player, 4);
       }
     }
@@ -295,32 +351,16 @@ export class Game {
         this.health -= enemy.damage;
         this.enemies.splice(i, 1);
         
-        // Handle bomber explosion on contact (no need to call handleEnemyDeath for explosion effect)
+        // Handle bomber explosion on contact
         if (enemy.explosionRadius && enemy.explosionDamage) {
-          // Bomber explodes on contact, dealing explosion damage
           this.health -= enemy.explosionDamage;
-          
-          // Visual explosion effect
-          if (isGeometryWars) {
-            const gwRenderer = visualStyleSystem.getGeometryWarsRenderer();
-            gwRenderer.spawnExplosion(enemy.pos.x, enemy.pos.y, '#ff9800', 25);
-            gwRenderer.addShockwave(enemy.pos.x, enemy.pos.y, enemy.explosionRadius, '#ff9800', 0.6);
-            gwRenderer.addCameraShake(0.7);
-          }
+          this.createExplosionEffects(enemy.pos.x, enemy.pos.y, '#ff9800', enemy.explosionRadius, 25, 0.7);
         } else {
-          // Regular Geometry Wars effects for non-bomber collision
-          if (isGeometryWars) {
-            const gwRenderer = visualStyleSystem.getGeometryWarsRenderer();
-            gwRenderer.spawnImpactParticles(enemy.pos.x, enemy.pos.y, gwRenderer.colors.enemy, 8);
-            gwRenderer.addCameraShake(0.5);
-            gwRenderer.deformGrid(enemy.pos.x, enemy.pos.y, 0.8);
-          }
+          // Regular collision effects
+          this.createCollisionEffects(enemy.pos.x, enemy.pos.y, 8, 0.5, 0.8);
         }
         
-        if (this.health <= 0) {
-          this.isGameOver = true;
-          this.gameOverElement.style.display = 'block';
-        }
+        this.checkGameOver();
       }
     }
 
@@ -332,18 +372,9 @@ export class Game {
       // Check collision with player
       if (this.collisionSystem.checkPlayerEnemyCollision(this.player, boss)) {
         this.health -= boss.damage;
+        this.createCollisionEffects(boss.pos.x, boss.pos.y, 12, 1.0, 1.5);
         
-        // Geometry Wars effects on collision
-        if (isGeometryWars) {
-          const gwRenderer = visualStyleSystem.getGeometryWarsRenderer();
-          gwRenderer.spawnImpactParticles(boss.pos.x, boss.pos.y, gwRenderer.colors.enemy, 12);
-          gwRenderer.addCameraShake(1.0);
-          gwRenderer.deformGrid(boss.pos.x, boss.pos.y, 1.5);
-        }
-        
-        if (this.health <= 0) {
-          this.isGameOver = true;
-          this.gameOverElement.style.display = 'block';
+        if (this.checkGameOver()) {
           this.bossManager.hideHealthBar();
         }
       }
@@ -363,8 +394,7 @@ export class Game {
       projectile.update(dt);
       
       // Spawn trail particles in Geometry Wars mode
-      if (isGeometryWars && Math.random() < 0.5) {
-        const gwRenderer = visualStyleSystem.getGeometryWarsRenderer();
+      if (gwRenderer && Math.random() < 0.5) {
         gwRenderer.spawnTrailParticle(projectile.pos.x, projectile.pos.y, gwRenderer.colors.projectile, 2);
       }
 
@@ -383,7 +413,7 @@ export class Game {
           this.projectiles.splice(i, 1);
           
           if (isDead) {
-            this.handleEnemyDeath(enemy, j, isGeometryWars, visualStyleSystem);
+            this.handleEnemyDeath(enemy, j);
           }
           break;
         }
@@ -396,8 +426,7 @@ export class Game {
         this.projectiles.splice(i, 1);
         
         if (isDead) {
-          const gwRenderer = isGeometryWars ? visualStyleSystem.getGeometryWarsRenderer() : null;
-          const result = this.bossManager.handleBossDefeat(this.currencies, isGeometryWars, gwRenderer);
+          const result = this.bossManager.handleBossDefeat(this.currencies, gwRenderer !== null, gwRenderer);
           if (result.victory) {
             this.triggerVictory();
           }
@@ -605,7 +634,7 @@ export class Game {
     }
   }
   
-  handleEnemyDeath(enemy, enemyIndex, isGeometryWars, visualStyleSystem) {
+  handleEnemyDeath(enemy, enemyIndex) {
     // Remove enemy from array
     this.enemies.splice(enemyIndex, 1);
     
@@ -642,25 +671,16 @@ export class Game {
       
       if (dist < enemy.explosionRadius) {
         this.health -= enemy.explosionDamage;
-        
-        if (this.health <= 0) {
-          this.isGameOver = true;
-          this.gameOverElement.style.display = 'block';
-        }
+        this.checkGameOver();
       }
       
-      // Visual explosion effect (larger than normal)
-      if (isGeometryWars) {
-        const gwRenderer = visualStyleSystem.getGeometryWarsRenderer();
-        gwRenderer.spawnExplosion(enemy.pos.x, enemy.pos.y, '#ff9800', 25);
-        gwRenderer.addShockwave(enemy.pos.x, enemy.pos.y, enemy.explosionRadius, '#ff9800', 0.6);
-        gwRenderer.addCameraShake(0.5);
-      }
+      // Visual explosion effect
+      this.createExplosionEffects(enemy.pos.x, enemy.pos.y, '#ff9800', enemy.explosionRadius, 25, 0.5);
     }
     
-    // Geometry Wars effects on kill
-    if (isGeometryWars) {
-      const gwRenderer = visualStyleSystem.getGeometryWarsRenderer();
+    // Standard kill effects
+    const gwRenderer = this.getGWRenderer();
+    if (gwRenderer) {
       gwRenderer.spawnExplosion(enemy.pos.x, enemy.pos.y, gwRenderer.colors.explosion, 15);
       gwRenderer.addShockwave(enemy.pos.x, enemy.pos.y, 80, gwRenderer.colors.shockwave, 0.4);
       gwRenderer.addCameraShake(0.3);

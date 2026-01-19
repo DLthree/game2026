@@ -32,3 +32,8 @@ export const ENEMY_GOLD_DROP = 10;
 // Wave banner physics
 export const BANNER_BOUNCE_MULTIPLIER = 3.0;
 export const BANNER_BASE_PUSH_FORCE = 100;
+
+// Movement and physics thresholds
+export const TAP_MOVE_STOP_DISTANCE = 5; // Stop moving when within this distance
+export const MOVEMENT_VELOCITY_THRESHOLD = 10; // Threshold for considering player "moving"
+export const TRAIL_SPAWN_PROBABILITY = 0.3; // Chance to spawn trail particle per frame
