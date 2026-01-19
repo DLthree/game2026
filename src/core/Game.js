@@ -38,7 +38,7 @@ export class Game {
     this.lastTime = 0;
 
     // Initialize systems
-    this.inputSystem = new InputSystem(canvas, () => this.handleRestart());
+    this.inputSystem = new InputSystem(canvas, () => this.handleRestart(), (x, y) => this.handleTouchEffect(x, y));
     this.collisionSystem = new CollisionSystem();
     this.renderSystem = new RenderSystem(canvas);
     this.waveSystem = new WaveSystem();
@@ -103,6 +103,26 @@ export class Game {
     this.showWaveBanner();
   }
   
+  /**
+   * Handle touch/click effect by deforming the background grid
+   * @param {number} x - X coordinate of the touch/click
+   * @param {number} y - Y coordinate of the touch/click
+   */
+  handleTouchEffect(x, y) {
+    // Don't create effects during game over
+    if (this.isGameOver) return;
+    
+    // Check if Geometry Wars mode is active
+    const visualStyleSystem = this.renderSystem.getVisualStyleSystem();
+    const isGeometryWars = visualStyleSystem.getCurrentStyle() === VisualStyle.GEOMETRY_WARS;
+    
+    if (isGeometryWars) {
+      const gwRenderer = visualStyleSystem.getGeometryWarsRenderer();
+      // Deform the background grid at touch point (similar to explosion effect)
+      gwRenderer.deformGrid(x, y, 0.6);
+    }
+  }
+  
   showWaveBanner() {
     const waveNumber = this.waveSystem.getCurrentWaveNumber();
     this.waveBanner = new WaveBanner(waveNumber, this.canvas.width, this.canvas.height);
@@ -163,10 +183,28 @@ export class Game {
     // Update player movement
     const speed = 200;
     const keyboardVel = this.inputSystem.getMovementVelocity(speed);
+    const dragVel = this.inputSystem.getDragVelocity(this.player.pos, speed);
     const targetPos = this.inputSystem.getTargetPosition();
 
-    if (targetPos) {
-      // Touch/mouse movement
+    // Check if keyboard is being used
+    const keyboardActive = keyboardVel.x !== 0 || keyboardVel.y !== 0;
+    
+    if (keyboardActive) {
+      // Keyboard input - clear any persisted drag velocity
+      this.inputSystem.clearDragVelocity();
+      this.player.vel = keyboardVel;
+    } else if (dragVel) {
+      // Drag input (active or persisted)
+      this.player.vel.x = dragVel.x;
+      this.player.vel.y = dragVel.y;
+      
+      // Apply friction when drag is not active (persisted velocity)
+      const dragState = this.inputSystem.getDragState();
+      if (!dragState.active) {
+        this.inputSystem.applyFriction();
+      }
+    } else if (targetPos) {
+      // Touch/mouse movement (old tap-to-move behavior, kept for backward compatibility)
       const dx = targetPos.x - this.player.pos.x;
       const dy = targetPos.y - this.player.pos.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
@@ -179,8 +217,9 @@ export class Game {
         this.player.vel.y = 0;
       }
     } else {
-      // Keyboard movement
-      this.player.vel = keyboardVel;
+      // No input - stop
+      this.player.vel.x = 0;
+      this.player.vel.y = 0;
     }
 
     this.player.update(dt, this.canvas.width, this.canvas.height);
@@ -397,6 +436,13 @@ export class Game {
     }
     
     this.renderSystem.applyPostProcessing();
+    
+    // Draw drag line AFTER post-processing so it appears on top
+    // Note: We render directly to main canvas here (not via RenderSystem) because
+    // RenderSystem draws to the scene context which gets post-processed. The drag line
+    // needs to appear above all post-processing effects.
+    const dragState = this.inputSystem.getDragState();
+    this.renderSystem.drawDragLine(this.player, dragState, ctx);
     
     // Draw wave banner AFTER post-processing so it appears on top
     if (this.waveBanner) {
