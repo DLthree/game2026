@@ -28,6 +28,15 @@ export class Boss {
   static DASH_MIN_RANGE = 100;
   static DASH_MAX_RANGE = 400;
   
+  // Difficulty scaling constants
+  static SIZE_SCALE_FACTOR = 0.3; // How much size increases per difficulty unit
+  static MAX_SIZE_MULTIPLIER = 1.5; // Maximum size multiplier
+  static DIFFICULTY_EASY_THRESHOLD = 0.5;
+  static DIFFICULTY_MEDIUM_THRESHOLD = 0.8;
+  static DIFFICULTY_EASY_COLOR = '#4169E1'; // Royal blue
+  static DIFFICULTY_MEDIUM_COLOR = '#8B008B'; // Dark magenta
+  static DIFFICULTY_HARD_COLOR = '#9400D3'; // Dark violet
+  
   constructor(x, y, difficultyScale = 1.0) {
     this.pos = { x, y };
     this.vel = { x: 0, y: 0 };
@@ -38,7 +47,7 @@ export class Boss {
     this.maxHealth = this.health;
     this.speed = Boss.BASE_SPEED * Math.sqrt(difficultyScale); // Speed scales slower
     this.damage = Boss.DAMAGE * difficultyScale;
-    this.size = Boss.SIZE * Math.min(1.0 + (difficultyScale - 1) * 0.3, 1.5); // Size scales more gradually
+    this.size = Boss.SIZE * Math.min(1.0 + (difficultyScale - 1) * Boss.SIZE_SCALE_FACTOR, Boss.MAX_SIZE_MULTIPLIER);
     this.color = this.getBossColor(difficultyScale);
     this.type = 'boss';
     this.isBoss = true;
@@ -52,12 +61,12 @@ export class Boss {
   
   getBossColor(scale) {
     // Different colors for different difficulty levels
-    if (scale < 0.5) {
-      return '#4169E1'; // Royal blue for easier boss
-    } else if (scale < 0.8) {
-      return '#8B008B'; // Dark magenta for medium boss
+    if (scale < Boss.DIFFICULTY_EASY_THRESHOLD) {
+      return Boss.DIFFICULTY_EASY_COLOR;
+    } else if (scale < Boss.DIFFICULTY_MEDIUM_THRESHOLD) {
+      return Boss.DIFFICULTY_MEDIUM_COLOR;
     } else {
-      return '#9400D3'; // Dark violet for final boss
+      return Boss.DIFFICULTY_HARD_COLOR;
     }
   }
 

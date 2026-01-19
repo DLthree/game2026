@@ -15,6 +15,8 @@ export const BOMBER_EXPLOSION_DAMAGE = 15;
 export const BOMBER_PULSE_FREQUENCY = 6;
 export const BOMBER_PULSE_SCALE = 0.15;
 export const BOMBER_RING_SCALE = 0.3;
+export const BOMBER_RING_ALPHA = 0.5;
+export const BOMBER_RING_LINE_WIDTH = 2;
 
 // Teleporter constants
 export const TELEPORTER_MIN_DISTANCE = 100;
@@ -22,6 +24,9 @@ export const TELEPORTER_MAX_DISTANCE = 150;
 export const TELEPORTER_COOLDOWN = 3.5;
 export const TELEPORTER_MIN_PLAYER_DISTANCE = 30;
 export const TELEPORTER_FADE_DURATION = 0.3;
+export const TELEPORTER_INITIAL_DELAY_MIN = 3;
+export const TELEPORTER_INITIAL_DELAY_RANGE = 2; // Random range added to min delay
+export const TELEPORTER_FADE_IN_DELAY_FACTOR = 0.2; // Percentage of cooldown before fade-in
 
 // Splitter constants
 export const SPLITTER_MIN_CHILDREN = 2;

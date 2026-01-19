@@ -1,6 +1,6 @@
 # Game 2026
 
-A minimal HTML5 canvas-based survivors-like game built for mobile Safari with no build step required.
+A minimal HTML5 canvas-based survivors-like game built for mobile Safari with **no build step required**.
 
 ## Features
 
@@ -99,15 +99,25 @@ For full skill tree documentation, see [SKILLTREE.md](SKILLTREE.md)
 
 ## Technology Stack
 
+- **Pure HTML5 Canvas**: 2D rendering with requestAnimationFrame for smooth 60fps gameplay
 - **Plain JavaScript**: ES modules with JSDoc type annotations
-- **HTML5 Canvas**: 2D rendering
 - **Zero Build**: No compilation or bundling - runs directly in the browser
+- **Mobile-First**: Works perfectly on mobile Safari with touch controls
 
 ## Development Notes
 
 - **No build step required**: All code is plain JavaScript that runs directly in the browser
 - **Native ES modules**: Uses `import`/`export` with explicit `.js` file extensions
-- **JSDoc for typing**: Type hints via JSDoc comments (no TypeScript compilation)
+- **JSDoc for typing**: Type hints via JSDoc comments - no TypeScript compilation needed
 - **Mobile-first**: Optimized for mobile Safari with touch controls
 - **GitHub Pages**: Automatically deployed on push to main branch
-- The modular structure makes it easy to add new entities or systems
+- **Modular architecture**: Easy to extend with new entities, systems, or features
+
+## Contributing
+
+When adding new features:
+- Keep the zero-build philosophy - no compilation or bundling tools
+- Use plain JavaScript with JSDoc for type hints
+- Follow the existing ECS-inspired architecture
+- Test on both desktop and mobile browsers
+- Ensure explicit `.js` extensions in all imports

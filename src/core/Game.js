@@ -9,6 +9,27 @@ import {
   SPLITTER_CHILD_MIN_SPEED,
   SPLITTER_CHILD_MAX_SPEED
 } from '../entities/EnemyConfig.js';
+import {
+  CANVAS_WIDTH,
+  CANVAS_HEIGHT,
+  PLAYER_SPEED,
+  PLAYER_START_HEALTH,
+  PLAYER_MAX_HEALTH,
+  BULLET_RANGE,
+  BULLET_SPEED,
+  AUTO_SHOOT_RANGE,
+  AUTO_SHOOT_INTERVAL,
+  WAVE_COMPLETE_HEALTH_REWARD,
+  ENEMY_GOLD_DROP,
+  BANNER_BOUNCE_MULTIPLIER,
+  BANNER_BASE_PUSH_FORCE,
+  TAP_MOVE_STOP_DISTANCE,
+  MOVEMENT_VELOCITY_THRESHOLD,
+  TRAIL_SPAWN_PROBABILITY
+} from '../data/gameConfig.js';
+import { EnemySpawner } from './EnemySpawner.js';
+import { BossManager } from './BossManager.js';
+import { CurrencyManager } from './CurrencyManager.js';
 
 export class Game {
   constructor(canvas) {
@@ -17,25 +38,11 @@ export class Game {
     this.projectiles = [];
     this.currencies = [];
     this.waveBanner = null;
-    this.boss = null;
     this.bossSpawned = false;
     
-    // Game constants
-    this.WAVE_COMPLETE_HEALTH_REWARD = 30;
-    this.BULLET_RANGE = 300;
-    this.AUTO_SHOOT_RANGE = 250;
-    this.AUTO_SHOOT_INTERVAL = 500; // milliseconds
-    this.BANNER_BOUNCE_MULTIPLIER = 3.0;
-    this.BANNER_BASE_PUSH_FORCE = 100;
-    this.CURRENCY_PICKUP_RADIUS = 100;
-    
-    // Boss rewards
-    this.BOSS_GOLD_REWARD = 500;
-    this.BOSS_GEM_REWARD = 20;
-    
     this.score = 0;
-    this.health = 100;
-    this.maxHealth = 100;
+    this.health = PLAYER_START_HEALTH;
+    this.maxHealth = PLAYER_MAX_HEALTH;
     this.isGameOver = false;
     this.isPaused = false;
     this.waveCompleteShown = false;
@@ -44,6 +51,10 @@ export class Game {
     this.lastEnemySpawn = 0;
     this.lastShot = 0;
     this.lastTime = 0;
+
+    // Initialize managers
+    this.enemySpawner = new EnemySpawner();
+    this.currencyManager = new CurrencyManager();
 
     // Initialize systems
     this.inputSystem = new InputSystem(canvas, () => this.handleRestart(), (x, y) => this.handleTouchEffect(x, y));
@@ -60,9 +71,13 @@ export class Game {
     this.gameOverElement = document.getElementById('gameOver');
     this.waveElement = document.getElementById('wave');
     this.waveTimeElement = document.getElementById('waveTime');
-    this.bossHealthContainer = document.getElementById('bossHealthContainer');
-    this.bossHealthBar = document.getElementById('bossHealthBar');
-    this.bossHealthText = document.getElementById('bossHealthText');
+    
+    // Initialize boss manager with UI elements
+    this.bossManager = new BossManager(
+      document.getElementById('bossHealthContainer'),
+      document.getElementById('bossHealthBar'),
+      document.getElementById('bossHealthText')
+    );
     
     // Setup event delegation for victory buttons
     this.gameOverElement.addEventListener('click', (e) => {
@@ -85,17 +100,15 @@ export class Game {
 
   setupResize() {
     const resize = () => {
-      const maxWidth = 800;
-      const maxHeight = 600;
       const scale = Math.min(
-        window.innerWidth / maxWidth,
-        window.innerHeight / maxHeight,
+        window.innerWidth / CANVAS_WIDTH,
+        window.innerHeight / CANVAS_HEIGHT,
         1
       );
-      this.canvas.width = maxWidth;
-      this.canvas.height = maxHeight;
-      this.canvas.style.width = `${maxWidth * scale}px`;
-      this.canvas.style.height = `${maxHeight * scale}px`;
+      this.canvas.width = CANVAS_WIDTH;
+      this.canvas.height = CANVAS_HEIGHT;
+      this.canvas.style.width = `${CANVAS_WIDTH * scale}px`;
+      this.canvas.style.height = `${CANVAS_HEIGHT * scale}px`;
       
       // Update render system canvas sizes
       this.renderSystem.updateCanvasSize();
@@ -113,7 +126,7 @@ export class Game {
     this.projectiles = [];
     this.currencies = [];
     this.waveBanner = null;
-    this.boss = null;
+    this.bossManager.clear();
     this.bossSpawned = false;
     this.score = 0;
     this.health = this.maxHealth;
@@ -124,7 +137,7 @@ export class Game {
     this.lastShot = 0;
     this.gameOverElement.style.display = 'none';
     
-    this.hideBossHealthBar();
+    this.bossManager.hideHealthBar();
     
     // Restart wave system
     this.waveSystem.restart();
@@ -140,14 +153,69 @@ export class Game {
     // Don't create effects during game over
     if (this.isGameOver) return;
     
-    // Check if Geometry Wars mode is active
-    const visualStyleSystem = this.renderSystem.getVisualStyleSystem();
-    const isGeometryWars = visualStyleSystem.getCurrentStyle() === VisualStyle.GEOMETRY_WARS;
-    
-    if (isGeometryWars) {
-      const gwRenderer = visualStyleSystem.getGeometryWarsRenderer();
+    const gwRenderer = this.getGWRenderer();
+    if (gwRenderer) {
       // Deform the background grid at touch point (similar to explosion effect)
       gwRenderer.deformGrid(x, y, 0.6);
+    }
+  }
+  
+  /**
+   * Get the Geometry Wars renderer if the mode is active
+   * @returns {Object|null} GeometryWarsRenderer instance or null
+   */
+  getGWRenderer() {
+    const visualStyleSystem = this.renderSystem.getVisualStyleSystem();
+    if (visualStyleSystem.getCurrentStyle() === VisualStyle.GEOMETRY_WARS) {
+      return visualStyleSystem.getGeometryWarsRenderer();
+    }
+    return null;
+  }
+  
+  /**
+   * Check if player is dead and trigger game over
+   */
+  checkGameOver() {
+    if (this.health <= 0) {
+      this.isGameOver = true;
+      this.gameOverElement.style.display = 'block';
+      return true;
+    }
+    return false;
+  }
+  
+  /**
+   * Create collision impact effects for Geometry Wars mode
+   * @param {number} x - X position
+   * @param {number} y - Y position
+   * @param {number} particleCount - Number of particles
+   * @param {number} cameraShake - Camera shake intensity
+   * @param {number} gridDeform - Grid deformation amount
+   */
+  createCollisionEffects(x, y, particleCount = 8, cameraShake = 0.5, gridDeform = 0.8) {
+    const gwRenderer = this.getGWRenderer();
+    if (gwRenderer) {
+      gwRenderer.spawnImpactParticles(x, y, gwRenderer.colors.enemy, particleCount);
+      gwRenderer.addCameraShake(cameraShake);
+      gwRenderer.deformGrid(x, y, gridDeform);
+    }
+  }
+  
+  /**
+   * Create explosion effects for Geometry Wars mode
+   * @param {number} x - X position
+   * @param {number} y - Y position
+   * @param {string} color - Explosion color
+   * @param {number} radius - Shockwave radius
+   * @param {number} particleCount - Number of particles
+   * @param {number} cameraShake - Camera shake intensity
+   */
+  createExplosionEffects(x, y, color, radius, particleCount = 25, cameraShake = 0.7) {
+    const gwRenderer = this.getGWRenderer();
+    if (gwRenderer) {
+      gwRenderer.spawnExplosion(x, y, color, particleCount);
+      gwRenderer.addShockwave(x, y, radius, color, 0.6);
+      gwRenderer.addCameraShake(cameraShake);
     }
   }
   
@@ -194,7 +262,9 @@ export class Game {
         
         // Spawn boss at the start of boss wave
         if (this.waveSystem.isBossWave() && !this.bossSpawned) {
-          this.spawnBoss();
+          const wave = this.waveSystem.getCurrentWave();
+          const bossScale = wave && wave.bossScale ? wave.bossScale : 1.0;
+          this.bossManager.spawnBoss(this.canvas.width, this.canvas.height, bossScale);
           this.bossSpawned = true;
         }
       }
@@ -206,18 +276,15 @@ export class Game {
       return; // Pause game until player advances
     }
 
-    // Update Geometry Wars renderer if active
-    const visualStyleSystem = this.renderSystem.getVisualStyleSystem();
-    const isGeometryWars = visualStyleSystem.getCurrentStyle() === VisualStyle.GEOMETRY_WARS;
-    if (isGeometryWars) {
-      const gwRenderer = visualStyleSystem.getGeometryWarsRenderer();
+    // Get Geometry Wars renderer once for efficiency (used throughout update)
+    const gwRenderer = this.getGWRenderer();
+    if (gwRenderer) {
       gwRenderer.update(dt, this);
     }
 
     // Update player movement
-    const speed = 200;
-    const keyboardVel = this.inputSystem.getMovementVelocity(speed);
-    const dragVel = this.inputSystem.getDragVelocity(this.player.pos, speed);
+    const keyboardVel = this.inputSystem.getMovementVelocity(PLAYER_SPEED);
+    const dragVel = this.inputSystem.getDragVelocity(this.player.pos, PLAYER_SPEED);
     const targetPos = this.inputSystem.getTargetPosition();
 
     // Check if keyboard is being used
@@ -243,9 +310,9 @@ export class Game {
       const dy = targetPos.y - this.player.pos.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
       
-      if (dist > 5) {
-        this.player.vel.x = (dx / dist) * speed;
-        this.player.vel.y = (dy / dist) * speed;
+      if (dist > TAP_MOVE_STOP_DISTANCE) {
+        this.player.vel.x = (dx / dist) * PLAYER_SPEED;
+        this.player.vel.y = (dy / dist) * PLAYER_SPEED;
       } else {
         this.player.vel.x = 0;
         this.player.vel.y = 0;
@@ -259,10 +326,10 @@ export class Game {
     this.player.update(dt, this.canvas.width, this.canvas.height);
     
     // Spawn trail particles in Geometry Wars mode
-    if (isGeometryWars) {
-      const gwRenderer = visualStyleSystem.getGeometryWarsRenderer();
-      const moving = Math.abs(this.player.vel.x) > 10 || Math.abs(this.player.vel.y) > 10;
-      if (moving && Math.random() < 0.3) {
+    if (gwRenderer) {
+      const moving = Math.abs(this.player.vel.x) > MOVEMENT_VELOCITY_THRESHOLD || 
+                     Math.abs(this.player.vel.y) > MOVEMENT_VELOCITY_THRESHOLD;
+      if (moving && Math.random() < TRAIL_SPAWN_PROBABILITY) {
         gwRenderer.spawnTrailParticle(this.player.pos.x, this.player.pos.y, gwRenderer.colors.player, 4);
       }
     }
@@ -284,63 +351,39 @@ export class Game {
         this.health -= enemy.damage;
         this.enemies.splice(i, 1);
         
-        // Handle bomber explosion on contact (no need to call handleEnemyDeath for explosion effect)
+        // Handle bomber explosion on contact
         if (enemy.explosionRadius && enemy.explosionDamage) {
-          // Bomber explodes on contact, dealing explosion damage
           this.health -= enemy.explosionDamage;
-          
-          // Visual explosion effect
-          if (isGeometryWars) {
-            const gwRenderer = visualStyleSystem.getGeometryWarsRenderer();
-            gwRenderer.spawnExplosion(enemy.pos.x, enemy.pos.y, '#ff9800', 25);
-            gwRenderer.addShockwave(enemy.pos.x, enemy.pos.y, enemy.explosionRadius, '#ff9800', 0.6);
-            gwRenderer.addCameraShake(0.7);
-          }
+          this.createExplosionEffects(enemy.pos.x, enemy.pos.y, '#ff9800', enemy.explosionRadius, 25, 0.7);
         } else {
-          // Regular Geometry Wars effects for non-bomber collision
-          if (isGeometryWars) {
-            const gwRenderer = visualStyleSystem.getGeometryWarsRenderer();
-            gwRenderer.spawnImpactParticles(enemy.pos.x, enemy.pos.y, gwRenderer.colors.enemy, 8);
-            gwRenderer.addCameraShake(0.5);
-            gwRenderer.deformGrid(enemy.pos.x, enemy.pos.y, 0.8);
-          }
+          // Regular collision effects
+          this.createCollisionEffects(enemy.pos.x, enemy.pos.y, 8, 0.5, 0.8);
         }
         
-        if (this.health <= 0) {
-          this.isGameOver = true;
-          this.gameOverElement.style.display = 'block';
-        }
+        this.checkGameOver();
       }
     }
 
     // Update boss if active
-    if (this.boss) {
-      this.boss.update(dt, this.player.pos);
+    const boss = this.bossManager.getBoss();
+    if (boss) {
+      boss.update(dt, this.player.pos);
       
       // Check collision with player
-      if (this.collisionSystem.checkPlayerEnemyCollision(this.player, this.boss)) {
-        this.health -= this.boss.damage;
+      if (this.collisionSystem.checkPlayerEnemyCollision(this.player, boss)) {
+        this.health -= boss.damage;
+        this.createCollisionEffects(boss.pos.x, boss.pos.y, 12, 1.0, 1.5);
         
-        // Geometry Wars effects on collision
-        if (isGeometryWars) {
-          const gwRenderer = visualStyleSystem.getGeometryWarsRenderer();
-          gwRenderer.spawnImpactParticles(this.boss.pos.x, this.boss.pos.y, gwRenderer.colors.enemy, 12);
-          gwRenderer.addCameraShake(1.0);
-          gwRenderer.deformGrid(this.boss.pos.x, this.boss.pos.y, 1.5);
-        }
-        
-        if (this.health <= 0) {
-          this.isGameOver = true;
-          this.gameOverElement.style.display = 'block';
-          this.hideBossHealthBar();
+        if (this.checkGameOver()) {
+          this.bossManager.hideHealthBar();
         }
       }
       
-      this.updateBossHealthBar();
+      this.bossManager.updateHealthBar();
     }
 
     // Auto-shoot projectiles (include boss as target)
-    if (now - this.lastShot > this.AUTO_SHOOT_INTERVAL && (this.enemies.length > 0 || this.boss)) {
+    if (now - this.lastShot > AUTO_SHOOT_INTERVAL && (this.enemies.length > 0 || boss)) {
       this.lastShot = now;
       this.shootAtNearestEnemy();
     }
@@ -351,8 +394,7 @@ export class Game {
       projectile.update(dt);
       
       // Spawn trail particles in Geometry Wars mode
-      if (isGeometryWars && Math.random() < 0.5) {
-        const gwRenderer = visualStyleSystem.getGeometryWarsRenderer();
+      if (gwRenderer && Math.random() < 0.5) {
         gwRenderer.spawnTrailParticle(projectile.pos.x, projectile.pos.y, gwRenderer.colors.projectile, 2);
       }
 
@@ -371,54 +413,37 @@ export class Game {
           this.projectiles.splice(i, 1);
           
           if (isDead) {
-            this.handleEnemyDeath(enemy, j, isGeometryWars, visualStyleSystem);
+            this.handleEnemyDeath(enemy, j);
           }
           break;
         }
       }
       
       // Check collision with boss
-      if (this.boss && this.collisionSystem.checkProjectileEnemyCollision(projectile, this.boss)) {
-        const isDead = this.boss.takeDamage();
+      const boss = this.bossManager.getBoss();
+      if (boss && this.collisionSystem.checkProjectileEnemyCollision(projectile, boss)) {
+        const isDead = boss.takeDamage();
         this.projectiles.splice(i, 1);
         
         if (isDead) {
-          const gwRenderer = isGeometryWars ? visualStyleSystem.getGeometryWarsRenderer() : null;
-          this.handleBossDefeat(isGeometryWars, gwRenderer);
+          const result = this.bossManager.handleBossDefeat(this.currencies, gwRenderer !== null, gwRenderer);
+          if (result.victory) {
+            this.triggerVictory();
+          }
         }
         break;
       }
     }
 
     // Update currencies
-    for (let i = this.currencies.length - 1; i >= 0; i--) {
-      const currency = this.currencies[i];
-      currency.update(dt, this.player.pos, this.CURRENCY_PICKUP_RADIUS);
-      
-      // Check for pickup by player
-      const dx = currency.pos.x - this.player.pos.x;
-      const dy = currency.pos.y - this.player.pos.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      const pickupRadius = this.player.radius + currency.size;
-      
-      if (dist < pickupRadius) {
-        // Pick up currency and add to score
-        this.score += currency.amount;
-        
-        // Add to skill tree manager if available
-        if (window.skillTreeManager) {
-          window.skillTreeManager.addCurrency(currency.type, currency.amount);
-        }
-        
-        this.currencies.splice(i, 1);
-        continue;
-      }
-      
-      // Remove if expired or out of bounds
-      if (currency.isExpired() || currency.isOutOfBounds(this.canvas.width, this.canvas.height)) {
-        this.currencies.splice(i, 1);
-      }
-    }
+    const pickedUp = this.currencyManager.updateCurrencies(
+      this.currencies, 
+      dt, 
+      this.player.pos, 
+      this.player.radius, 
+      this.canvas
+    );
+    this.score += pickedUp;
 
     // Update UI
     this.scoreElement.textContent = this.score.toString();
@@ -437,31 +462,10 @@ export class Game {
   }
 
   spawnEnemy() {
-    const side = Math.floor(Math.random() * 4);
-    let x, y;
-
-    if (side === 0) {
-      x = -20;
-      y = Math.random() * this.canvas.height;
-    } else if (side === 1) {
-      x = this.canvas.width + 20;
-      y = Math.random() * this.canvas.height;
-    } else if (side === 2) {
-      x = Math.random() * this.canvas.width;
-      y = -20;
-    } else {
-      x = Math.random() * this.canvas.width;
-      y = this.canvas.height + 20;
-    }
-
-    // Pick a random point on screen as initial target for enemy navigation
-    const targetX = Math.random() * this.canvas.width;
-    const targetY = Math.random() * this.canvas.height;
-    const targetPos = { x: targetX, y: targetY };
-
     // Get enemy type from wave system
     const enemyType = this.waveSystem.getRandomEnemyType();
-    this.enemies.push(new Enemy(x, y, enemyType, targetPos));
+    const enemy = this.enemySpawner.spawnEnemy(this.canvas.width, this.canvas.height, enemyType);
+    this.enemies.push(enemy);
   }
 
   shootAtNearestEnemy() {
@@ -480,29 +484,29 @@ export class Game {
     }
     
     // Also check boss as potential target
-    if (this.boss) {
-      const dx = this.boss.pos.x - this.player.pos.x;
-      const dy = this.boss.pos.y - this.player.pos.y;
+    const boss = this.bossManager.getBoss();
+    if (boss) {
+      const dx = boss.pos.x - this.player.pos.x;
+      const dy = boss.pos.y - this.player.pos.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
       
       if (dist < nearestDist) {
         nearestDist = dist;
-        nearestEnemy = this.boss;
+        nearestEnemy = boss;
       }
     }
 
     // Only shoot if nearest enemy is within range
-    if (nearestEnemy && nearestDist <= this.AUTO_SHOOT_RANGE) {
+    if (nearestEnemy && nearestDist <= AUTO_SHOOT_RANGE) {
       const dx = nearestEnemy.pos.x - this.player.pos.x;
       const dy = nearestEnemy.pos.y - this.player.pos.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
-      const speed = 300;
 
-      const velX = (dx / dist) * speed;
-      const velY = (dy / dist) * speed;
+      const velX = (dx / dist) * BULLET_SPEED;
+      const velY = (dy / dist) * BULLET_SPEED;
 
       this.projectiles.push(
-        new Projectile(this.player.pos.x, this.player.pos.y, velX, velY, this.BULLET_RANGE)
+        new Projectile(this.player.pos.x, this.player.pos.y, velX, velY, BULLET_RANGE)
       );
     }
   }
@@ -515,8 +519,9 @@ export class Game {
     
     // Draw boss and currencies before post-processing
     const ctx = this.canvas.getContext('2d');
-    if (this.boss) {
-      this.boss.draw(ctx);
+    const boss = this.bossManager.getBoss();
+    if (boss) {
+      boss.draw(ctx);
     }
     
     for (const currency of this.currencies) {
@@ -544,11 +549,11 @@ export class Game {
     this.enemies = [];
     this.projectiles = [];
     this.currencies = [];
-    this.boss = null;
+    this.bossManager.clear();
     this.bossSpawned = false;
     
     // Restore some health as reward
-    this.health = Math.min(this.maxHealth, this.health + this.WAVE_COMPLETE_HEALTH_REWARD);
+    this.health = Math.min(this.maxHealth, this.health + WAVE_COMPLETE_HEALTH_REWARD);
     
     // Hide wave complete modal
     this.hideWaveComplete();
@@ -573,7 +578,7 @@ export class Game {
     this.projectiles = [];
     this.currencies = [];
     this.waveBanner = null;
-    this.boss = null;
+    this.bossManager.clear();
     this.bossSpawned = false;
     this.score = 0;
     this.health = this.maxHealth;
@@ -583,74 +588,13 @@ export class Game {
     this.lastEnemySpawn = 0;
     this.lastShot = 0;
     
-    this.hideBossHealthBar();
+    this.bossManager.hideHealthBar();
     this.hideWaveComplete();
     this.waveSystem.restart();
     this.showWaveBanner();
     this.isPaused = false;
   }
   
-  spawnBoss() {
-    const x = this.canvas.width / 2;
-    const y = this.canvas.height / 2;
-    const wave = this.waveSystem.getCurrentWave();
-    const bossScale = wave && wave.bossScale ? wave.bossScale : 1.0;
-    this.boss = new Boss(x, y, bossScale);
-  }
-  
-  updateBossHealthBar() {
-    if (!this.boss || !this.bossHealthContainer || !this.bossHealthBar || !this.bossHealthText) {
-      return;
-    }
-    
-    this.bossHealthContainer.style.display = 'block';
-    const healthPercent = this.boss.getHealthPercentage() * 100;
-    this.bossHealthBar.style.width = `${healthPercent}%`;
-    this.bossHealthText.textContent = `BOSS: ${Math.ceil(this.boss.health)}/${this.boss.maxHealth}`;
-  }
-  
-  hideBossHealthBar() {
-    if (this.bossHealthContainer) {
-      this.bossHealthContainer.style.display = 'none';
-    }
-  }
-  
-  handleBossDefeat(isGeometryWars, gwRenderer) {
-    const bossScale = this.boss.difficultyScale;
-    
-    // Scale rewards based on boss difficulty
-    const goldReward = Math.floor(this.BOSS_GOLD_REWARD * bossScale);
-    const gemReward = Math.floor(this.BOSS_GEM_REWARD * bossScale);
-    
-    // Award scaled rewards
-    this.currencies.push(new Currency(
-      this.boss.pos.x, 
-      this.boss.pos.y, 
-      goldReward, 
-      'gold'
-    ));
-    
-    if (window.skillTreeManager) {
-      window.skillTreeManager.addCurrency('gems', gemReward);
-    }
-    
-    // Visual effects (scaled intensity)
-    if (isGeometryWars && gwRenderer) {
-      const effectScale = Math.min(bossScale * 1.5, 2.0);
-      gwRenderer.spawnExplosion(this.boss.pos.x, this.boss.pos.y, gwRenderer.colors.explosion, Math.floor(15 * effectScale));
-      gwRenderer.addMultiRingShockwave(this.boss.pos.x, this.boss.pos.y, Math.floor(3 * effectScale));
-      gwRenderer.addCameraShake(1.0 * effectScale);
-      gwRenderer.deformGrid(this.boss.pos.x, this.boss.pos.y, 1.5 * effectScale);
-    }
-    
-    this.boss = null;
-    this.hideBossHealthBar();
-    
-    // Only trigger victory for final boss (scale = 1.0)
-    if (bossScale >= 0.95) {
-      this.triggerVictory();
-    }
-  }
   
   triggerVictory() {
     this.isVictory = true;
@@ -690,12 +634,12 @@ export class Game {
     }
   }
   
-  handleEnemyDeath(enemy, enemyIndex, isGeometryWars, visualStyleSystem) {
+  handleEnemyDeath(enemy, enemyIndex) {
     // Remove enemy from array
     this.enemies.splice(enemyIndex, 1);
     
     // Drop currency
-    this.currencies.push(new Currency(enemy.pos.x, enemy.pos.y, 10, 'gold'));
+    this.currencies.push(new Currency(enemy.pos.x, enemy.pos.y, ENEMY_GOLD_DROP, 'gold'));
     
     // Handle splitter enemy - split into smaller enemies
     if (enemy.splitOnDeath) {
@@ -727,25 +671,16 @@ export class Game {
       
       if (dist < enemy.explosionRadius) {
         this.health -= enemy.explosionDamage;
-        
-        if (this.health <= 0) {
-          this.isGameOver = true;
-          this.gameOverElement.style.display = 'block';
-        }
+        this.checkGameOver();
       }
       
-      // Visual explosion effect (larger than normal)
-      if (isGeometryWars) {
-        const gwRenderer = visualStyleSystem.getGeometryWarsRenderer();
-        gwRenderer.spawnExplosion(enemy.pos.x, enemy.pos.y, '#ff9800', 25);
-        gwRenderer.addShockwave(enemy.pos.x, enemy.pos.y, enemy.explosionRadius, '#ff9800', 0.6);
-        gwRenderer.addCameraShake(0.5);
-      }
+      // Visual explosion effect
+      this.createExplosionEffects(enemy.pos.x, enemy.pos.y, '#ff9800', enemy.explosionRadius, 25, 0.5);
     }
     
-    // Geometry Wars effects on kill
-    if (isGeometryWars) {
-      const gwRenderer = visualStyleSystem.getGeometryWarsRenderer();
+    // Standard kill effects
+    const gwRenderer = this.getGWRenderer();
+    if (gwRenderer) {
       gwRenderer.spawnExplosion(enemy.pos.x, enemy.pos.y, gwRenderer.colors.explosion, 15);
       gwRenderer.addShockwave(enemy.pos.x, enemy.pos.y, 80, gwRenderer.colors.shockwave, 0.4);
       gwRenderer.addCameraShake(0.3);
