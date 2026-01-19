@@ -55,7 +55,7 @@ export class BossManager {
    * @param {Object} gwRenderer - Geometry Wars renderer for effects
    * @returns {Object} Result containing victory flag and rewards
    */
-  handleDefeat(currencies, isGeometryWars, gwRenderer) {
+  handleBossDefeat(currencies, isGeometryWars, gwRenderer) {
     if (!this.boss) {
       return { victory: false };
     }

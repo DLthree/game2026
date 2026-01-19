@@ -5,6 +5,7 @@
 
 /**
  * Calculate Euclidean distance between two points
+ * Assumes valid numeric inputs; no bounds checking is performed
  * @param {number} x1 - First point x coordinate
  * @param {number} y1 - First point y coordinate
  * @param {number} x2 - Second point x coordinate
@@ -40,9 +41,10 @@ export function clamp(value, min, max) {
 
 /**
  * Linear interpolation between two values
+ * When t is outside 0-1 range, the function extrapolates beyond a and b
  * @param {number} a - Start value
  * @param {number} b - End value
- * @param {number} t - Interpolation factor (0-1)
+ * @param {number} t - Interpolation factor (typically 0-1, but extrapolates if outside range)
  * @returns {number} Interpolated value
  */
 export function lerp(a, b, t) {

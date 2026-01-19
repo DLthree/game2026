@@ -397,7 +397,7 @@ export class Game {
         
         if (isDead) {
           const gwRenderer = isGeometryWars ? visualStyleSystem.getGeometryWarsRenderer() : null;
-          const result = this.bossManager.handleDefeat(this.currencies, isGeometryWars, gwRenderer);
+          const result = this.bossManager.handleBossDefeat(this.currencies, isGeometryWars, gwRenderer);
           if (result.victory) {
             this.triggerVictory();
           }
