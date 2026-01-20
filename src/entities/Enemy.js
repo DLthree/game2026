@@ -58,6 +58,14 @@ export class Enemy {
       this.fadeAlpha = 1.0;
     }
     
+    // Initialize shield behavior for shielded enemies
+    if (typeConfig.hasShield) {
+      this.shieldTimer = Math.random() * typeConfig.shieldCooldown;
+      this.shieldCooldown = typeConfig.shieldCooldown;
+      this.shieldDuration = typeConfig.shieldDuration;
+      this.isShielded = false;
+    }
+    
     // Initialize asteroid velocity
     if (typeConfig.hasConstantVelocity) {
       this.initializeAsteroidVelocity(x, y);
@@ -104,6 +112,24 @@ export class Enemy {
     
     if (this.teleportTimer !== undefined) {
       this.teleportTimer -= dt;
+    }
+    
+    // Update shield timer for shielded enemies
+    if (this.shieldTimer !== undefined) {
+      this.shieldTimer -= dt;
+      
+      if (this.isShielded) {
+        // Shield is active, check if it should deactivate
+        if (this.shieldTimer <= this.shieldCooldown - this.shieldDuration) {
+          this.isShielded = false;
+        }
+      } else {
+        // Shield is on cooldown, check if it should activate
+        if (this.shieldTimer <= 0) {
+          this.isShielded = true;
+          this.shieldTimer = this.shieldCooldown;
+        }
+      }
     }
   }
   
@@ -181,8 +207,16 @@ export class Enemy {
       case 'triangle':
         this.drawTriangle(ctx);
         break;
+      case 'hexagon':
+        this.drawHexagon(ctx);
+        break;
       default:
         this.drawSquare(ctx);
+    }
+    
+    // Draw shield effect for shielded enemies
+    if (this.isShielded) {
+      this.drawShield(ctx);
     }
     
     ctx.restore();
@@ -235,8 +269,42 @@ export class Enemy {
       this.size * 2
     );
   }
+  
+  drawHexagon(ctx) {
+    ctx.beginPath();
+    for (let i = 0; i < 6; i++) {
+      const angle = (Math.PI / 3) * i;
+      const x = this.pos.x + this.size * Math.cos(angle);
+      const y = this.pos.y + this.size * Math.sin(angle);
+      if (i === 0) {
+        ctx.moveTo(x, y);
+      } else {
+        ctx.lineTo(x, y);
+      }
+    }
+    ctx.closePath();
+    ctx.fill();
+  }
+  
+  drawShield(ctx) {
+    // Draw shield as a cyan circle around the enemy
+    ctx.strokeStyle = '#00FFFF';
+    ctx.lineWidth = 3;
+    ctx.globalAlpha = 0.6;
+    ctx.beginPath();
+    ctx.arc(this.pos.x, this.pos.y, this.size * 1.5, 0, Math.PI * 2);
+    ctx.stroke();
+    
+    // Reset alpha for next drawing operations
+    ctx.globalAlpha = 1.0;
+  }
 
   takeDamage() {
+    // Shielded enemies are invulnerable while shield is active
+    if (this.isShielded) {
+      return false;
+    }
+    
     this.health--;
     return this.health <= 0;
   }
