@@ -299,13 +299,13 @@ export class Enemy {
     ctx.globalAlpha = 1.0;
   }
 
-  takeDamage() {
+  takeDamage(amount = 1) {
     // Shielded enemies are invulnerable while shield is active
     if (this.isShielded) {
       return false;
     }
     
-    this.health--;
+    this.health -= amount;
     return this.health <= 0;
   }
 }

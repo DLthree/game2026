@@ -12,10 +12,11 @@ export class CurrencyManager {
    * @param {Object} playerPos - Player position {x, y}
    * @param {number} playerRadius - Player collision radius
    * @param {Object} canvas - Canvas object for bounds checking
-   * @returns {number} Total currency value picked up this frame
+   * @param {Function} onPickup - Callback when currency is picked up (currency)
+   * @returns {Array} Array of picked up currencies {type, amount, x, y}
    */
-  updateCurrencies(currencies, dt, playerPos, playerRadius, canvas) {
-    let totalPickedUp = 0;
+  updateCurrencies(currencies, dt, playerPos, playerRadius, canvas, onPickup = null) {
+    const pickedUp = [];
 
     for (let i = currencies.length - 1; i >= 0; i--) {
       const currency = currencies[i];
@@ -28,12 +29,22 @@ export class CurrencyManager {
       const pickupRadius = playerRadius + currency.size;
       
       if (dist < pickupRadius) {
-        // Pick up currency and add to score
-        totalPickedUp += currency.amount;
+        // Store pickup info for floating text
+        pickedUp.push({
+          type: currency.type,
+          amount: currency.amount,
+          x: currency.pos.x,
+          y: currency.pos.y
+        });
         
         // Add to skill tree manager if available
         if (window.skillTreeManager) {
           window.skillTreeManager.addCurrency(currency.type, currency.amount);
+        }
+        
+        // Call callback if provided
+        if (onPickup) {
+          onPickup(currency);
         }
         
         currencies.splice(i, 1);
@@ -46,6 +57,6 @@ export class CurrencyManager {
       }
     }
 
-    return totalPickedUp;
+    return pickedUp;
   }
 }
