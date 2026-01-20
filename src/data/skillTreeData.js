@@ -19,7 +19,22 @@ export const skillTreeData = {
       id: 'gems',
       name: 'Gems',
       color: '#FF69B4',
-      startingAmount: 0
+      startingAmount: 0,
+      unlockWave: 2
+    },
+    shards: {
+      id: 'shards',
+      name: 'Shards',
+      color: '#6A5ACD',
+      startingAmount: 0,
+      unlockWave: 5
+    },
+    orbs: {
+      id: 'orbs',
+      name: 'Orbs',
+      color: '#40E0D0',
+      startingAmount: 0,
+      unlockWave: 8
     },
     experience: {
       id: 'experience',
