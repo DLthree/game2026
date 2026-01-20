@@ -62,6 +62,13 @@ export class BossManager {
 
     const bossScale = this.boss.difficultyScale;
     
+    // Boss scale thresholds - these correspond to the wave scales:
+    // Wave 3 mini-boss: 0.5 scale
+    // Wave 6 mid-boss: 0.8 scale  
+    // Wave 10 final boss: 1.0 scale
+    const FINAL_BOSS_THRESHOLD = 0.95;  // >= 0.95 is considered final boss
+    const MID_BOSS_THRESHOLD = 0.7;     // >= 0.7 is considered mid-boss
+    
     // Determine rewards based on boss difficulty scale
     // Mini-boss (scale 0.5): 5 gems, 1 shard
     // Mid-boss (scale 0.8): 20 gems, 5 shards
@@ -71,12 +78,12 @@ export class BossManager {
     let shardReward = 0;
     let orbReward = 0;
     
-    if (bossScale >= 0.95) {
+    if (bossScale >= FINAL_BOSS_THRESHOLD) {
       // Final boss (Wave 10)
       gemReward = 50;
       shardReward = 5;
       orbReward = 1;
-    } else if (bossScale >= 0.7) {
+    } else if (bossScale >= MID_BOSS_THRESHOLD) {
       // Mid-boss (Wave 6)
       gemReward = 20;
       shardReward = 5;

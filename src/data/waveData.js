@@ -407,18 +407,18 @@ export const waveData = {
       spawnInterval: 2000,
       enemyTypes: [
         {
-          type: 'fast',
-          weight: 0.7,
-          healthMultiplier: 40.0,
-          speedMultiplier: 2.5,
-          damageMultiplier: 1.5
-        },
-        {
           type: 'basic',
           weight: 0.3,
           healthMultiplier: 50.0,
           speedMultiplier: 1.5,
           damageMultiplier: 2.0
+        },
+        {
+          type: 'fast',
+          weight: 0.7,
+          healthMultiplier: 40.0,
+          speedMultiplier: 2.5,
+          damageMultiplier: 1.5
         }
       ]
     }
