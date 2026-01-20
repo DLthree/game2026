@@ -15,7 +15,14 @@ export class Currency {
     this.size = 8;
     this.lifetime = 10.0; // seconds before disappearing
     this.age = 0;
-    this.color = this.type === 'gold' ? '#FFD700' : '#FF69B4';
+    // Set color based on currency type
+    const colorMap = {
+      'gold': '#FFD700',
+      'gems': '#FF69B4',
+      'shards': '#6A5ACD',
+      'orbs': '#40E0D0'
+    };
+    this.color = colorMap[this.type] || '#FFD700';
     this.friction = 0.95;
     this.magneticPullForce = 400; // Base force for pulling currency towards player
   }

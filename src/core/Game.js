@@ -1,5 +1,5 @@
 import { Player, Enemy, Projectile, WaveBanner, Currency, Boss } from '../entities/index.js';
-import { InputSystem, CollisionSystem, RenderSystem, VisualStyle, WaveSystem } from '../systems/index.js';
+import { InputSystem, CollisionSystem, RenderSystem, VisualStyle, WaveSystem, FloatingTextSystem } from '../systems/index.js';
 import { 
   SPLITTER_MIN_CHILDREN, 
   SPLITTER_MAX_CHILDREN,
@@ -40,7 +40,6 @@ export class Game {
     this.waveBanner = null;
     this.bossSpawned = false;
     
-    this.score = 0;
     this.health = PLAYER_START_HEALTH;
     this.maxHealth = PLAYER_MAX_HEALTH;
     this.isGameOver = false;
@@ -51,6 +50,9 @@ export class Game {
     this.lastEnemySpawn = 0;
     this.lastShot = 0;
     this.lastTime = 0;
+    
+    // Base damage for projectiles (will be modified by skills)
+    this.baseDamage = 1;
 
     // Initialize managers
     this.enemySpawner = new EnemySpawner();
@@ -61,12 +63,12 @@ export class Game {
     this.collisionSystem = new CollisionSystem();
     this.renderSystem = new RenderSystem(canvas);
     this.waveSystem = new WaveSystem();
+    this.floatingTextSystem = new FloatingTextSystem();
 
     // Initialize player
     this.player = new Player(canvas.width / 2, canvas.height / 2);
 
-    // Get UI elements
-    this.scoreElement = document.getElementById('score');
+    // Get UI elements (removed scoreElement)
     this.healthElement = document.getElementById('health');
     this.gameOverElement = document.getElementById('gameOver');
     this.waveElement = document.getElementById('wave');
@@ -128,7 +130,6 @@ export class Game {
     this.waveBanner = null;
     this.bossManager.clear();
     this.bossSpawned = false;
-    this.score = 0;
     this.health = this.maxHealth;
     this.isGameOver = false;
     this.isVictory = false;
@@ -136,6 +137,9 @@ export class Game {
     this.lastEnemySpawn = 0;
     this.lastShot = 0;
     this.gameOverElement.style.display = 'none';
+    
+    // Clear floating text
+    this.floatingTextSystem.clear();
     
     this.bossManager.hideHealthBar();
     
@@ -170,6 +174,36 @@ export class Game {
       return visualStyleSystem.getGeometryWarsRenderer();
     }
     return null;
+  }
+  
+  /**
+   * Get player stats modified by skill effects
+   * @returns {Object} Player stats with skill effects applied
+   */
+  getPlayerStats() {
+    const baseStats = {
+      damageMultiplier: 1.0,
+      attackSpeedMultiplier: 1.0,
+      speedMultiplier: 1.0,
+      healthBonus: 0,
+      healthRegen: 0,
+      damageReduction: 0,
+      pickupRadius: 0
+    };
+    
+    // Get skill effects from global skill tree manager
+    if (window.skillTreeManager) {
+      const effects = window.skillTreeManager.getSkillEffects();
+      
+      // Apply all effects to base stats
+      for (const [key, value] of Object.entries(effects)) {
+        if (baseStats.hasOwnProperty(key)) {
+          baseStats[key] += value;
+        }
+      }
+    }
+    
+    return baseStats;
   }
   
   /**
@@ -348,12 +382,22 @@ export class Game {
 
       // Check collision with player
       if (this.collisionSystem.checkPlayerEnemyCollision(this.player, enemy)) {
-        this.health -= enemy.damage;
+        const stats = this.getPlayerStats();
+        const damageReduction = Math.min(0.9, stats.damageReduction); // Cap at 90%
+        const actualDamage = enemy.damage * (1 - damageReduction);
+        
+        this.health -= actualDamage;
+        
+        // Show damage number on player
+        this.floatingTextSystem.addPlayerDamage(this.player.pos.x, this.player.pos.y, actualDamage);
+        
         this.enemies.splice(i, 1);
         
         // Handle bomber explosion on contact
         if (enemy.explosionRadius && enemy.explosionDamage) {
-          this.health -= enemy.explosionDamage;
+          const explosionDamage = enemy.explosionDamage * (1 - damageReduction);
+          this.health -= explosionDamage;
+          this.floatingTextSystem.addPlayerDamage(this.player.pos.x, this.player.pos.y, explosionDamage);
           this.createExplosionEffects(enemy.pos.x, enemy.pos.y, '#ff9800', enemy.explosionRadius, 25, 0.7);
         } else {
           // Regular collision effects
@@ -371,7 +415,15 @@ export class Game {
       
       // Check collision with player
       if (this.collisionSystem.checkPlayerEnemyCollision(this.player, boss)) {
-        this.health -= boss.damage;
+        const stats = this.getPlayerStats();
+        const damageReduction = Math.min(0.9, stats.damageReduction);
+        const actualDamage = boss.damage * (1 - damageReduction);
+        
+        this.health -= actualDamage;
+        
+        // Show damage number on player
+        this.floatingTextSystem.addPlayerDamage(this.player.pos.x, this.player.pos.y, actualDamage);
+        
         this.createCollisionEffects(boss.pos.x, boss.pos.y, 12, 1.0, 1.5);
         
         if (this.checkGameOver()) {
@@ -383,7 +435,10 @@ export class Game {
     }
 
     // Auto-shoot projectiles (include boss as target)
-    if (now - this.lastShot > AUTO_SHOOT_INTERVAL && (this.enemies.length > 0 || boss)) {
+    const stats = this.getPlayerStats();
+    const shootInterval = AUTO_SHOOT_INTERVAL / (1 + stats.attackSpeedMultiplier);
+    
+    if (now - this.lastShot > shootInterval && (this.enemies.length > 0 || boss)) {
       this.lastShot = now;
       this.shootAtNearestEnemy();
     }
@@ -409,7 +464,13 @@ export class Game {
         const enemy = this.enemies[j];
         
         if (this.collisionSystem.checkProjectileEnemyCollision(projectile, enemy)) {
-          const isDead = enemy.takeDamage();
+          const stats = this.getPlayerStats();
+          const damage = this.baseDamage * (1 + stats.damageMultiplier);
+          
+          // Show damage number
+          this.floatingTextSystem.addDamage(enemy.pos.x, enemy.pos.y, damage);
+          
+          const isDead = enemy.takeDamage(damage);
           this.projectiles.splice(i, 1);
           
           if (isDead) {
@@ -422,7 +483,13 @@ export class Game {
       // Check collision with boss
       const boss = this.bossManager.getBoss();
       if (boss && this.collisionSystem.checkProjectileEnemyCollision(projectile, boss)) {
-        const isDead = boss.takeDamage();
+        const stats = this.getPlayerStats();
+        const damage = this.baseDamage * (1 + stats.damageMultiplier);
+        
+        // Show damage number
+        this.floatingTextSystem.addDamage(boss.pos.x, boss.pos.y, damage);
+        
+        const isDead = boss.takeDamage(damage);
         this.projectiles.splice(i, 1);
         
         if (isDead) {
@@ -443,10 +510,16 @@ export class Game {
       this.player.radius, 
       this.canvas
     );
-    this.score += pickedUp;
+    
+    // Show floating text for each picked up currency
+    for (const pickup of pickedUp) {
+      this.floatingTextSystem.addCurrency(pickup.x, pickup.y, pickup.amount, pickup.type);
+    }
+    
+    // Update floating text system
+    this.floatingTextSystem.update(dt);
 
-    // Update UI
-    this.scoreElement.textContent = this.score.toString();
+    // Update UI (removed score)
     this.healthElement.textContent = Math.max(0, Math.floor(this.health)).toString();
     this.waveElement.textContent = this.waveSystem.getCurrentWaveNumber().toString();
     
@@ -527,6 +600,9 @@ export class Game {
     for (const currency of this.currencies) {
       currency.draw(ctx);
     }
+    
+    // Draw floating text (damage numbers, currency pickups)
+    this.floatingTextSystem.draw(ctx);
     
     this.renderSystem.applyPostProcessing();
     

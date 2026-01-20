@@ -7,7 +7,7 @@
 export const BASE_HEALTH = 1;
 export const BASE_SPEED = 50;
 export const BASE_SIZE = 15;
-export const BASE_DAMAGE = 10;
+export const BASE_DAMAGE = 15;
 
 // Bomber constants
 export const BOMBER_EXPLOSION_RADIUS = 80;
@@ -89,5 +89,18 @@ export const ENEMY_TYPES = {
     color: '#00bcd4',
     shape: 'triangle',
     canTeleport: true
+  },
+  elite: {
+    sizeMultiplier: 1.3,
+    color: '#FFD700',
+    shape: 'hexagon'
+  },
+  shielded: {
+    sizeMultiplier: 1.0,
+    color: '#4CAF50',
+    shape: 'square',
+    hasShield: true,
+    shieldCooldown: 5.0,
+    shieldDuration: 1.0
   }
 };
