@@ -121,11 +121,11 @@ export class Enemy {
       if (this.shieldTimer <= 0) {
         // Timer expired
         if (this.isShielded) {
-          // Shield was active, deactivate and start cooldown
+          // Shield was active, deactivate and start full cooldown
           this.isShielded = false;
-          this.shieldTimer = this.shieldCooldown - this.shieldDuration;
+          this.shieldTimer = this.shieldCooldown;
         } else {
-          // Cooldown finished, activate shield
+          // Cooldown finished, activate shield for its duration
           this.isShielded = true;
           this.shieldTimer = this.shieldDuration;
         }

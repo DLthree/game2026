@@ -155,7 +155,7 @@ export const skillTreeData = {
     multishot: {
       id: 'multishot',
       name: 'Multishot',
-      description: 'Level 1: fire 2× projectiles; Level 2: 4× projectiles (reduces attack speed by 25%)',
+      description: 'Level 1: fire 2 projectiles; Level 2: fire 4 projectiles (reduces attack speed by 25%)',
       maxLevel: 2,
       costs: [
         { gold: 10000, gems: 40, experience: 300 },
@@ -163,7 +163,7 @@ export const skillTreeData = {
       ],
       prerequisites: ['attack_speed_2'],
       position: { x: 300, y: 300 },
-      effects: { projectileCount: 2, attackSpeedPenalty: 0.25 }
+      effects: { additionalProjectiles: 1, attackSpeedPenalty: 0.25 }
     },
 
     // Tier 4 - Ultimate Offense Skill
