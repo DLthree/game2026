@@ -19,15 +19,17 @@ export const AUTO_SHOOT_RANGE = 250;
 export const AUTO_SHOOT_INTERVAL = 500; // milliseconds
 
 // Wave rewards
-export const WAVE_COMPLETE_HEALTH_REWARD = 30;
+export const WAVE_COMPLETE_HEALTH_REWARD = 40;
 
 // Boss rewards
 export const BOSS_GOLD_REWARD = 500;
 export const BOSS_GEM_REWARD = 20;
+export const BOSS_SHARD_REWARD = 5;
+export const BOSS_ORB_REWARD = 1;
 
 // Currency system
-export const CURRENCY_PICKUP_RADIUS = 100;
-export const ENEMY_GOLD_DROP = 10;
+export const CURRENCY_PICKUP_RADIUS = 150;
+export const ENEMY_GOLD_DROP = 5;
 
 // Wave banner physics
 export const BANNER_BOUNCE_MULTIPLIER = 3.0;

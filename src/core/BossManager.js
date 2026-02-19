@@ -3,7 +3,7 @@
  */
 
 import { Boss, Currency } from '../entities/index.js';
-import { BOSS_GOLD_REWARD, BOSS_GEM_REWARD } from '../data/gameConfig.js';
+import { BOSS_GOLD_REWARD, BOSS_GEM_REWARD, BOSS_SHARD_REWARD, BOSS_ORB_REWARD } from '../data/gameConfig.js';
 
 export class BossManager {
   constructor(bossHealthContainer, bossHealthBar, bossHealthText) {
@@ -62,11 +62,38 @@ export class BossManager {
 
     const bossScale = this.boss.difficultyScale;
     
-    // Scale rewards based on boss difficulty
-    const goldReward = Math.floor(BOSS_GOLD_REWARD * bossScale);
-    const gemReward = Math.floor(BOSS_GEM_REWARD * bossScale);
+    // Boss scale thresholds - these correspond to the wave scales:
+    // Wave 3 mini-boss: 0.5 scale
+    // Wave 6 mid-boss: 0.8 scale  
+    // Wave 10 final boss: 1.0 scale
+    const FINAL_BOSS_THRESHOLD = 0.95;  // >= 0.95 is considered final boss
+    const MID_BOSS_THRESHOLD = 0.7;     // >= 0.7 is considered mid-boss
     
-    // Award scaled rewards
+    // Determine rewards based on boss difficulty scale
+    // Mini-boss (scale 0.5): 5 gems, 1 shard
+    // Mid-boss (scale 0.8): 20 gems, 5 shards
+    // Final boss (scale 1.0): 50 gems, 5 shards, 1 orb
+    let goldReward = Math.floor(BOSS_GOLD_REWARD * bossScale);
+    let gemReward = 0;
+    let shardReward = 0;
+    let orbReward = 0;
+    
+    if (bossScale >= FINAL_BOSS_THRESHOLD) {
+      // Final boss (Wave 10)
+      gemReward = 50;
+      shardReward = 5;
+      orbReward = 1;
+    } else if (bossScale >= MID_BOSS_THRESHOLD) {
+      // Mid-boss (Wave 6)
+      gemReward = 20;
+      shardReward = 5;
+    } else {
+      // Mini-boss (Wave 3)
+      gemReward = 5;
+      shardReward = 1;
+    }
+    
+    // Award gold as currency drop
     currencies.push(new Currency(
       this.boss.pos.x, 
       this.boss.pos.y, 
@@ -74,8 +101,17 @@ export class BossManager {
       'gold'
     ));
     
+    // Award other currencies directly to skill tree
     if (window.skillTreeManager) {
-      window.skillTreeManager.addCurrency('gems', gemReward);
+      if (gemReward > 0) {
+        window.skillTreeManager.addCurrency('gems', gemReward);
+      }
+      if (shardReward > 0) {
+        window.skillTreeManager.addCurrency('shards', shardReward);
+      }
+      if (orbReward > 0) {
+        window.skillTreeManager.addCurrency('orbs', orbReward);
+      }
     }
     
     // Visual effects (scaled intensity)
@@ -92,7 +128,7 @@ export class BossManager {
     this.boss = null;
     this.hideHealthBar();
     
-    return { victory, goldReward, gemReward };
+    return { victory, goldReward, gemReward, shardReward, orbReward };
   }
 
   /**

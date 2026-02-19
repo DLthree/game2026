@@ -22,9 +22,9 @@ export class Boss {
   static EYE_OFFSET_RATIO = 0.3;
   
   // Dash attack constants
-  static DASH_COOLDOWN = 3.0;
+  static DASH_COOLDOWN = 2.5;
   static DASH_DURATION = 0.5;
-  static DASH_SPEED = 300;
+  static DASH_SPEED = 350;
   static DASH_MIN_RANGE = 100;
   static DASH_MAX_RANGE = 400;
   
